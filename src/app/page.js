@@ -1,42 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import data from '@/data/project.json';
 
-const milestones = [
-  { title: 'Ideenpapier eingereicht', date: 'Mai 2026', status: 'done' },
-  { title: 'Gründungsberatung TUM', date: 'Jun 2026', status: 'done' },
-  { title: 'Businessplan & Finanzplan', date: 'Aug 2026', status: 'active' },
-  { title: 'EXIST Antrag einreichen', date: 'Sep 2026', status: 'upcoming' },
-  { title: 'Förderbescheid erwartet', date: 'Nov 2026', status: 'upcoming' },
-  { title: 'Projektstart', date: 'Jan 2027', status: 'upcoming' },
-];
-
-const workPackages = [
-  { name: 'AP1 — Marktanalyse & Validierung', progress: 75, owner: 'Nina' },
-  { name: 'AP2 — Prototyp-Entwicklung', progress: 40, owner: 'Jiun' },
-  { name: 'AP3 — Businessplan erstellen', progress: 55, owner: 'Jiun & Nina' },
-  { name: 'AP4 — Team & Gründungskonzept', progress: 30, owner: 'Nina' },
-  { name: 'AP5 — Pitchdeck & Kommunikation', progress: 20, owner: 'Jiun' },
-];
-
-const budgetItems = [
-  { label: 'Personal (Stipendien)', amount: '82.800', pct: 55, color: '#111' },
-  { label: 'Sachmittel', amount: '30.000', pct: 20, color: '#666' },
-  { label: 'Coaching', amount: '15.000', pct: 10, color: '#aaa' },
-  { label: 'Reise & Sonstiges', amount: '22.200', pct: 15, color: '#ddd' },
-];
-
-const notes = [
-  { text: 'Mentor-Gespräch am 08.08. mit Prof. Müller — Feedback zum MVP einholen', author: 'Jiun' },
-  { text: 'Letter of Intent von Pilotpartner steht noch aus — Reminder senden', author: 'Nina' },
-  { text: 'IHK Gründerworkshop am 15.08. — beide angemeldet', author: 'Nina' },
-  { text: 'Tech-Stack-Entscheidung dokumentieren für Antrag Anhang', author: 'Jiun' },
-];
+const { project, team, funding, milestones, workPackages, budget, notes } = data;
 
 function statusLabel(s) {
   if (s === 'done') return 'Erledigt';
-  if (s === 'active') return 'In Arbeit';
+  if (s === 'active') return 'Aktuell';
   return 'Geplant';
+}
+
+function formatAmount(n) {
+  return n.toLocaleString('de-DE');
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('de-DE', { day: 'numeric', month: 'short' });
 }
 
 export default function HomePage() {
@@ -51,36 +32,82 @@ export default function HomePage() {
     workPackages.reduce((s, w) => s + w.progress, 0) / workPackages.length
   );
 
-  const deadline = new Date('2026-09-30');
+  const deadline = new Date(funding.deadline);
   const daysLeft = Math.max(0, Math.ceil((deadline - new Date()) / 86400000));
+
+  const budgetColors = ['#111', '#666', '#aaa', '#ddd'];
 
   return (
     <div className="container">
-      {/* Nav */}
+
+      {/* 1. Nav */}
       <nav className="nav" id="main-nav">
         <div className="nav-left">
           <span className="nav-title">PANDA</span>
           <span className="nav-sep">/</span>
-          <span className="nav-subtitle">EXIST Gründungsstipendium</span>
+          <span className="nav-subtitle">{funding.program}</span>
         </div>
         <div className="nav-right">
           <div className="nav-team">
-            <span className="team-tag">Jiun</span>
-            <span className="team-tag">Nina</span>
+            {team.map((t) => (
+              <span className="team-tag" key={t.name}>{t.name}</span>
+            ))}
           </div>
           <span>{today}</span>
         </div>
       </nav>
 
-      {/* Header */}
+      {/* 2. Header */}
       <header className="page-header" id="hero">
         <h1>Vorhaben-Planung</h1>
         <p>
-          Fortschritt, Meilensteine und nächste Schritte für den EXIST-Antrag — übersichtlich an einem Ort.
+          Fortschritt, Meilensteine und nächste Schritte für den EXIST-Antrag —
+          übersichtlich an einem Ort.
         </p>
       </header>
 
-      {/* Stats */}
+      {/* 3. Project Summary */}
+      <section className="summary-section" id="summary">
+        <div className="section-head">
+          <h2 className="section-title">Projekt</h2>
+        </div>
+        <p className="summary-lead">{project.oneLiner}</p>
+        <div className="summary-grid">
+          <div className="summary-col">
+            <h3>Problem</h3>
+            <p>{project.problem}</p>
+          </div>
+          <div className="summary-col">
+            <h3>Lösung</h3>
+            <p>{project.solution}</p>
+          </div>
+          <div className="summary-col">
+            <h3>Ansatz</h3>
+            <p>{project.approach}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Team */}
+      <section className="team-section" id="team">
+        <div className="section-head">
+          <h2 className="section-title">Team</h2>
+        </div>
+        <div className="team-grid">
+          {team.map((t) => (
+            <div className="team-member" key={t.name}>
+              <div className="team-initial">{t.name.charAt(0)}</div>
+              <div className="team-info">
+                <h3>{t.name}</h3>
+                <div className="team-role">{t.role}</div>
+                <div className="team-bio">{t.bio}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 5. Key Figures */}
       <div className="stats" id="stats">
         <div className="stat">
           <div className="stat-value">{overallProgress}%</div>
@@ -91,54 +118,48 @@ export default function HomePage() {
           <div className="stat-label">Tage bis Deadline</div>
         </div>
         <div className="stat">
-          <div className="stat-value">150.000</div>
+          <div className="stat-value">{formatAmount(funding.volume)}</div>
           <div className="stat-label">Fördervolumen EUR</div>
         </div>
         <div className="stat">
-          <div className="stat-value">12</div>
-          <div className="stat-label">Monate Laufzeit</div>
+          <div className="stat-value">{funding.duration}</div>
+          <div className="stat-label">{funding.durationUnit} Laufzeit</div>
         </div>
       </div>
 
-      {/* Milestones + Work Packages */}
-      <section className="section" id="main-content">
+      {/* 6. Milestones + 7. Work Packages */}
+      <section className="section" id="milestones-and-packages">
         <div className="two-col">
-          {/* Milestones */}
+
+          {/* Milestones as Timeline */}
           <div>
             <div className="section-head">
               <h2 className="section-title">Meilensteine</h2>
-              <span className="section-meta">6 gesamt</span>
+              <span className="section-meta">{milestones.length} gesamt</span>
             </div>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Meilenstein</th>
-                  <th>Zeitraum</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {milestones.map((m, i) => (
-                  <tr key={i}>
-                    <td>{m.title}</td>
-                    <td style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>{m.date}</td>
-                    <td>
-                      <span className="status">
-                        <span className={`status-dot ${m.status}`} />
-                        {statusLabel(m.status)}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="timeline">
+              {milestones.map((m, i) => (
+                <div className="timeline-item" key={i}>
+                  <div className={`timeline-dot ${m.status}`} />
+                  <div className="timeline-body">
+                    <span className={`timeline-title ${m.status}`}>
+                      {m.title}
+                    </span>
+                    <span className="timeline-date">{m.date}</span>
+                    <span className={`timeline-status ${m.status}`}>
+                      {statusLabel(m.status)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Work Packages */}
           <div>
             <div className="section-head">
               <h2 className="section-title">Arbeitspakete</h2>
-              <span className="section-meta">5 Pakete</span>
+              <span className="section-meta">{workPackages.length} Pakete</span>
             </div>
             <table className="table">
               <thead>
@@ -152,7 +173,7 @@ export default function HomePage() {
                 {workPackages.map((wp, i) => (
                   <tr key={i}>
                     <td>
-                      {wp.name}
+                      {wp.id} — {wp.name}
                       <div className="progress-bar">
                         <div
                           className="progress-fill"
@@ -170,14 +191,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Budget + Notes */}
-      <section className="section" id="bottom-content">
+      {/* 8. Budget + Activity */}
+      <section className="section" id="budget-and-activity">
         <div className="two-col">
+
           {/* Budget */}
           <div>
             <div className="section-head">
               <h2 className="section-title">Budget</h2>
-              <span className="section-meta">150.000 EUR gesamt</span>
+              <span className="section-meta">{formatAmount(funding.volume)} EUR gesamt</span>
             </div>
             <table className="table">
               <thead>
@@ -187,39 +209,42 @@ export default function HomePage() {
                 </tr>
               </thead>
               <tbody>
-                {budgetItems.map((b, i) => (
+                {budget.map((b, i) => (
                   <tr key={i}>
                     <td>{b.label}</td>
-                    <td style={{ fontVariantNumeric: 'tabular-nums' }}>{b.amount}</td>
+                    <td style={{ fontVariantNumeric: 'tabular-nums' }}>{formatAmount(b.amount)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             <div className="budget-bar">
-              {budgetItems.map((b, i) => (
+              {budget.map((b, i) => (
                 <div
                   key={i}
                   className="budget-segment"
                   style={{
                     width: mounted ? `${b.pct}%` : '0%',
-                    background: b.color,
+                    background: budgetColors[i] || '#ccc',
                   }}
                 />
               ))}
             </div>
           </div>
 
-          {/* Notes */}
+          {/* Activity Feed */}
           <div>
             <div className="section-head">
-              <h2 className="section-title">Notizen</h2>
+              <h2 className="section-title">Aktivität</h2>
               <span className="section-meta">{notes.length} Einträge</span>
             </div>
-            <div className="note-list">
+            <div className="activity-list">
               {notes.map((n, i) => (
-                <div className="note" key={i}>
-                  {n.text}
-                  <div className="note-author">{n.author}</div>
+                <div className="activity-item" key={i}>
+                  <span className="activity-author">{n.author}</span>
+                  <div className="activity-content">
+                    <div className="activity-text">{n.text}</div>
+                    <div className="activity-date">{formatDate(n.date)}</div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -227,7 +252,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* 9. Footer */}
       <footer className="footer" id="footer">
         <span>PANDA — Internal Tool</span>
         <span>

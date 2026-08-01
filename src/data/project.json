@@ -1,0 +1,58 @@
+{
+  "project": {
+    "name": "PANDA",
+    "tagline": "Protecting consumers from dark patterns with local AI",
+    "oneLiner": "A browser extension AI agent that detects and neutralizes dark patterns in real time, powered by a local neurosymbolic model — no cloud, no tracking, full privacy.",
+    "problem": "Dark patterns are deceptive UI designs that manipulate users into unintended actions — hidden fees, forced subscriptions, misleading opt-ins. They cost consumers billions annually and erode trust in digital products. Existing tools are limited to static blocklists that can't keep up with evolving tactics.",
+    "solution": "PANDA is a browser extension that uses a local neurosymbolic AI model to detect dark patterns in real time as users browse. It highlights manipulative elements, explains the tactic being used, and offers a clean alternative — empowering informed decisions without sending any data to the cloud.",
+    "approach": "Our neurosymbolic architecture combines neural pattern recognition with symbolic reasoning over UI semantics. The model runs entirely on-device, ensuring privacy and low latency. We validate against a curated taxonomy of dark pattern categories from established HCI research."
+  },
+  "team": [
+    {
+      "name": "Jiun",
+      "role": "Technical Lead",
+      "bio": "AI/ML engineer with experience in neurosymbolic systems and browser technologies. Responsible for model architecture, extension development, and technical infrastructure."
+    },
+    {
+      "name": "Nina",
+      "role": "Business Lead",
+      "bio": "Background in business development and consumer research. Responsible for market validation, business plan, stakeholder relations, and go-to-market strategy."
+    }
+  ],
+  "funding": {
+    "program": "EXIST Gründungsstipendium",
+    "volume": 150000,
+    "currency": "EUR",
+    "duration": 12,
+    "durationUnit": "Monate",
+    "deadline": "2026-09-30",
+    "projectStart": "2027-01-01"
+  },
+  "milestones": [
+    { "title": "Ideenpapier eingereicht", "date": "Mai 2026", "status": "done" },
+    { "title": "Gründungsberatung TUM", "date": "Jun 2026", "status": "done" },
+    { "title": "Businessplan & Finanzplan", "date": "Aug 2026", "status": "active" },
+    { "title": "EXIST Antrag einreichen", "date": "Sep 2026", "status": "upcoming" },
+    { "title": "Förderbescheid erwartet", "date": "Nov 2026", "status": "upcoming" },
+    { "title": "Projektstart", "date": "Jan 2027", "status": "upcoming" }
+  ],
+  "workPackages": [
+    { "id": "AP1", "name": "Marktanalyse & Validierung", "progress": 75, "owner": "Nina" },
+    { "id": "AP2", "name": "Prototyp-Entwicklung", "progress": 40, "owner": "Jiun" },
+    { "id": "AP3", "name": "Businessplan erstellen", "progress": 55, "owner": "Jiun & Nina" },
+    { "id": "AP4", "name": "Team & Gründungskonzept", "progress": 30, "owner": "Nina" },
+    { "id": "AP5", "name": "Pitchdeck & Kommunikation", "progress": 20, "owner": "Jiun" }
+  ],
+  "budget": [
+    { "label": "Personal (Stipendien)", "amount": 82800, "pct": 55 },
+    { "label": "Sachmittel", "amount": 30000, "pct": 20 },
+    { "label": "Coaching", "amount": 15000, "pct": 10 },
+    { "label": "Reise & Sonstiges", "amount": 22200, "pct": 15 }
+  ],
+  "notes": [
+    { "text": "Mentor-Gespräch am 08.08. mit Prof. Müller — Feedback zum MVP einholen", "author": "Jiun", "date": "2026-08-01" },
+    { "text": "Letter of Intent von Pilotpartner steht noch aus — Reminder senden", "author": "Nina", "date": "2026-07-30" },
+    { "text": "IHK Gründerworkshop am 15.08. — beide angemeldet", "author": "Nina", "date": "2026-07-28" },
+    { "text": "Tech-Stack-Entscheidung dokumentieren für Antrag Anhang", "author": "Jiun", "date": "2026-07-25" }
+  ]
+}
