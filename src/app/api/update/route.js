@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
+import { getProjectData, updateProjectData } from '@/lib/data';
 
 // POST /api/update — receive updates from agents
 // Auth is handled by middleware (cookie or Bearer token)
-// Phase 1: validates and logs. Phase 2: writes to Vercel KV.
 export async function POST(request) {
   let body;
   try {
@@ -53,10 +53,27 @@ export async function POST(request) {
 
   console.log('[PANDA API] Update received:', JSON.stringify(logEntry));
 
+  // Phase 2: Persist to Vercel KV
+  const projectData = await getProjectData();
+
+  if (type === 'note' && action === 'add') {
+    if (!projectData.notes) projectData.notes = [];
+    projectData.notes.unshift({
+      text: data.text,
+      author: author || agent || 'Unknown',
+      date: new Date().toISOString().split('T')[0]
+    });
+  }
+
+  // Save back to KV
+  const success = await updateProjectData(projectData);
+  if (!success) {
+    return NextResponse.json({ error: 'Failed to update data in KV' }, { status: 500 });
+  }
+
   return NextResponse.json({
     success: true,
-    message: `${action} ${type} received`,
+    message: `${action} ${type} received and saved`,
     entry: logEntry,
-    note: 'Phase 1: Update logged. In Phase 2, this will persist to Vercel KV.',
   });
 }

@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
-import projectData from '@/data/project.json';
+import { getProjectData } from '@/lib/data';
+
+export const dynamic = 'force-dynamic';
 
 // GET /api/status — returns current project state
 // Auth is handled by middleware (cookie or Bearer token)
 export async function GET() {
+  const projectData = await getProjectData();
   const { workPackages, milestones, funding } = projectData;
 
   const overallProgress = Math.round(
