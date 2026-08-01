@@ -78,7 +78,7 @@
   "milestones": [
     {
       "title": "Ideenpapier eingereicht",
-      "date": "Mai 2026",
+      "date": "April 2026",
       "status": "done"
     },
     {
@@ -92,23 +92,13 @@
       "status": "done"
     },
     {
-      "title": "Businessplan & Finanzplan",
+      "title": "Projektstart",
       "date": "Aug 2026",
       "status": "active"
     },
     {
-      "title": "EXIST Antrag einreichen",
+      "title": "Company Setup",
       "date": "Sep 2026",
-      "status": "upcoming"
-    },
-    {
-      "title": "Förderbescheid erwartet",
-      "date": "Nov 2026",
-      "status": "upcoming"
-    },
-    {
-      "title": "Projektstart",
-      "date": "Jan 2027",
       "status": "upcoming"
     }
   ],
