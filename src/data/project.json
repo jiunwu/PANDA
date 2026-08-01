@@ -172,5 +172,47 @@
       "author": "Jiun",
       "date": "2026-07-25"
     }
+  ],
+  "sprints": [
+    {
+      "id": "Sprint 1",
+      "name": "Foundation & MVP Scope",
+      "status": "Active",
+      "startDate": "2026-08-01",
+      "endDate": "2026-08-14",
+      "progress": 35,
+      "tasks": [
+        { "title": "Define extension manifest V3", "status": "done" },
+        { "title": "Setup local LLM bridge", "status": "in-progress" },
+        { "title": "Draft IP agreement", "status": "in-progress" }
+      ]
+    },
+    {
+      "id": "Sprint 2",
+      "name": "Core Detection Logic",
+      "status": "Upcoming",
+      "startDate": "2026-08-15",
+      "endDate": "2026-08-28",
+      "progress": 0,
+      "tasks": [
+        { "title": "Train classifier on 500 samples", "status": "todo" },
+        { "title": "Implement DOM observer", "status": "todo" }
+      ]
+    }
+  ],
+  "github": [
+    { "type": "pr", "repo": "panda-ext", "title": "Feat: Add DOM traversal engine", "status": "Open", "author": "Jiun", "time": "2h ago" },
+    { "type": "commit", "repo": "panda-ext", "title": "fix: background script memory leak", "status": "Merged", "author": "Jiun", "time": "5h ago" },
+    { "type": "issue", "repo": "panda-model", "title": "False positive on cookie banners", "status": "Open", "author": "Nina", "time": "1d ago" }
+  ],
+  "agentsOverview": [
+    { "name": "z.AI Coordinator", "role": "Scrum Master & PM", "status": "Active", "task": "Monitoring Sprint 1 progress" },
+    { "name": "Lark Bot", "role": "Notifier", "status": "Idle", "task": "Waiting for webhook" },
+    { "name": "Code Agent", "role": "Dev Assist", "status": "Working", "task": "Refactoring DOM observer" },
+    { "name": "Research Agent", "role": "Literature", "status": "Error", "task": "API rate limit exceeded" }
+  ],
+  "agentInteractions": [
+    { "role": "user", "agent": "z.AI Coordinator", "message": "Summarize today's GitHub activity.", "time": "10:00 AM" },
+    { "role": "agent", "agent": "z.AI Coordinator", "message": "Jiun opened a PR for DOM traversal and fixed a memory leak. Nina reported an issue on the model.", "time": "10:01 AM" }
   ]
 }

@@ -1004,6 +1004,160 @@ a { color: inherit; }
   color: var(--text-tertiary);
 }
 
+/* ── Bento Grid ── */
+.bento-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 24px;
+  padding: 32px 0;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .bento-grid { grid-template-columns: 1fr; }
+}
+
+.bento-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.bento-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.bento-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.bento-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* ── GitHub & Sprints ── */
+.list-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+.list-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+.item-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.item-meta {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.item-tag {
+  font-size: 10px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  background: var(--accent-light);
+  border-radius: 3px;
+}
+.item-tag.active { background: var(--text-primary); color: var(--white); }
+
+/* ── Agent Cards ── */
+.agent-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.agent-card {
+  padding: 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  background: var(--accent-light);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.agent-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.agent-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+.agent-status {
+  font-size: 10px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: var(--white);
+  border: 1px solid var(--border);
+}
+.agent-task {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ── Chat Console ── */
+.chat-console {
+  background: #111;
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 16px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  height: 240px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.chat-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.chat-agent { color: #4ade80; }
+.chat-user { color: #60a5fa; }
+.chat-text { color: #ddd; line-height: 1.5; }
+.chat-input-wrapper {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #333;
+  padding-top: 12px;
+}
+.chat-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+}
+
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }

@@ -3,10 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import data from '@/data/project.json';
-import integrationsData from '@/data/integrations.json';
 
-const { project, team, mentors, contact, funding, goals, dataRoom, milestones, workPackages, budget } = data;
-const { activityLog } = integrationsData;
+const { project, team, mentors, contact, funding, goals, dataRoom, milestones, workPackages, budget, sprints, github, agentsOverview, agentInteractions } = data;
 
 function statusLabel(s) {
   if (s === 'done') return 'Erledigt';
@@ -17,17 +15,6 @@ function statusLabel(s) {
 
 function formatAmount(n) {
   return n.toLocaleString('de-DE');
-}
-
-function formatRelative(ts) {
-  const diff = Date.now() - new Date(ts).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
 }
 
 export default function DashboardPage() {
@@ -42,9 +29,6 @@ export default function DashboardPage() {
   const deadline = new Date(funding.projectEnd);
   const daysLeft = Math.max(0, Math.ceil((deadline - new Date()) / 86400000));
 
-  const budgetColors = ['#111', '#666', '#aaa', '#ddd'];
-  const recentActivity = activityLog.slice(0, 4);
-
   async function handleLogout() {
     await fetch('/api/logout', { method: 'POST' });
     router.push('/');
@@ -57,11 +41,8 @@ export default function DashboardPage() {
       <header className="page-header" id="hero">
         <div className="page-header-row">
           <div>
-            <h1>Vorhaben-Planung</h1>
-            <p>
-              Fortschritt, Meilensteine und nächste Schritte für den EXIST-Antrag —
-              übersichtlich an einem Ort.
-            </p>
+            <h1>Dashboard</h1>
+            <p>{project.tagline}</p>
           </div>
           <button className="btn btn-ghost" onClick={handleLogout} style={{ alignSelf: 'flex-start', marginTop: 8 }}>
             Logout
@@ -69,30 +50,150 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Project Summary */}
-      <section className="summary-section" id="summary">
-        <div className="section-head">
-          <h2 className="section-title">Projekt</h2>
+      {/* Stats Bar */}
+      <div className="stats" id="stats">
+        <div className="stat">
+          <div className="stat-value">{overallProgress}%</div>
+          <div className="stat-label">Fortschritt</div>
         </div>
-        <p className="summary-lead">{project.oneLiner}</p>
-        <div className="summary-grid">
-          <div className="summary-col">
-            <h3>Problem</h3>
-            <p>{project.problem}</p>
+        <div className="stat">
+          <div className="stat-value">{daysLeft}</div>
+          <div className="stat-label">Tage bis Deadline</div>
+        </div>
+        <div className="stat">
+          <div className="stat-value">{formatAmount(funding.volume)}</div>
+          <div className="stat-label">Fördervolumen EUR</div>
+        </div>
+        <div className="stat">
+          <div className="stat-value">{sprints[0].progress}%</div>
+          <div className="stat-label">{sprints[0].id} Progress</div>
+        </div>
+      </div>
+
+      {/* Bento Grid */}
+      <div className="bento-grid">
+        {/* LEFT COLUMN: Operations */}
+        <div className="bento-col">
+          <div className="bento-card">
+            <div className="bento-header">
+              <h2 className="bento-title">Agile Sprint</h2>
+              <span className="section-meta">{sprints[0].id}</span>
+            </div>
+            <div className="list-stack">
+              {sprints[0].tasks.map((task, i) => (
+                <div className="list-item" key={i}>
+                  <div className="item-title">{task.title}</div>
+                  <div className="item-meta">
+                    <span className={`item-tag ${task.status === 'done' ? 'active' : ''}`}>{task.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="summary-col">
-            <h3>Lösung</h3>
-            <p>{project.solution}</p>
-          </div>
-          <div className="summary-col">
-            <h3>Ansatz</h3>
-            <p>{project.approach}</p>
+
+          <div className="bento-card">
+            <div className="bento-header">
+              <h2 className="bento-title">GitHub Development</h2>
+            </div>
+            <div className="list-stack">
+              {github.map((item, i) => (
+                <div className="list-item" key={i}>
+                  <div className="item-title">{item.title}</div>
+                  <div className="item-meta">
+                    <span className={`item-tag ${item.status === 'Merged' ? 'active' : ''}`}>{item.type}</span>
+                    <span>{item.author} • {item.time}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </section>
+
+        {/* MIDDLE COLUMN: Core Project */}
+        <div className="bento-col">
+          <div className="bento-card">
+            <div className="bento-header">
+              <h2 className="bento-title">Goals</h2>
+              <span className="section-meta">{goals.length} active</span>
+            </div>
+            <div className="timeline" style={{ paddingLeft: 8 }}>
+              {goals.map((g, i) => (
+                <div className="timeline-item" key={i}>
+                  <div className={`timeline-dot ${g.status}`} />
+                  <div className="timeline-body">
+                    <span className={`timeline-title ${g.status}`}>{g.title}</span>
+                    <span className="timeline-date">{g.deadline}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bento-card">
+            <div className="bento-header">
+              <h2 className="bento-title">Data Room</h2>
+            </div>
+            <div className="list-stack">
+              {dataRoom.map((doc, i) => (
+                <div className="list-item" key={i}>
+                  <div className="item-title">{doc.title}</div>
+                  <div className="item-meta">
+                    <span className={`type-tag ${doc.status === 'Empty' ? 'type-system' : doc.status === 'Draft' ? 'type-note' : 'type-milestone'}`}>
+                      {doc.status}
+                    </span>
+                    <span>Updated {doc.lastUpdated}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: AI Agents */}
+        <div className="bento-col">
+          <div className="bento-card">
+            <div className="bento-header">
+              <h2 className="bento-title">AI Agents Overview</h2>
+            </div>
+            <div className="agent-grid">
+              {agentsOverview.map((agent, i) => (
+                <div className="agent-card" key={i}>
+                  <div className="agent-header">
+                    <span className="agent-name">{agent.name}</span>
+                    <span className="agent-status" style={{
+                      color: agent.status === 'Working' || agent.status === 'Active' ? 'var(--green)' : agent.status === 'Error' ? 'var(--red)' : 'var(--text-tertiary)',
+                      borderColor: agent.status === 'Working' || agent.status === 'Active' ? 'var(--green)' : agent.status === 'Error' ? 'var(--red)' : 'var(--border)'
+                    }}>
+                      {agent.status}
+                    </span>
+                  </div>
+                  <div className="agent-task">{agent.task}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bento-card" style={{ padding: 0, background: '#111', borderColor: '#111' }}>
+            <div className="chat-console">
+              {agentInteractions.map((msg, i) => (
+                <div className="chat-msg" key={i}>
+                  <span className={msg.role === 'agent' ? 'chat-agent' : 'chat-user'}>
+                    {msg.role === 'agent' ? msg.agent : 'You'} <span style={{color:'#666', fontSize:10}}>[{msg.time}]</span>
+                  </span>
+                  <span className="chat-text">{msg.message}</span>
+                </div>
+              ))}
+              <div className="chat-input-wrapper">
+                <span style={{color: '#60a5fa'}}>&gt;</span>
+                <input type="text" className="chat-input" placeholder="Dispatch task to agents..." />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Team & Stakeholders */}
-      <section className="team-section" id="team">
+      <section className="team-section" id="team" style={{ borderTop: '1px solid var(--border)', paddingTop: 40, marginTop: 24 }}>
         <div className="section-head">
           <h2 className="section-title">Team & Stakeholders</h2>
         </div>
@@ -120,193 +221,6 @@ export default function DashboardPage() {
             <div className="team-info">
               <h3>{contact.name}</h3>
               <div className="team-role">{contact.role}</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Goals + Data Room */}
-      <section className="section" id="goals-and-data-room">
-        <div className="two-col">
-          <div>
-            <div className="section-head">
-              <h2 className="section-title">Goals</h2>
-              <span className="section-meta">{goals.length} goals</span>
-            </div>
-            <div className="timeline">
-              {goals.map((g, i) => (
-                <div className="timeline-item" key={i}>
-                  <div className={`timeline-dot ${g.status}`} />
-                  <div className="timeline-body">
-                    <span className={`timeline-title ${g.status}`}>{g.title}</span>
-                    <span className="timeline-date">{g.deadline}</span>
-                    <span className={`timeline-status ${g.status}`}>{statusLabel(g.status)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="section-head">
-              <h2 className="section-title">Data Room</h2>
-              <span className="section-meta">{dataRoom.length} docs</span>
-            </div>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Document</th>
-                  <th>Status</th>
-                  <th>Updated</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dataRoom.map((doc, i) => (
-                  <tr key={i}>
-                    <td>{doc.title}</td>
-                    <td>
-                      <span className={`type-tag ${doc.status === 'Empty' ? 'type-system' : doc.status === 'Draft' ? 'type-note' : 'type-milestone'}`}>
-                        {doc.status}
-                      </span>
-                    </td>
-                    <td style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--text-tertiary)' }}>{doc.lastUpdated}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <div className="stats" id="stats">
-        <div className="stat">
-          <div className="stat-value">{overallProgress}%</div>
-          <div className="stat-label">Fortschritt</div>
-        </div>
-        <div className="stat">
-          <div className="stat-value">{daysLeft}</div>
-          <div className="stat-label">Tage bis Deadline</div>
-        </div>
-        <div className="stat">
-          <div className="stat-value">{formatAmount(funding.volume)}</div>
-          <div className="stat-label">Fördervolumen EUR</div>
-        </div>
-        <div className="stat">
-          <div className="stat-value">{funding.duration}</div>
-          <div className="stat-label">{funding.durationUnit} Laufzeit</div>
-        </div>
-      </div>
-
-      {/* Milestones + Work Packages */}
-      <section className="section" id="milestones-and-packages">
-        <div className="two-col">
-          <div>
-            <div className="section-head">
-              <h2 className="section-title">Meilensteine</h2>
-              <span className="section-meta">{milestones.length} gesamt</span>
-            </div>
-            <div className="timeline">
-              {milestones.map((m, i) => (
-                <div className="timeline-item" key={i}>
-                  <div className={`timeline-dot ${m.status}`} />
-                  <div className="timeline-body">
-                    <span className={`timeline-title ${m.status}`}>{m.title}</span>
-                    <span className="timeline-date">{m.date}</span>
-                    <span className={`timeline-status ${m.status}`}>{statusLabel(m.status)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="section-head">
-              <h2 className="section-title">Arbeitspakete</h2>
-              <span className="section-meta">{workPackages.length} Pakete</span>
-            </div>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Paket</th>
-                  <th>Verantwortlich</th>
-                  <th>Stand</th>
-                </tr>
-              </thead>
-              <tbody>
-                {workPackages.map((wp, i) => (
-                  <tr key={i}>
-                    <td>
-                      {wp.id} — {wp.name}
-                      <div className="progress-bar">
-                        <div className="progress-fill" style={{ width: mounted ? `${wp.progress}%` : '0%' }} />
-                      </div>
-                    </td>
-                    <td style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>{wp.owner}</td>
-                    <td style={{ fontVariantNumeric: 'tabular-nums' }}>{wp.progress}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* Budget + Recent Activity */}
-      <section className="section" id="budget-and-activity">
-        <div className="two-col">
-          <div>
-            <div className="section-head">
-              <h2 className="section-title">Budget</h2>
-              <span className="section-meta">{formatAmount(funding.volume)} EUR gesamt</span>
-            </div>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Position</th>
-                  <th>Betrag EUR</th>
-                </tr>
-              </thead>
-              <tbody>
-                {budget.map((b, i) => (
-                  <tr key={i}>
-                    <td>{b.label}</td>
-                    <td style={{ fontVariantNumeric: 'tabular-nums' }}>{formatAmount(b.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="budget-bar">
-              {budget.map((b, i) => (
-                <div
-                  key={i}
-                  className="budget-segment"
-                  style={{
-                    width: mounted ? `${b.pct}%` : '0%',
-                    background: budgetColors[i] || '#ccc',
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div className="section-head">
-              <h2 className="section-title">Recent Activity</h2>
-              <a href="/activity" className="section-meta" style={{ textDecoration: 'none', color: 'var(--text-tertiary)' }}>
-                View all →
-              </a>
-            </div>
-            <div className="activity-list">
-              {recentActivity.map((entry, i) => (
-                <div className="activity-item" key={i}>
-                  <span className="activity-author">{entry.source.split(' ')[0]}</span>
-                  <div className="activity-content">
-                    <div className="activity-text">{entry.action}</div>
-                    <div className="activity-date">{formatRelative(entry.timestamp)}</div>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>
