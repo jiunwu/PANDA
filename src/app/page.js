@@ -2,220 +2,239 @@
 
 import { useState, useEffect } from 'react';
 
-// ── Data ──
 const milestones = [
-  { title: 'Ideenpapier eingereicht', date: 'Abgeschlossen', status: 'done' },
-  { title: 'Gründungsberatung TUM', date: 'Abgeschlossen', status: 'done' },
-  { title: 'Businessplan & Finanzplan', date: 'In Arbeit – Fällig Aug 2026', status: 'active' },
+  { title: 'Ideenpapier eingereicht', date: 'Mai 2026', status: 'done' },
+  { title: 'Gründungsberatung TUM', date: 'Jun 2026', status: 'done' },
+  { title: 'Businessplan & Finanzplan', date: 'Aug 2026', status: 'active' },
   { title: 'EXIST Antrag einreichen', date: 'Sep 2026', status: 'upcoming' },
   { title: 'Förderbescheid erwartet', date: 'Nov 2026', status: 'upcoming' },
   { title: 'Projektstart', date: 'Jan 2027', status: 'upcoming' },
 ];
 
 const workPackages = [
-  { name: 'AP1 – Marktanalyse & Validierung', progress: 75, owner: 'Nina', color: 'emerald' },
-  { name: 'AP2 – Prototyp-Entwicklung', progress: 40, owner: 'Jiun', color: 'violet' },
-  { name: 'AP3 – Businessplan erstellen', progress: 55, owner: 'Jiun & Nina', color: 'amber' },
-  { name: 'AP4 – Team & Gründungskonzept', progress: 30, owner: 'Nina', color: 'sky' },
-  { name: 'AP5 – Pitchdeck & Kommunikation', progress: 20, owner: 'Jiun', color: 'rose' },
+  { name: 'AP1 — Marktanalyse & Validierung', progress: 75, owner: 'Nina' },
+  { name: 'AP2 — Prototyp-Entwicklung', progress: 40, owner: 'Jiun' },
+  { name: 'AP3 — Businessplan erstellen', progress: 55, owner: 'Jiun & Nina' },
+  { name: 'AP4 — Team & Gründungskonzept', progress: 30, owner: 'Nina' },
+  { name: 'AP5 — Pitchdeck & Kommunikation', progress: 20, owner: 'Jiun' },
 ];
 
 const budgetItems = [
-  { label: 'Personal (Stipendien)', amount: '82.800 €', color: 'var(--accent-violet)', pct: 55 },
-  { label: 'Sachmittel', amount: '30.000 €', color: 'var(--accent-emerald)', pct: 20 },
-  { label: 'Coaching', amount: '15.000 €', color: 'var(--accent-amber)', pct: 10 },
-  { label: 'Reise & Sonstiges', amount: '22.200 €', color: 'var(--accent-sky)', pct: 15 },
+  { label: 'Personal (Stipendien)', amount: '82.800', pct: 55, color: '#111' },
+  { label: 'Sachmittel', amount: '30.000', pct: 20, color: '#666' },
+  { label: 'Coaching', amount: '15.000', pct: 10, color: '#aaa' },
+  { label: 'Reise & Sonstiges', amount: '22.200', pct: 15, color: '#ddd' },
 ];
 
 const notes = [
-  { text: 'Mentor-Gespräch am 08.08. mit Prof. Müller — Feedback zum MVP einholen', author: 'Jiun', color: 'var(--accent-violet)' },
-  { text: 'Letter of Intent von Pilotpartner steht noch aus — Reminder senden', author: 'Nina', color: 'var(--accent-emerald)' },
-  { text: 'IHK Gründerworkshop am 15.08. — beide angemeldet', author: 'Nina', color: 'var(--accent-amber)' },
-  { text: 'Tech-Stack-Entscheidung dokumentieren für Antrag Anhang', author: 'Jiun', color: 'var(--accent-sky)' },
+  { text: 'Mentor-Gespräch am 08.08. mit Prof. Müller — Feedback zum MVP einholen', author: 'Jiun' },
+  { text: 'Letter of Intent von Pilotpartner steht noch aus — Reminder senden', author: 'Nina' },
+  { text: 'IHK Gründerworkshop am 15.08. — beide angemeldet', author: 'Nina' },
+  { text: 'Tech-Stack-Entscheidung dokumentieren für Antrag Anhang', author: 'Jiun' },
 ];
+
+function statusLabel(s) {
+  if (s === 'done') return 'Erledigt';
+  if (s === 'active') return 'In Arbeit';
+  return 'Geplant';
+}
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
   const today = new Date().toLocaleDateString('de-DE', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
+    day: 'numeric', month: 'long', year: 'numeric',
   });
 
-  // Calculate overall progress
   const overallProgress = Math.round(
-    workPackages.reduce((sum, wp) => sum + wp.progress, 0) / workPackages.length
+    workPackages.reduce((s, w) => s + w.progress, 0) / workPackages.length
   );
 
-  // Days until EXIST deadline (Sep 30 2026)
   const deadline = new Date('2026-09-30');
-  const daysLeft = Math.max(0, Math.ceil((deadline - new Date()) / (1000 * 60 * 60 * 24)));
+  const daysLeft = Math.max(0, Math.ceil((deadline - new Date()) / 86400000));
 
   return (
-    <div className="app-container">
-      {/* ── Nav ── */}
+    <div className="container">
+      {/* Nav */}
       <nav className="nav" id="main-nav">
-        <div className="nav-brand">
-          <div className="nav-logo">P</div>
-          <div className="nav-title">
-            PANDA<span>planner</span>
-          </div>
+        <div className="nav-left">
+          <span className="nav-title">PANDA</span>
+          <span className="nav-sep">/</span>
+          <span className="nav-subtitle">EXIST Gründungsstipendium</span>
         </div>
-        <div className="nav-team">
-          <div className="avatar avatar-jiun" title="Jiun">J</div>
-          <div className="avatar avatar-nina" title="Nina">N</div>
-          <span className="nav-date">{today}</span>
+        <div className="nav-right">
+          <div className="nav-team">
+            <span className="team-tag">Jiun</span>
+            <span className="team-tag">Nina</span>
+          </div>
+          <span>{today}</span>
         </div>
       </nav>
 
-      {/* ── Hero ── */}
-      <section className="hero" id="hero">
-        <div className="hero-badge">
-          <span className="dot" />
-          EXIST Gründungsstipendium 2026
-        </div>
-        <h1>
-          Euer <span className="gradient-text">Vorhaben</span>,<br />
-          ein Dashboard.
-        </h1>
+      {/* Header */}
+      <header className="page-header" id="hero">
+        <h1>Vorhaben-Planung</h1>
         <p>
-          Planung, Fortschritt und nächste Schritte für den EXIST-Antrag — alles auf einen Blick für Jiun & Nina.
+          Fortschritt, Meilensteine und nächste Schritte für den EXIST-Antrag — übersichtlich an einem Ort.
         </p>
-      </section>
+      </header>
 
-      {/* ── Stats ── */}
-      <div className="stats-row" id="stats">
-        <div className="stat-card">
-          <div className="stat-value text-violet">{overallProgress}%</div>
-          <div className="stat-label">Gesamtfortschritt</div>
+      {/* Stats */}
+      <div className="stats" id="stats">
+        <div className="stat">
+          <div className="stat-value">{overallProgress}%</div>
+          <div className="stat-label">Fortschritt</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value text-emerald">{daysLeft}</div>
+        <div className="stat">
+          <div className="stat-value">{daysLeft}</div>
           <div className="stat-label">Tage bis Deadline</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value text-amber">150.000 €</div>
-          <div className="stat-label">Fördervolumen</div>
+        <div className="stat">
+          <div className="stat-value">150.000</div>
+          <div className="stat-label">Fördervolumen EUR</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value text-sky">12</div>
+        <div className="stat">
+          <div className="stat-value">12</div>
           <div className="stat-label">Monate Laufzeit</div>
         </div>
       </div>
 
-      {/* ── Main Grid: Milestones + Work Packages ── */}
-      <div className="main-grid" id="main-content">
-        {/* Milestones */}
-        <div className="card" id="milestones-card">
-          <div className="section-header">
-            <h2 className="section-title">Meilensteine</h2>
-            <span className="section-action">Alle anzeigen →</span>
+      {/* Milestones + Work Packages */}
+      <section className="section" id="main-content">
+        <div className="two-col">
+          {/* Milestones */}
+          <div>
+            <div className="section-head">
+              <h2 className="section-title">Meilensteine</h2>
+              <span className="section-meta">6 gesamt</span>
+            </div>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Meilenstein</th>
+                  <th>Zeitraum</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {milestones.map((m, i) => (
+                  <tr key={i}>
+                    <td>{m.title}</td>
+                    <td style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>{m.date}</td>
+                    <td>
+                      <span className="status">
+                        <span className={`status-dot ${m.status}`} />
+                        {statusLabel(m.status)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <div className="milestone-list">
-            {milestones.map((m, i) => (
-              <div className="milestone-item" key={i}>
-                <div className={`milestone-indicator ${m.status}`} />
-                <div className="milestone-content">
-                  <div className="milestone-title">{m.title}</div>
-                  <div className="milestone-date">{m.date}</div>
-                </div>
-                <span className={`milestone-tag tag-${m.status}`}>
-                  {m.status === 'done' ? '✓ Erledigt' : m.status === 'active' ? '● Aktiv' : '○ Geplant'}
-                </span>
-              </div>
-            ))}
+
+          {/* Work Packages */}
+          <div>
+            <div className="section-head">
+              <h2 className="section-title">Arbeitspakete</h2>
+              <span className="section-meta">5 Pakete</span>
+            </div>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Paket</th>
+                  <th>Verantwortlich</th>
+                  <th>Stand</th>
+                </tr>
+              </thead>
+              <tbody>
+                {workPackages.map((wp, i) => (
+                  <tr key={i}>
+                    <td>
+                      {wp.name}
+                      <div className="progress-bar">
+                        <div
+                          className="progress-fill"
+                          style={{ width: mounted ? `${wp.progress}%` : '0%' }}
+                        />
+                      </div>
+                    </td>
+                    <td style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>{wp.owner}</td>
+                    <td style={{ fontVariantNumeric: 'tabular-nums' }}>{wp.progress}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
+      </section>
 
-        {/* Work Packages */}
-        <div className="card" id="workpackages-card">
-          <div className="section-header">
-            <h2 className="section-title">Arbeitspakete</h2>
-            <span className="section-action">Details →</span>
+      {/* Budget + Notes */}
+      <section className="section" id="bottom-content">
+        <div className="two-col">
+          {/* Budget */}
+          <div>
+            <div className="section-head">
+              <h2 className="section-title">Budget</h2>
+              <span className="section-meta">150.000 EUR gesamt</span>
+            </div>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Position</th>
+                  <th>Betrag EUR</th>
+                </tr>
+              </thead>
+              <tbody>
+                {budgetItems.map((b, i) => (
+                  <tr key={i}>
+                    <td>{b.label}</td>
+                    <td style={{ fontVariantNumeric: 'tabular-nums' }}>{b.amount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="budget-bar">
+              {budgetItems.map((b, i) => (
+                <div
+                  key={i}
+                  className="budget-segment"
+                  style={{
+                    width: mounted ? `${b.pct}%` : '0%',
+                    background: b.color,
+                  }}
+                />
+              ))}
+            </div>
           </div>
-          <div className="wp-list">
-            {workPackages.map((wp, i) => (
-              <div className="wp-item" key={i}>
-                <div className="wp-header">
-                  <span className="wp-name">{wp.name}</span>
-                  <span className="wp-owner">{wp.owner}</span>
+
+          {/* Notes */}
+          <div>
+            <div className="section-head">
+              <h2 className="section-title">Notizen</h2>
+              <span className="section-meta">{notes.length} Einträge</span>
+            </div>
+            <div className="note-list">
+              {notes.map((n, i) => (
+                <div className="note" key={i}>
+                  {n.text}
+                  <div className="note-author">{n.author}</div>
                 </div>
-                <div className="wp-progress-bar">
-                  <div
-                    className={`wp-progress-fill ${wp.color}`}
-                    style={{ width: mounted ? `${wp.progress}%` : '0%' }}
-                  />
-                </div>
-                <div className="wp-meta">
-                  <span>{wp.progress}%</span>
-                  <span>{wp.owner}</span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── Bottom Grid: Budget + Notes ── */}
-      <div className="bottom-grid" id="bottom-content">
-        {/* Budget */}
-        <div className="card" id="budget-card">
-          <div className="section-header">
-            <h2 className="section-title">Budget-Übersicht</h2>
-            <span className="section-action">Finanzplan →</span>
-          </div>
-          <div className="budget-items">
-            {budgetItems.map((item, i) => (
-              <div className="budget-row" key={i}>
-                <div className="budget-label">
-                  <span className="budget-dot" style={{ background: item.color }} />
-                  {item.label}
-                </div>
-                <span className="budget-amount">{item.amount}</span>
-              </div>
-            ))}
-          </div>
-          <div className="budget-total-bar">
-            {budgetItems.map((item, i) => (
-              <div
-                key={i}
-                className="budget-segment"
-                style={{
-                  width: mounted ? `${item.pct}%` : '0%',
-                  background: item.color,
-                  opacity: 0.8,
-                }}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Notes */}
-        <div className="card" id="notes-card">
-          <div className="section-header">
-            <h2 className="section-title">Notizen & Aufgaben</h2>
-            <span className="section-action">+ Neue Notiz</span>
-          </div>
-          <div className="notes-list">
-            {notes.map((note, i) => (
-              <div className="note-item" key={i} style={{ borderLeftColor: note.color }}>
-                {note.text}
-                <div className="note-author">— {note.author}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Footer ── */}
+      {/* Footer */}
       <footer className="footer" id="footer">
-        PANDA · Internal Tool · Built for Jiun & Nina · <a href="https://www.exist.de" target="_blank" rel="noopener noreferrer">EXIST Programm</a>
+        <span>PANDA — Internal Tool</span>
+        <span>
+          <a href="https://www.exist.de" target="_blank" rel="noopener noreferrer">
+            exist.de
+          </a>
+        </span>
       </footer>
     </div>
   );
