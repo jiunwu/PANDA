@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import data from '@/data/project.json';
+import integrationsData from '@/data/integrations.json';
 
 const { project, team, funding, milestones, workPackages, budget, notes } = data;
+const { activityLog } = integrationsData;
 
 function statusLabel(s) {
   if (s === 'done') return 'Erledigt';
@@ -15,18 +17,20 @@ function formatAmount(n) {
   return n.toLocaleString('de-DE');
 }
 
-function formatDate(dateStr) {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('de-DE', { day: 'numeric', month: 'short' });
+function formatRelative(ts) {
+  const diff = Date.now() - new Date(ts).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
 
 export default function HomePage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
-
-  const today = new Date().toLocaleDateString('de-DE', {
-    day: 'numeric', month: 'long', year: 'numeric',
-  });
 
   const overallProgress = Math.round(
     workPackages.reduce((s, w) => s + w.progress, 0) / workPackages.length
@@ -36,28 +40,11 @@ export default function HomePage() {
   const daysLeft = Math.max(0, Math.ceil((deadline - new Date()) / 86400000));
 
   const budgetColors = ['#111', '#666', '#aaa', '#ddd'];
+  const recentActivity = activityLog.slice(0, 4);
 
   return (
-    <div className="container">
-
-      {/* 1. Nav */}
-      <nav className="nav" id="main-nav">
-        <div className="nav-left">
-          <span className="nav-title">PANDA</span>
-          <span className="nav-sep">/</span>
-          <span className="nav-subtitle">{funding.program}</span>
-        </div>
-        <div className="nav-right">
-          <div className="nav-team">
-            {team.map((t) => (
-              <span className="team-tag" key={t.name}>{t.name}</span>
-            ))}
-          </div>
-          <span>{today}</span>
-        </div>
-      </nav>
-
-      {/* 2. Header */}
+    <>
+      {/* Header */}
       <header className="page-header" id="hero">
         <h1>Vorhaben-Planung</h1>
         <p>
@@ -66,7 +53,7 @@ export default function HomePage() {
         </p>
       </header>
 
-      {/* 3. Project Summary */}
+      {/* Project Summary */}
       <section className="summary-section" id="summary">
         <div className="section-head">
           <h2 className="section-title">Projekt</h2>
@@ -88,7 +75,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. Team */}
+      {/* Team */}
       <section className="team-section" id="team">
         <div className="section-head">
           <h2 className="section-title">Team</h2>
@@ -107,7 +94,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. Key Figures */}
+      {/* Stats */}
       <div className="stats" id="stats">
         <div className="stat">
           <div className="stat-value">{overallProgress}%</div>
@@ -127,11 +114,9 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* 6. Milestones + 7. Work Packages */}
+      {/* Milestones + Work Packages */}
       <section className="section" id="milestones-and-packages">
         <div className="two-col">
-
-          {/* Milestones as Timeline */}
           <div>
             <div className="section-head">
               <h2 className="section-title">Meilensteine</h2>
@@ -142,20 +127,15 @@ export default function HomePage() {
                 <div className="timeline-item" key={i}>
                   <div className={`timeline-dot ${m.status}`} />
                   <div className="timeline-body">
-                    <span className={`timeline-title ${m.status}`}>
-                      {m.title}
-                    </span>
+                    <span className={`timeline-title ${m.status}`}>{m.title}</span>
                     <span className="timeline-date">{m.date}</span>
-                    <span className={`timeline-status ${m.status}`}>
-                      {statusLabel(m.status)}
-                    </span>
+                    <span className={`timeline-status ${m.status}`}>{statusLabel(m.status)}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Work Packages */}
           <div>
             <div className="section-head">
               <h2 className="section-title">Arbeitspakete</h2>
@@ -175,10 +155,7 @@ export default function HomePage() {
                     <td>
                       {wp.id} — {wp.name}
                       <div className="progress-bar">
-                        <div
-                          className="progress-fill"
-                          style={{ width: mounted ? `${wp.progress}%` : '0%' }}
-                        />
+                        <div className="progress-fill" style={{ width: mounted ? `${wp.progress}%` : '0%' }} />
                       </div>
                     </td>
                     <td style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>{wp.owner}</td>
@@ -191,11 +168,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 8. Budget + Activity */}
+      {/* Budget + Recent Activity */}
       <section className="section" id="budget-and-activity">
         <div className="two-col">
-
-          {/* Budget */}
           <div>
             <div className="section-head">
               <h2 className="section-title">Budget</h2>
@@ -231,19 +206,20 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Activity Feed */}
           <div>
             <div className="section-head">
-              <h2 className="section-title">Aktivität</h2>
-              <span className="section-meta">{notes.length} Einträge</span>
+              <h2 className="section-title">Recent Activity</h2>
+              <a href="/activity" className="section-meta" style={{ textDecoration: 'none', color: 'var(--text-tertiary)' }}>
+                View all →
+              </a>
             </div>
             <div className="activity-list">
-              {notes.map((n, i) => (
+              {recentActivity.map((entry, i) => (
                 <div className="activity-item" key={i}>
-                  <span className="activity-author">{n.author}</span>
+                  <span className="activity-author">{entry.source.split(' ')[0]}</span>
                   <div className="activity-content">
-                    <div className="activity-text">{n.text}</div>
-                    <div className="activity-date">{formatDate(n.date)}</div>
+                    <div className="activity-text">{entry.action}</div>
+                    <div className="activity-date">{formatRelative(entry.timestamp)}</div>
                   </div>
                 </div>
               ))}
@@ -252,15 +228,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 9. Footer */}
+      {/* Footer */}
       <footer className="footer" id="footer">
         <span>PANDA — Internal Tool</span>
         <span>
-          <a href="https://www.exist.de" target="_blank" rel="noopener noreferrer">
-            exist.de
-          </a>
+          <a href="https://www.exist.de" target="_blank" rel="noopener noreferrer">exist.de</a>
         </span>
       </footer>
-    </div>
+    </>
   );
 }

@@ -1,0 +1,48 @@
+{
+  "integrations": [
+    {
+      "id": "zai",
+      "name": "z.AI",
+      "description": "Zhipu AI agent — connected via Discord for agentic coding and task dispatch",
+      "docsUrl": "https://docs.z.ai/",
+      "fields": [
+        { "key": "apiKey", "label": "API Key", "type": "password", "placeholder": "ak-..." },
+        { "key": "model", "label": "Model", "type": "text", "placeholder": "GLM-5.2" },
+        { "key": "baseUrl", "label": "Base URL", "type": "text", "placeholder": "https://api.z.ai/api/paas/v4" }
+      ],
+      "capabilities": ["Update milestones", "Update progress", "Add notes", "Read project status"]
+    },
+    {
+      "id": "lark",
+      "name": "Lark",
+      "description": "Push project updates to Lark group chats via webhook bot",
+      "docsUrl": "https://open.larksuite.com/",
+      "fields": [
+        { "key": "webhookUrl", "label": "Webhook URL", "type": "password", "placeholder": "https://open.larksuite.com/open-apis/bot/v2/hook/..." },
+        { "key": "keyword", "label": "Security Keyword", "type": "text", "placeholder": "Optional keyword filter" }
+      ],
+      "capabilities": ["Push milestone notifications", "Weekly progress summaries", "Alert on deadline changes"]
+    },
+    {
+      "id": "custom",
+      "name": "Custom Model",
+      "description": "Connect any OpenAI-compatible model — Ollama, Claude, GPT, Gemini, or self-hosted",
+      "docsUrl": null,
+      "fields": [
+        { "key": "provider", "label": "Provider", "type": "text", "placeholder": "e.g. Ollama, OpenAI, Anthropic" },
+        { "key": "apiKey", "label": "API Key", "type": "password", "placeholder": "sk-..." },
+        { "key": "baseUrl", "label": "Base URL", "type": "text", "placeholder": "http://localhost:11434/v1" },
+        { "key": "model", "label": "Model", "type": "text", "placeholder": "e.g. llama3, gpt-4o, claude-sonnet" }
+      ],
+      "capabilities": ["Update milestones", "Update progress", "Add notes", "Read project status"]
+    }
+  ],
+  "activityLog": [
+    { "timestamp": "2026-08-01T14:32:00Z", "source": "z.AI Agent", "action": "Updated AP2 progress to 45%", "type": "progress" },
+    { "timestamp": "2026-08-01T14:10:00Z", "source": "Nina", "action": "Added note: Letter of Intent von Pilotpartner steht noch aus", "type": "note" },
+    { "timestamp": "2026-08-01T12:00:00Z", "source": "System", "action": "Daily progress snapshot recorded — overall 44%", "type": "system" },
+    { "timestamp": "2026-07-31T16:45:00Z", "source": "Jiun", "action": "Marked Gründungsberatung TUM as done", "type": "milestone" },
+    { "timestamp": "2026-07-31T10:20:00Z", "source": "z.AI Agent", "action": "Generated market analysis draft for AP1", "type": "progress" },
+    { "timestamp": "2026-07-30T09:15:00Z", "source": "Lark Bot", "action": "Weekly summary pushed to team group", "type": "notification" }
+  ]
+}
