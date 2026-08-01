@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function LoginPage() {
+function LoginForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,6 +39,36 @@ export default function LoginPage() {
   }
 
   return (
+    <form onSubmit={handleSubmit} className="login-form">
+      <div className="login-field">
+        <label htmlFor="password" className="field-label">Password</label>
+        <input
+          id="password"
+          type="password"
+          className="field-input login-input"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Enter team password"
+          autoFocus
+          autoComplete="current-password"
+        />
+      </div>
+
+      {error && <div className="login-error">{error}</div>}
+
+      <button
+        type="submit"
+        className="btn btn-primary login-btn"
+        disabled={loading || !password}
+      >
+        {loading ? 'Verifying...' : 'Continue'}
+      </button>
+    </form>
+  );
+}
+
+export default function LoginPage() {
+  return (
     <div className="login-page">
       <div className="login-box">
         <div className="login-header">
@@ -46,31 +76,9 @@ export default function LoginPage() {
           <p className="login-subtitle">Team access</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="login-form">
-          <div className="login-field">
-            <label htmlFor="password" className="field-label">Password</label>
-            <input
-              id="password"
-              type="password"
-              className="field-input login-input"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter team password"
-              autoFocus
-              autoComplete="current-password"
-            />
-          </div>
-
-          {error && <div className="login-error">{error}</div>}
-
-          <button
-            type="submit"
-            className="btn btn-primary login-btn"
-            disabled={loading || !password}
-          >
-            {loading ? 'Verifying...' : 'Continue'}
-          </button>
-        </form>
+        <Suspense fallback={<div>Loading...</div>}>
+          <LoginForm />
+        </Suspense>
 
         <a href="/" className="login-back">Back to homepage</a>
       </div>
