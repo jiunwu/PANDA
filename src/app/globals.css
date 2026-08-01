@@ -881,6 +881,129 @@ a { color: inherit; }
 
 .footer a:hover { color: var(--text-primary); }
 
+/* ── Page Header Row ── */
+.page-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* ── Login Page ── */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 360px;
+}
+
+.login-header {
+  margin-bottom: 32px;
+}
+
+.login-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.login-subtitle {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-input {
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+.login-error {
+  font-size: 13px;
+  color: var(--red);
+  background: var(--red-bg);
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+.login-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 10px;
+}
+
+.login-back {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  text-decoration: none;
+}
+
+.login-back:hover {
+  color: var(--text-primary);
+}
+
+/* ── Public Landing ── */
+.public-hero {
+  padding: 72px 0 48px;
+  border-bottom: 1px solid var(--border);
+}
+
+.public-title {
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.public-tagline {
+  font-size: 17px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 480px;
+}
+
+.public-access {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--accent-light);
+}
+
+.public-access-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
+}
+
+.public-access-desc {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }

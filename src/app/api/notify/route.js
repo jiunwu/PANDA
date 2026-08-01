@@ -1,15 +1,8 @@
 import { NextResponse } from 'next/server';
 
 // POST /api/notify — push notifications to connected services (Lark, etc.)
+// Auth is handled by middleware (cookie or Bearer token)
 export async function POST(request) {
-  // Auth check
-  const authHeader = request.headers.get('authorization');
-  const apiKey = process.env.PANDA_API_KEY;
-
-  if (apiKey && authHeader !== `Bearer ${apiKey}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   let body;
   try {
     body = await request.json();
@@ -31,7 +24,6 @@ export async function POST(request) {
 
   const results = [];
 
-  // Lark webhook notification
   if (target === 'lark' || target === 'all') {
     const larkWebhookUrl = process.env.LARK_WEBHOOK_URL;
 

@@ -2,15 +2,8 @@ import { NextResponse } from 'next/server';
 import projectData from '@/data/project.json';
 
 // GET /api/status — returns current project state
-export async function GET(request) {
-  // Auth check
-  const authHeader = request.headers.get('authorization');
-  const apiKey = process.env.PANDA_API_KEY;
-
-  if (apiKey && authHeader !== `Bearer ${apiKey}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
+// Auth is handled by middleware (cookie or Bearer token)
+export async function GET() {
   const { workPackages, milestones, funding } = projectData;
 
   const overallProgress = Math.round(

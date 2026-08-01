@@ -4,13 +4,30 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const links = [
-  { href: '/', label: 'Dashboard' },
+  { href: '/dashboard', label: 'Dashboard' },
   { href: '/integrations', label: 'Integrations' },
   { href: '/activity', label: 'Activity' },
 ];
 
+// Pages where nav should NOT show (public + login)
+const hiddenPaths = ['/', '/login'];
+
 export default function Nav() {
   const pathname = usePathname();
+
+  if (hiddenPaths.includes(pathname)) {
+    // Minimal public nav
+    return (
+      <nav className="nav" id="main-nav">
+        <div className="nav-left">
+          <Link href="/" className="nav-title">PANDA</Link>
+        </div>
+        <div className="nav-right">
+          <Link href="/login" className="nav-link">Team Login</Link>
+        </div>
+      </nav>
+    );
+  }
 
   const today = new Date().toLocaleDateString('de-DE', {
     day: 'numeric',
@@ -21,7 +38,7 @@ export default function Nav() {
   return (
     <nav className="nav" id="main-nav">
       <div className="nav-left">
-        <Link href="/" className="nav-title">PANDA</Link>
+        <Link href="/dashboard" className="nav-title">PANDA</Link>
         <span className="nav-sep">/</span>
         <div className="nav-links">
           {links.map((link) => (

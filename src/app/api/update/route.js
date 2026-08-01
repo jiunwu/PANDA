@@ -1,17 +1,9 @@
 import { NextResponse } from 'next/server';
 
 // POST /api/update — receive updates from agents
-// In Phase 1, this validates and logs the request.
-// In Phase 2, this writes to Vercel KV.
+// Auth is handled by middleware (cookie or Bearer token)
+// Phase 1: validates and logs. Phase 2: writes to Vercel KV.
 export async function POST(request) {
-  // Auth check
-  const authHeader = request.headers.get('authorization');
-  const apiKey = process.env.PANDA_API_KEY;
-
-  if (apiKey && authHeader !== `Bearer ${apiKey}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   let body;
   try {
     body = await request.json();
@@ -21,7 +13,6 @@ export async function POST(request) {
 
   const { type, action, data, agent, author } = body;
 
-  // Validate required fields
   if (!type || !action || !data) {
     return NextResponse.json(
       {
@@ -50,8 +41,6 @@ export async function POST(request) {
     );
   }
 
-  // Phase 1: Log and acknowledge
-  // Phase 2: Write to Vercel KV
   const logEntry = {
     timestamp: new Date().toISOString(),
     type,
