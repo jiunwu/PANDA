@@ -10,15 +10,27 @@
   "team": [
     {
       "name": "Jiun",
-      "role": "Technical Lead",
-      "bio": "AI/ML engineer with experience in neurosymbolic systems and browser technologies. Responsible for model architecture, extension development, and technical infrastructure."
+      "role": "Technical Lead"
     },
     {
       "name": "Nina",
-      "role": "Business Lead",
-      "bio": "Background in business development and consumer research. Responsible for market validation, business plan, stakeholder relations, and go-to-market strategy."
+      "role": "UI/UX Lead"
     }
   ],
+  "mentors": [
+    {
+      "name": "Prof. Dr. Tim Weitzel",
+      "affiliation": "University Bamberg"
+    },
+    {
+      "name": "Prof. Dr. Dominik Herrmann",
+      "affiliation": "University Bamberg"
+    }
+  ],
+  "contact": {
+    "name": "Uni Bamberg BIG",
+    "role": "Contact Window"
+  },
   "funding": {
     "program": "EXIST Gründungsstipendium",
     "volume": 150000,
@@ -26,33 +38,144 @@
     "duration": 12,
     "durationUnit": "Monate",
     "deadline": "2026-09-30",
-    "projectStart": "2027-01-01"
+    "projectStart": "2026-08-01",
+    "projectEnd": "2027-07-31"
   },
+  "goals": [
+    {
+      "title": "Discuss IP Assignment & Company Setup",
+      "deadline": "2026-08-31",
+      "status": "active"
+    },
+    {
+      "title": "Apply EIC Pathfinder Challenge",
+      "deadline": "2026-10-31",
+      "status": "upcoming"
+    }
+  ],
+  "dataRoom": [
+    {
+      "title": "Pitch Deck",
+      "status": "Draft",
+      "lastUpdated": "2026-08-01"
+    },
+    {
+      "title": "Business Plan",
+      "status": "In Progress",
+      "lastUpdated": "2026-08-01"
+    },
+    {
+      "title": "Financial Plan",
+      "status": "Empty",
+      "lastUpdated": "-"
+    },
+    {
+      "title": "IP Agreement",
+      "status": "In Discussion",
+      "lastUpdated": "2026-08-01"
+    }
+  ],
   "milestones": [
-    { "title": "Ideenpapier eingereicht", "date": "Mai 2026", "status": "done" },
-    { "title": "Gründungsberatung TUM", "date": "Jun 2026", "status": "done" },
-    { "title": "Businessplan & Finanzplan", "date": "Aug 2026", "status": "active" },
-    { "title": "EXIST Antrag einreichen", "date": "Sep 2026", "status": "upcoming" },
-    { "title": "Förderbescheid erwartet", "date": "Nov 2026", "status": "upcoming" },
-    { "title": "Projektstart", "date": "Jan 2027", "status": "upcoming" }
+    {
+      "title": "Ideenpapier eingereicht",
+      "date": "Mai 2026",
+      "status": "done"
+    },
+    {
+      "title": "Gründungsberatung TUM",
+      "date": "Jun 2026",
+      "status": "done"
+    },
+    {
+      "title": "Businessplan & Finanzplan",
+      "date": "Aug 2026",
+      "status": "active"
+    },
+    {
+      "title": "EXIST Antrag einreichen",
+      "date": "Sep 2026",
+      "status": "upcoming"
+    },
+    {
+      "title": "Förderbescheid erwartet",
+      "date": "Nov 2026",
+      "status": "upcoming"
+    },
+    {
+      "title": "Projektstart",
+      "date": "Jan 2027",
+      "status": "upcoming"
+    }
   ],
   "workPackages": [
-    { "id": "AP1", "name": "Marktanalyse & Validierung", "progress": 75, "owner": "Nina" },
-    { "id": "AP2", "name": "Prototyp-Entwicklung", "progress": 40, "owner": "Jiun" },
-    { "id": "AP3", "name": "Businessplan erstellen", "progress": 55, "owner": "Jiun & Nina" },
-    { "id": "AP4", "name": "Team & Gründungskonzept", "progress": 30, "owner": "Nina" },
-    { "id": "AP5", "name": "Pitchdeck & Kommunikation", "progress": 20, "owner": "Jiun" }
+    {
+      "id": "AP1",
+      "name": "Marktanalyse & Validierung",
+      "progress": 75,
+      "owner": "Nina"
+    },
+    {
+      "id": "AP2",
+      "name": "Prototyp-Entwicklung",
+      "progress": 40,
+      "owner": "Jiun"
+    },
+    {
+      "id": "AP3",
+      "name": "Businessplan erstellen",
+      "progress": 55,
+      "owner": "Jiun & Nina"
+    },
+    {
+      "id": "AP4",
+      "name": "Team & Gründungskonzept",
+      "progress": 30,
+      "owner": "Nina"
+    },
+    {
+      "id": "AP5",
+      "name": "Pitchdeck & Kommunikation",
+      "progress": 20,
+      "owner": "Jiun"
+    }
   ],
   "budget": [
-    { "label": "Personal (Stipendien)", "amount": 82800, "pct": 55 },
-    { "label": "Sachmittel", "amount": 30000, "pct": 20 },
-    { "label": "Coaching", "amount": 15000, "pct": 10 },
-    { "label": "Reise & Sonstiges", "amount": 22200, "pct": 15 }
+    {
+      "label": "Personal (Stipendien)",
+      "amount": 82800,
+      "pct": 55
+    },
+    {
+      "label": "Sachmittel",
+      "amount": 30000,
+      "pct": 20
+    },
+    {
+      "label": "Coaching",
+      "amount": 15000,
+      "pct": 10
+    },
+    {
+      "label": "Reise & Sonstiges",
+      "amount": 22200,
+      "pct": 15
+    }
   ],
   "notes": [
-    { "text": "Mentor-Gespräch am 08.08. mit Prof. Müller — Feedback zum MVP einholen", "author": "Jiun", "date": "2026-08-01" },
-    { "text": "Letter of Intent von Pilotpartner steht noch aus — Reminder senden", "author": "Nina", "date": "2026-07-30" },
-    { "text": "IHK Gründerworkshop am 15.08. — beide angemeldet", "author": "Nina", "date": "2026-07-28" },
-    { "text": "Tech-Stack-Entscheidung dokumentieren für Antrag Anhang", "author": "Jiun", "date": "2026-07-25" }
+    {
+      "text": "Letter of Intent von Pilotpartner steht noch aus — Reminder senden",
+      "author": "Nina",
+      "date": "2026-07-30"
+    },
+    {
+      "text": "IHK Gründerworkshop am 15.08. — beide angemeldet",
+      "author": "Nina",
+      "date": "2026-07-28"
+    },
+    {
+      "text": "Tech-Stack-Entscheidung dokumentieren für Antrag Anhang",
+      "author": "Jiun",
+      "date": "2026-07-25"
+    }
   ]
 }

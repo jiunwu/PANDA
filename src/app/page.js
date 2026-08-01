@@ -12,47 +12,6 @@ export default function PublicPage() {
         <p className="public-tagline">{project.tagline}</p>
       </header>
 
-      {/* What is PANDA */}
-      <section className="section" id="about">
-        <div className="section-head">
-          <h2 className="section-title">About</h2>
-        </div>
-        <p className="summary-lead">{project.oneLiner}</p>
-        <div className="summary-grid" style={{ marginTop: 32 }}>
-          <div className="summary-col">
-            <h3>Problem</h3>
-            <p>{project.problem}</p>
-          </div>
-          <div className="summary-col">
-            <h3>Solution</h3>
-            <p>{project.solution}</p>
-          </div>
-          <div className="summary-col">
-            <h3>Approach</h3>
-            <p>{project.approach}</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Team */}
-      <section className="team-section" id="public-team">
-        <div className="section-head">
-          <h2 className="section-title">Team</h2>
-        </div>
-        <div className="team-grid">
-          {team.map((t) => (
-            <div className="team-member" key={t.name}>
-              <div className="team-initial">{t.name.charAt(0)}</div>
-              <div className="team-info">
-                <h3>{t.name}</h3>
-                <div className="team-role">{t.role}</div>
-                <div className="team-bio">{t.bio}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* Funding Context */}
       <section className="section" id="funding">
         <div className="section-head">

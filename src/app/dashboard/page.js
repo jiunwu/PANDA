@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation';
 import data from '@/data/project.json';
 import integrationsData from '@/data/integrations.json';
 
-const { project, team, funding, milestones, workPackages, budget } = data;
+const { project, team, mentors, contact, funding, goals, dataRoom, milestones, workPackages, budget } = data;
 const { activityLog } = integrationsData;
 
 function statusLabel(s) {
   if (s === 'done') return 'Erledigt';
   if (s === 'active') return 'Aktuell';
-  return 'Geplant';
+  if (s === 'upcoming') return 'Geplant';
+  return s;
 }
 
 function formatAmount(n) {
@@ -38,7 +39,7 @@ export default function DashboardPage() {
     workPackages.reduce((s, w) => s + w.progress, 0) / workPackages.length
   );
 
-  const deadline = new Date(funding.deadline);
+  const deadline = new Date(funding.projectEnd);
   const daysLeft = Math.max(0, Math.ceil((deadline - new Date()) / 86400000));
 
   const budgetColors = ['#111', '#666', '#aaa', '#ddd'];
@@ -90,10 +91,10 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Team */}
+      {/* Team & Stakeholders */}
       <section className="team-section" id="team">
         <div className="section-head">
-          <h2 className="section-title">Team</h2>
+          <h2 className="section-title">Team & Stakeholders</h2>
         </div>
         <div className="team-grid">
           {team.map((t) => (
@@ -102,10 +103,78 @@ export default function DashboardPage() {
               <div className="team-info">
                 <h3>{t.name}</h3>
                 <div className="team-role">{t.role}</div>
-                <div className="team-bio">{t.bio}</div>
               </div>
             </div>
           ))}
+          {mentors.map((m) => (
+            <div className="team-member" key={m.name}>
+              <div className="team-initial" style={{ background: 'var(--border-light)' }}>{m.name.charAt(0)}</div>
+              <div className="team-info">
+                <h3>{m.name}</h3>
+                <div className="team-role">Mentor — {m.affiliation}</div>
+              </div>
+            </div>
+          ))}
+          <div className="team-member">
+            <div className="team-initial" style={{ background: 'var(--border-light)' }}>{contact.name.charAt(0)}</div>
+            <div className="team-info">
+              <h3>{contact.name}</h3>
+              <div className="team-role">{contact.role}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Goals + Data Room */}
+      <section className="section" id="goals-and-data-room">
+        <div className="two-col">
+          <div>
+            <div className="section-head">
+              <h2 className="section-title">Goals</h2>
+              <span className="section-meta">{goals.length} goals</span>
+            </div>
+            <div className="timeline">
+              {goals.map((g, i) => (
+                <div className="timeline-item" key={i}>
+                  <div className={`timeline-dot ${g.status}`} />
+                  <div className="timeline-body">
+                    <span className={`timeline-title ${g.status}`}>{g.title}</span>
+                    <span className="timeline-date">{g.deadline}</span>
+                    <span className={`timeline-status ${g.status}`}>{statusLabel(g.status)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="section-head">
+              <h2 className="section-title">Data Room</h2>
+              <span className="section-meta">{dataRoom.length} docs</span>
+            </div>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Document</th>
+                  <th>Status</th>
+                  <th>Updated</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dataRoom.map((doc, i) => (
+                  <tr key={i}>
+                    <td>{doc.title}</td>
+                    <td>
+                      <span className={`type-tag ${doc.status === 'Empty' ? 'type-system' : doc.status === 'Draft' ? 'type-note' : 'type-milestone'}`}>
+                        {doc.status}
+                      </span>
+                    </td>
+                    <td style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--text-tertiary)' }}>{doc.lastUpdated}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
