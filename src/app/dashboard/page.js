@@ -150,7 +150,7 @@ export default function DashboardPage() {
           <input
             type="text"
             className="chat-input"
-            style={{ flex: 1, background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '4px', padding: '8px' }}
+            style={{ flex: 1, background: '#ffffff', color: '#000000', border: '1px solid var(--border)', borderRadius: '4px', padding: '8px' }}
             placeholder="Add a new note..."
             value={newNote}
             onChange={e => setNewNote(e.target.value)}
