@@ -1,9 +1,12 @@
 import Link from 'next/link';
-import data from '@/data/project.json';
+import { getProjectData } from '@/lib/data';
 
-const { project, team } = data;
+export const dynamic = 'force-dynamic';
 
-export default function PublicPage() {
+export default async function PublicPage() {
+  const data = await getProjectData();
+  const { project, team } = data;
+
   return (
     <>
       {/* Public Header */}

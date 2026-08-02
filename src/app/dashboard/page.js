@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import data from '@/data/project.json';
-
-const { project, team, mentors, contact, funding, goals, dataRoom, milestones, workPackages, budget, sprints, github, agentsOverview, agentInteractions } = data;
+import defaultData from '@/data/project.json';
 
 function statusLabel(s) {
   if (s === 'done') return 'Erledigt';
@@ -19,12 +17,74 @@ function formatAmount(n) {
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
+  const [data, setData] = useState(defaultData);
   const router = useRouter();
-  useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    setMounted(true);
+    // Fetch live data on mount
+    fetch('/api/status')
+      .then(res => res.json())
+      .then(fetchedData => {
+        // api/status only returns partial data (for public/status endpoint)
+        // so to keep dashboard complete, we might need a dedicated dashboard data fetch or just fetch all
+        // Let's create an endpoint or just fetch it here
+      })
+      .catch(console.error);
+
+    // Better yet, just fetch the whole project data in a Server Component
+    // or let's create an API endpoint to get all data for the dashboard.
+    // I'll make a dedicated fetch for the full data.
+    fetch('/api/dashboard-data')
+      .then(res => res.json())
+      .then(fullData => {
+        if (fullData.project) setData(fullData);
+      })
+      .catch(console.error);
+  }, []);
+
+  const { project, team, mentors, contact, funding, goals, dataRoom, milestones, workPackages, budget, sprints, github, agentsOverview, agentInteractions, notes } = data;
+
+  const [newNote, setNewNote] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const overallProgress = Math.round(
     workPackages.reduce((s, w) => s + w.progress, 0) / workPackages.length
   );
+
+  async function handleAddNote(e) {
+    e.preventDefault();
+    if (!newNote.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'note',
+          action: 'add',
+          data: { text: newNote.trim() },
+          author: 'User', // Could be dynamic if we have user context
+        })
+      });
+
+      if (res.ok) {
+        setNewNote('');
+        // Refresh data
+        fetch('/api/dashboard-data')
+          .then(res => res.json())
+          .then(fullData => {
+            if (fullData.project) setData(fullData);
+          })
+          .catch(console.error);
+      }
+    } catch (error) {
+      console.error('Failed to add note', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   const deadline = new Date(funding.projectEnd);
   const daysLeft = Math.max(0, Math.ceil((deadline - new Date()) / 86400000));
@@ -70,8 +130,40 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Notes Section */}
+      <section className="section" style={{ marginTop: 24, paddingBottom: 24, borderBottom: '1px solid var(--border)' }}>
+        <div className="section-head">
+          <h2 className="section-title">Project Notes</h2>
+        </div>
+        <div className="list-stack" style={{ marginBottom: 16 }}>
+          {(notes || []).map((note, i) => (
+            <div className="list-item" key={i}>
+              <div className="item-title" style={{ fontWeight: 'normal', color: 'var(--text-secondary)' }}>{note.text}</div>
+              <div className="item-meta">
+                <span>{note.author}</span>
+                <span>{note.date}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <form onSubmit={handleAddNote} style={{ display: 'flex', gap: '8px' }}>
+          <input
+            type="text"
+            className="chat-input"
+            style={{ flex: 1, background: '#ffffff', color: '#000000', border: '1px solid var(--border)', borderRadius: '4px', padding: '8px' }}
+            placeholder="Add a new note..."
+            value={newNote}
+            onChange={e => setNewNote(e.target.value)}
+            disabled={isSubmitting}
+          />
+          <button type="submit" className="btn btn-primary" disabled={isSubmitting || !newNote.trim()}>
+            {isSubmitting ? 'Adding...' : 'Add Note'}
+          </button>
+        </form>
+      </section>
+
       {/* Bento Grid */}
-      <div className="bento-grid">
+      <div className="bento-grid" style={{ marginTop: 24 }}>
         {/* LEFT COLUMN: Operations */}
         <div className="bento-col">
           <div className="bento-card">
