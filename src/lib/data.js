@@ -9,17 +9,21 @@ let tableReady = false;
 
 function getClient() {
   if (!client) {
-    client = createClient({
-      url: process.env.TURSO_DATABASE_URL,
-      authToken: process.env.TURSO_AUTH_TOKEN,
-    });
+    const url = process.env.TURSO_DATABASE_URL;
+    const authToken = process.env.TURSO_AUTH_TOKEN;
+
+    if (!url || !authToken) {
+      console.warn('Turso credentials not configured (TURSO_DATABASE_URL / TURSO_AUTH_TOKEN). Falling back to default data.');
+      return null;
+    }
+
+    client = createClient({ url, authToken });
   }
   return client;
 }
 
-async function ensureTable() {
+async function ensureTable(db) {
   if (tableReady) return;
-  const db = getClient();
   await db.execute(`
     CREATE TABLE IF NOT EXISTS kv_store (
       key TEXT PRIMARY KEY,
@@ -32,7 +36,8 @@ async function ensureTable() {
 export async function getProjectData() {
   try {
     const db = getClient();
-    await ensureTable();
+    if (!db) return defaultData;
+    await ensureTable(db);
 
     const result = await db.execute({
       sql: 'SELECT value FROM kv_store WHERE key = ?',
@@ -52,7 +57,8 @@ export async function getProjectData() {
 export async function updateProjectData(newData) {
   try {
     const db = getClient();
-    await ensureTable();
+    if (!db) return false;
+    await ensureTable(db);
 
     await db.execute({
       sql: 'INSERT INTO kv_store (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
