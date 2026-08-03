@@ -73,20 +73,36 @@ export async function POST() {
 
   try {
     const db = createClient({ url, authToken });
-    await db.execute(`
-      CREATE TABLE IF NOT EXISTS kv_store (
-        key TEXT PRIMARY KEY,
-        value TEXT
-      )
-    `);
     
-    await db.execute({
-      sql: 'INSERT INTO kv_store (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
-      args: ['panda_project_data', JSON.stringify(defaultData)],
-    });
+    // Create tables if they don't exist yet (in case they reset before viewing the dashboard)
+    const { ensureTables } = await import('@/lib/data');
+    await ensureTables(db);
+    
+    // Clear all relational data
+    await db.batch([
+      'DELETE FROM notes',
+      'DELETE FROM milestones',
+      'DELETE FROM work_packages',
+      'DELETE FROM sprints',
+      'DELETE FROM sprint_tasks',
+      'DELETE FROM budget',
+      'DELETE FROM kv_store' // also clear the old kv_store to be safe
+    ]);
 
-    return NextResponse.json({ success: true, message: 'Database reset to local project.json' });
+    // Insert default budget if present in defaultData (so it's not totally empty)
+    if (defaultData.budget && defaultData.budget.length > 0) {
+      for (const b of defaultData.budget) {
+        await db.execute({
+          sql: 'INSERT INTO budget (label, amount, pct) VALUES (?, ?, ?)',
+          args: [b.label, b.amount, b.pct]
+        });
+      }
+    }
+
+    return NextResponse.json({ success: true, message: 'Database reset and tables cleared. Ready for external agents!' });
   } catch (error) {
+    console.error('Reset error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

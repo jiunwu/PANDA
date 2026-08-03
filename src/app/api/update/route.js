@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getProjectData, updateProjectData } from '@/lib/data';
+import { getClient, ensureTables } from '@/lib/data';
 
 // POST /api/update — receive updates from agents
-// Auth is handled by middleware (cookie or Bearer token)
 export async function POST(request) {
   let body;
   try {
@@ -27,19 +26,8 @@ export async function POST(request) {
   const validTypes = ['milestone', 'progress', 'note', 'budget', 'sprint'];
   const validActions = ['update', 'add'];
 
-  if (!validTypes.includes(type)) {
-    return NextResponse.json(
-      { error: `Invalid type. Must be one of: ${validTypes.join(', ')}` },
-      { status: 400 }
-    );
-  }
-
-  if (!validActions.includes(action)) {
-    return NextResponse.json(
-      { error: `Invalid action. Must be one of: ${validActions.join(', ')}` },
-      { status: 400 }
-    );
-  }
+  if (!validTypes.includes(type)) return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
+  if (!validActions.includes(action)) return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
 
   const logEntry = {
     timestamp: new Date().toISOString(),
@@ -53,105 +41,93 @@ export async function POST(request) {
 
   console.log('[PANDA API] Update received:', JSON.stringify(logEntry));
 
-  // Phase 2: Persist to Vercel KV
-  const projectData = await getProjectData();
+  try {
+    const db = getClient();
+    if (!db) throw new Error('Database client not configured');
+    await ensureTables(db);
 
-  if (type === 'note' && action === 'add') {
-    if (!projectData.notes) projectData.notes = [];
-    projectData.notes.unshift({
-      text: data.text,
-      author: author || agent || 'Unknown',
-      date: new Date().toISOString().split('T')[0]
+    if (type === 'note' && action === 'add') {
+      await db.execute({
+        sql: 'INSERT INTO notes (text, author, date) VALUES (?, ?, ?)',
+        args: [data.text, author || agent || 'Unknown', new Date().toISOString().split('T')[0]]
+      });
+    } else if (type === 'milestone') {
+      if (action === 'add') {
+        await db.execute({
+          sql: 'INSERT INTO milestones (title, date, status) VALUES (?, ?, ?)',
+          args: [data.title, data.date || new Date().toISOString().split('T')[0], data.status || 'upcoming']
+        });
+      } else if (action === 'update') {
+        await db.execute({
+          sql: 'UPDATE milestones SET date = COALESCE(?, date), status = COALESCE(?, status) WHERE title = ?',
+          args: [data.date || null, data.status || null, data.title]
+        });
+      }
+    } else if (type === 'progress') {
+      if (action === 'add') {
+        await db.execute({
+          sql: 'INSERT INTO work_packages (id, name, progress, owner) VALUES (?, ?, ?, ?)',
+          args: [data.id, data.name, data.progress || 0, data.owner || author || agent || 'Unknown']
+        });
+      } else if (action === 'update') {
+        await db.execute({
+          sql: 'UPDATE work_packages SET name = COALESCE(?, name), progress = COALESCE(?, progress), owner = COALESCE(?, owner) WHERE id = ?',
+          args: [data.name || null, data.progress !== undefined ? data.progress : null, data.owner || null, data.id]
+        });
+      }
+    } else if (type === 'budget') {
+      if (action === 'add') {
+        await db.execute({
+          sql: 'INSERT INTO budget (label, amount, pct) VALUES (?, ?, ?)',
+          args: [data.label, data.amount, data.pct || 0]
+        });
+      } else if (action === 'update') {
+        await db.execute({
+          sql: 'UPDATE budget SET amount = COALESCE(?, amount), pct = COALESCE(?, pct) WHERE label = ?',
+          args: [data.amount !== undefined ? data.amount : null, data.pct !== undefined ? data.pct : null, data.label]
+        });
+      }
+    } else if (type === 'sprint') {
+      if (action === 'add') {
+        await db.execute({
+          sql: 'INSERT INTO sprints (id, name, status, start_date, end_date, progress) VALUES (?, ?, ?, ?, ?, ?)',
+          args: [data.id, data.name || '', data.status || 'Active', data.startDate || new Date().toISOString().split('T')[0], data.endDate || '', data.progress || 0]
+        });
+        if (data.tasks && data.tasks.length > 0) {
+          for (const task of data.tasks) {
+            await db.execute({
+              sql: 'INSERT INTO sprint_tasks (id, sprint_id, title, status) VALUES (?, ?, ?, ?)',
+              args: [task.id || crypto.randomUUID(), data.id, task.title, task.status || 'todo']
+            });
+          }
+        }
+      } else if (action === 'update') {
+        await db.execute({
+          sql: 'UPDATE sprints SET name = COALESCE(?, name), status = COALESCE(?, status), start_date = COALESCE(?, start_date), end_date = COALESCE(?, end_date), progress = COALESCE(?, progress) WHERE id = ?',
+          args: [data.name || null, data.status || null, data.startDate || null, data.endDate || null, data.progress !== undefined ? data.progress : null, data.id]
+        });
+        
+        // If tasks are provided, we do a full replacement of tasks for this sprint
+        if (data.tasks !== undefined) {
+          await db.execute({ sql: 'DELETE FROM sprint_tasks WHERE sprint_id = ?', args: [data.id] });
+          for (const task of data.tasks) {
+            await db.execute({
+              sql: 'INSERT INTO sprint_tasks (id, sprint_id, title, status) VALUES (?, ?, ?, ?)',
+              args: [task.id || crypto.randomUUID(), data.id, task.title, task.status || 'todo']
+            });
+          }
+        }
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `${action} ${type} received and saved to relational DB`,
+      entry: logEntry,
     });
-  } else if (type === 'milestone') {
-    if (!projectData.milestones) projectData.milestones = [];
-    if (action === 'add') {
-      projectData.milestones.push({
-        title: data.title,
-        date: data.date || new Date().toISOString().split('T')[0],
-        status: data.status || 'upcoming'
-      });
-    } else if (action === 'update') {
-      const ms = projectData.milestones.find(m => m.title === data.title);
-      if (ms) {
-        if (data.status) ms.status = data.status;
-        if (data.date) ms.date = data.date;
-      } else {
-        return NextResponse.json({ error: 'Milestone not found' }, { status: 404 });
-      }
-    }
-  } else if (type === 'progress') {
-    if (!projectData.workPackages) projectData.workPackages = [];
-    if (action === 'update') {
-      const wp = projectData.workPackages.find(w => w.id === data.id);
-      if (wp) {
-        if (data.progress !== undefined) wp.progress = data.progress;
-        if (data.name) wp.name = data.name;
-        if (data.owner) wp.owner = data.owner;
-      } else {
-        return NextResponse.json({ error: 'Work package not found' }, { status: 404 });
-      }
-    } else if (action === 'add') {
-      projectData.workPackages.push({
-        id: data.id,
-        name: data.name,
-        progress: data.progress || 0,
-        owner: data.owner || author || agent || 'Unknown'
-      });
-    }
-  } else if (type === 'budget') {
-    if (!projectData.budget) projectData.budget = [];
-    if (action === 'add') {
-      projectData.budget.push({
-        label: data.label,
-        amount: data.amount,
-        pct: data.pct || 0
-      });
-    } else if (action === 'update') {
-      const bg = projectData.budget.find(b => b.label === data.label);
-      if (bg) {
-        if (data.amount !== undefined) bg.amount = data.amount;
-        if (data.pct !== undefined) bg.pct = data.pct;
-      } else {
-        return NextResponse.json({ error: 'Budget item not found' }, { status: 404 });
-      }
-    }
-  } else if (type === 'sprint') {
-    if (!projectData.sprints) projectData.sprints = [];
-    if (action === 'add') {
-      projectData.sprints.unshift({
-        id: data.id,
-        name: data.name || '',
-        status: data.status || 'Active',
-        startDate: data.startDate || new Date().toISOString().split('T')[0],
-        endDate: data.endDate || '',
-        progress: data.progress || 0,
-        tasks: data.tasks || []
-      });
-    } else if (action === 'update') {
-      const sp = projectData.sprints.find(s => s.id === data.id);
-      if (sp) {
-        if (data.name !== undefined) sp.name = data.name;
-        if (data.status !== undefined) sp.status = data.status;
-        if (data.startDate !== undefined) sp.startDate = data.startDate;
-        if (data.endDate !== undefined) sp.endDate = data.endDate;
-        if (data.progress !== undefined) sp.progress = data.progress;
-        if (data.tasks !== undefined) sp.tasks = data.tasks;
-      } else {
-        return NextResponse.json({ error: 'Sprint not found' }, { status: 404 });
-      }
-    }
+  } catch (error) {
+    console.error('Error saving data to DB:', error);
+    return NextResponse.json({ error: 'Failed to update data in database', details: error.message }, { status: 500 });
   }
-
-  // Save back to KV
-  const success = await updateProjectData(projectData);
-  if (!success) {
-    return NextResponse.json({ error: 'Failed to update data in KV' }, { status: 500 });
-  }
-
-  return NextResponse.json({
-    success: true,
-    message: `${action} ${type} received and saved`,
-    entry: logEntry,
-  });
 }
+

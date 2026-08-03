@@ -2,72 +2,102 @@ import { createClient } from '@libsql/client';
 import defaultData from '@/data/project.json';
 import { dbConfig } from '@/lib/config';
 
-const PROJECT_DATA_KEY = 'panda_project_data';
-
-// Keep the client singleton alive for the duration of the serverless invocation
+// Keep the client singleton alive
 let client;
-let tableReady = false;
+let tablesReady = false;
 
-function getClient() {
+export function getClient() {
   if (!client) {
     const url = dbConfig.TURSO_DATABASE_URL;
     const authToken = dbConfig.TURSO_AUTH_TOKEN;
 
     if (!url || !authToken) {
-      console.warn('Turso credentials not configured (TURSO_DATABASE_URL / TURSO_AUTH_TOKEN). Falling back to default data.');
+      console.warn('Turso credentials not configured.');
       return null;
     }
-
     client = createClient({ url, authToken });
   }
   return client;
 }
 
-async function ensureTable(db) {
-  if (tableReady) return;
-  await db.execute(`
-    CREATE TABLE IF NOT EXISTS kv_store (
-      key TEXT PRIMARY KEY,
-      value TEXT
-    )
-  `);
-  tableReady = true;
+export async function ensureTables(db) {
+  if (tablesReady) return;
+  
+  await db.batch([
+    `CREATE TABLE IF NOT EXISTS notes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      text TEXT NOT NULL,
+      author TEXT,
+      date TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS milestones (
+      title TEXT PRIMARY KEY,
+      date TEXT,
+      status TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS work_packages (
+      id TEXT PRIMARY KEY,
+      name TEXT,
+      progress INTEGER DEFAULT 0,
+      owner TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS sprints (
+      id TEXT PRIMARY KEY,
+      name TEXT,
+      status TEXT,
+      start_date TEXT,
+      end_date TEXT,
+      progress INTEGER DEFAULT 0
+    )`,
+    `CREATE TABLE IF NOT EXISTS sprint_tasks (
+      id TEXT PRIMARY KEY,
+      sprint_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      status TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS budget (
+      label TEXT PRIMARY KEY,
+      amount INTEGER,
+      pct INTEGER
+    )`
+  ]);
+  
+  tablesReady = true;
 }
 
 export async function getProjectData() {
   try {
     const db = getClient();
     if (!db) return defaultData;
-    await ensureTable(db);
+    await ensureTables(db);
 
-    const result = await db.execute({
-      sql: 'SELECT value FROM kv_store WHERE key = ?',
-      args: [PROJECT_DATA_KEY],
+    const notesRes = await db.execute('SELECT text, author, date FROM notes ORDER BY id DESC');
+    const milestonesRes = await db.execute('SELECT title, date, status FROM milestones');
+    const wpRes = await db.execute('SELECT id, name, progress, owner FROM work_packages');
+    const sprintsRes = await db.execute('SELECT id, name, status, start_date as startDate, end_date as endDate, progress FROM sprints');
+    const tasksRes = await db.execute('SELECT id, sprint_id as sprintId, title, status FROM sprint_tasks');
+    const budgetRes = await db.execute('SELECT label, amount, pct FROM budget');
+
+    const sprints = sprintsRes.rows.map(s => {
+      const sprintTasks = tasksRes.rows.filter(t => t.sprintId === s.id).map(t => ({
+        id: t.id,
+        title: t.title,
+        status: t.status
+      }));
+      return { ...s, tasks: sprintTasks };
     });
 
-    if (result.rows.length > 0 && result.rows[0].value) {
-      return JSON.parse(result.rows[0].value);
-    }
+    return {
+      ...defaultData,
+      notes: notesRes.rows,
+      milestones: milestonesRes.rows,
+      workPackages: wpRes.rows,
+      budget: budgetRes.rows.length > 0 ? budgetRes.rows : defaultData.budget,
+      sprints: sprints
+    };
   } catch (error) {
-    console.error('Error fetching data from Turso:', error);
-  }
-
-  return defaultData;
-}
-
-export async function updateProjectData(newData) {
-  try {
-    const db = getClient();
-    if (!db) return false;
-    await ensureTable(db);
-
-    await db.execute({
-      sql: 'INSERT INTO kv_store (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
-      args: [PROJECT_DATA_KEY, JSON.stringify(newData)],
-    });
-    return true;
-  } catch (error) {
-    console.error('Error saving data to Turso:', error);
-    return false;
+    console.error('Error fetching relational data from Turso:', error);
+    return defaultData;
   }
 }
+
