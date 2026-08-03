@@ -7,6 +7,7 @@ const links = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/integrations', label: 'Integrations' },
   { href: '/activity', label: 'Activity' },
+  { href: '/debug', label: 'Debug' },
 ];
 
 // Pages where nav should NOT show (public + login)
