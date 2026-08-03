@@ -63,6 +63,59 @@ export async function POST(request) {
       author: author || agent || 'Unknown',
       date: new Date().toISOString().split('T')[0]
     });
+  } else if (type === 'milestone') {
+    if (!projectData.milestones) projectData.milestones = [];
+    if (action === 'add') {
+      projectData.milestones.push({
+        title: data.title,
+        date: data.date || new Date().toISOString().split('T')[0],
+        status: data.status || 'upcoming'
+      });
+    } else if (action === 'update') {
+      const ms = projectData.milestones.find(m => m.title === data.title);
+      if (ms) {
+        if (data.status) ms.status = data.status;
+        if (data.date) ms.date = data.date;
+      } else {
+        return NextResponse.json({ error: 'Milestone not found' }, { status: 404 });
+      }
+    }
+  } else if (type === 'progress') {
+    if (!projectData.workPackages) projectData.workPackages = [];
+    if (action === 'update') {
+      const wp = projectData.workPackages.find(w => w.id === data.id);
+      if (wp) {
+        if (data.progress !== undefined) wp.progress = data.progress;
+        if (data.name) wp.name = data.name;
+        if (data.owner) wp.owner = data.owner;
+      } else {
+        return NextResponse.json({ error: 'Work package not found' }, { status: 404 });
+      }
+    } else if (action === 'add') {
+      projectData.workPackages.push({
+        id: data.id,
+        name: data.name,
+        progress: data.progress || 0,
+        owner: data.owner || author || agent || 'Unknown'
+      });
+    }
+  } else if (type === 'budget') {
+    if (!projectData.budget) projectData.budget = [];
+    if (action === 'add') {
+      projectData.budget.push({
+        label: data.label,
+        amount: data.amount,
+        pct: data.pct || 0
+      });
+    } else if (action === 'update') {
+      const bg = projectData.budget.find(b => b.label === data.label);
+      if (bg) {
+        if (data.amount !== undefined) bg.amount = data.amount;
+        if (data.pct !== undefined) bg.pct = data.pct;
+      } else {
+        return NextResponse.json({ error: 'Budget item not found' }, { status: 404 });
+      }
+    }
   }
 
   // Save back to KV
