@@ -11,8 +11,37 @@ const USERS = [
 
 export default function SetupPage() {
   const [selectedUser, setSelectedUser] = useState('');
-  const [status, setStatus] = useState('idle'); // idle | loading | success | error
+  const [status, setStatus] = useState('idle'); // idle | loading | checking | success | error
   const [message, setMessage] = useState('');
+  const [hasPasskey, setHasPasskey] = useState(false);
+
+  async function checkPasskeyStatus(userId) {
+    try {
+      setStatus('checking');
+      const res = await fetch(`/api/auth/passkey/status?userId=${userId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setHasPasskey(data.hasPasskey);
+      } else {
+        setHasPasskey(false);
+      }
+      setStatus('idle');
+    } catch {
+      setHasPasskey(false);
+      setStatus('idle');
+    }
+  }
+
+  async function handleUserChange(userId) {
+    setSelectedUser(userId);
+    setStatus('idle');
+    setMessage('');
+    setHasPasskey(false);
+
+    if (userId) {
+      await checkPasskeyStatus(userId);
+    }
+  }
 
   async function handleRegister() {
     if (!selectedUser) return;
@@ -53,6 +82,7 @@ export default function SetupPage() {
       const result = await verifyRes.json();
       if (result.verified) {
         setStatus('success');
+        setHasPasskey(true);
         setMessage(`Passkey registered for ${selectedUser.charAt(0).toUpperCase() + selectedUser.slice(1)}!`);
       } else {
         throw new Error('Registration was not verified');
@@ -86,11 +116,7 @@ export default function SetupPage() {
                 id="setup-user"
                 className="field-input login-select"
                 value={selectedUser}
-                onChange={(e) => {
-                  setSelectedUser(e.target.value);
-                  setStatus('idle');
-                  setMessage('');
-                }}
+                onChange={(e) => handleUserChange(e.target.value)}
               >
                 <option value="">Select your name</option>
                 {USERS.map((u) => (
@@ -101,13 +127,33 @@ export default function SetupPage() {
           </div>
 
           {/* Selected user indicator */}
-          {user && status === 'idle' && (
+          {user && status !== 'checking' && !hasPasskey && status === 'idle' && (
             <div className="setup-info">
               <div className="user-avatar">{user.initial}</div>
               <div>
                 <p className="setup-info-name">{user.label}</p>
                 <p className="setup-info-desc">
                   Register a passkey to sign in with biometrics, Face ID, or your device PIN.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Checking status indicator */}
+          {status === 'checking' && (
+            <div className="setup-status" style={{ color: 'var(--text-secondary)' }}>
+              <span>Checking passkey status…</span>
+            </div>
+          )}
+
+          {/* Already registered indicator */}
+          {user && hasPasskey && status !== 'success' && (
+            <div className="setup-info">
+              <div className="user-avatar" style={{ background: 'var(--green)', color: '#fff' }}>{user.initial}</div>
+              <div>
+                <p className="setup-info-name">{user.label}</p>
+                <p className="setup-info-desc" style={{ color: 'var(--green)' }}>
+                  ✓ Passkey already registered. You can log in directly.
                 </p>
               </div>
             </div>
@@ -132,11 +178,15 @@ export default function SetupPage() {
             <button
               type="button"
               className="btn btn-primary login-btn"
-              disabled={!selectedUser || status === 'loading'}
+              disabled={!selectedUser || status === 'loading' || status === 'checking' || hasPasskey}
               onClick={handleRegister}
             >
               <span className="passkey-icon">🔑</span>
-              {status === 'loading' ? 'Waiting for browser...' : 'Register Passkey'}
+              {status === 'loading'
+                ? 'Waiting for browser...'
+                : hasPasskey
+                  ? 'Already Registered'
+                  : 'Register Passkey'}
             </button>
           ) : (
             <div className="setup-done-actions">
@@ -162,3 +212,4 @@ export default function SetupPage() {
     </div>
   );
 }
+
