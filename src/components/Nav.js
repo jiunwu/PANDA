@@ -10,7 +10,7 @@ const links = [
 ];
 
 // Pages where nav should NOT show (public + login)
-const hiddenPaths = ['/', '/login'];
+const hiddenPaths = ['/', '/login', '/setup'];
 
 export default function Nav() {
   const pathname = usePathname();

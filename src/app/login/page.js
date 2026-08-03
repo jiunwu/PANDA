@@ -2,9 +2,16 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { startAuthentication } from '@simplewebauthn/browser';
+import Link from 'next/link';
+
+const USERS = [
+  { id: 'nina', label: 'Nina', initial: 'N' },
+  { id: 'jiun', label: 'Jiun', initial: 'J' },
+];
 
 function LoginForm() {
-  const [password, setPassword] = useState('');
+  const [selectedUser, setSelectedUser] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -12,58 +19,110 @@ function LoginForm() {
 
   const from = searchParams.get('from') || '/dashboard';
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function handlePasskeyLogin() {
+    if (!selectedUser) return;
+
     setError('');
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth', {
+      // Step 1: Get authentication options
+      const optionsRes = await fetch('/api/auth/passkey/login-options', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ userId: selectedUser }),
       });
 
-      if (res.ok) {
+      if (!optionsRes.ok) {
+        const err = await optionsRes.json();
+        throw new Error(err.error || 'Failed to get login options');
+      }
+
+      const options = await optionsRes.json();
+
+      // Step 2: Start the browser's authentication ceremony
+      const credential = await startAuthentication({ optionsJSON: options });
+
+      // Step 3: Verify on server
+      const verifyRes = await fetch('/api/auth/passkey/login-verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: selectedUser, credential }),
+      });
+
+      if (!verifyRes.ok) {
+        const err = await verifyRes.json();
+        throw new Error(err.error || 'Login failed');
+      }
+
+      const result = await verifyRes.json();
+      if (result.verified) {
         router.push(from);
         router.refresh();
       } else {
-        setError('Wrong password');
-        setPassword('');
+        throw new Error('Authentication was not verified');
       }
-    } catch {
-      setError('Connection error');
+    } catch (error) {
+      if (error.name === 'NotAllowedError') {
+        setError('Authentication was cancelled or timed out.');
+      } else {
+        setError(error.message || 'Login failed');
+      }
     } finally {
       setLoading(false);
     }
   }
 
+  const user = USERS.find((u) => u.id === selectedUser);
+
   return (
-    <form onSubmit={handleSubmit} className="login-form">
+    <div className="login-form">
+      {/* User selection */}
       <div className="login-field">
-        <label htmlFor="password" className="field-label">Password</label>
-        <input
-          id="password"
-          type="password"
-          className="field-input login-input"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter team password"
-          autoFocus
-          autoComplete="current-password"
-        />
+        <label htmlFor="login-user" className="field-label">Login as</label>
+        <div className="user-select-wrapper">
+          <select
+            id="login-user"
+            className="field-input login-select"
+            value={selectedUser}
+            onChange={(e) => {
+              setSelectedUser(e.target.value);
+              setError('');
+            }}
+          >
+            <option value="">Select your name</option>
+            {USERS.map((u) => (
+              <option key={u.id} value={u.id}>{u.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
+
+      {/* Selected user indicator */}
+      {user && (
+        <div className="login-user-badge">
+          <div className="user-avatar">{user.initial}</div>
+          <span className="login-user-name">{user.label}</span>
+        </div>
+      )}
 
       {error && <div className="login-error">{error}</div>}
 
       <button
-        type="submit"
+        type="button"
         className="btn btn-primary login-btn"
-        disabled={loading || !password}
+        disabled={loading || !selectedUser}
+        onClick={handlePasskeyLogin}
       >
-        {loading ? 'Verifying...' : 'Continue'}
+        <span className="passkey-icon">🔑</span>
+        {loading ? 'Waiting for browser...' : 'Login with Passkey'}
       </button>
-    </form>
+
+      <div className="login-setup-link">
+        <span>First time?</span>{' '}
+        <Link href="/setup">Set up your passkey</Link>
+      </div>
+    </div>
   );
 }
 

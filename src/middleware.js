@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 const PROTECTED_PATHS = ['/dashboard', '/integrations', '/activity', '/api/'];
 const PUBLIC_API_PATHS = ['/api/auth', '/api/logout'];
+const VALID_SESSIONS = ['authenticated', 'nina', 'jiun'];
 
 export function middleware(request) {
   const { pathname } = request.nextUrl;
@@ -27,7 +28,7 @@ export function middleware(request) {
 
     // Also allow if authenticated via session cookie
     const session = request.cookies.get('panda-auth')?.value;
-    if (session === 'authenticated') {
+    if (VALID_SESSIONS.includes(session)) {
       return NextResponse.next();
     }
 
@@ -36,7 +37,7 @@ export function middleware(request) {
 
   // Page routes: check session cookie
   const session = request.cookies.get('panda-auth')?.value;
-  if (session === 'authenticated') {
+  if (VALID_SESSIONS.includes(session)) {
     return NextResponse.next();
   }
 
