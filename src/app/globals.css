@@ -1285,41 +1285,48 @@ a { color: inherit; }
 
 /* ── Jules Panel ── */
 .jules-panel {
-  background: #111;
-  color: #fff;
-  border-radius: var(--radius);
+  background: linear-gradient(145deg, #09090b 0%, #18181b 100%);
+  color: #fafafa;
+  border-radius: 12px;
   font-family: 'SF Mono', 'Fira Code', monospace;
   font-size: 12px;
   display: flex;
   flex-direction: column;
-  height: 380px; /* Make it slightly taller for better UX */
+  height: 420px;
   overflow: hidden;
-  border: 1px solid #333;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 .jules-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #1a1a1a;
-  padding: 10px 14px;
-  border-bottom: 1px solid #333;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .jules-header-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .jules-logo {
-  color: #60a5fa;
+  color: #a78bfa;
+  text-shadow: 0 0 12px rgba(167, 139, 250, 0.4);
 }
 
 .jules-title {
-  font-weight: 600;
+  font-weight: 700;
   font-family: 'Inter', sans-serif;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  font-size: 14px;
+  background: linear-gradient(90deg, #ffffff 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .jules-badge {
@@ -1422,24 +1429,26 @@ a { color: inherit; }
 }
 
 .jules-select, .jules-input, .jules-textarea {
-  background: #1a1a1a;
-  border: 1px solid #333;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #fff;
-  padding: 8px 10px;
-  border-radius: 4px;
+  padding: 10px 12px;
+  border-radius: 6px;
   font-family: inherit;
   font-size: 12px;
   outline: none;
   width: 100%;
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
 .jules-select { cursor: pointer; }
 .jules-select:focus, .jules-input:focus, .jules-textarea:focus {
-  border-color: #60a5fa;
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.2);
 }
 
 .jules-textarea {
   resize: vertical;
-  min-height: 60px;
+  min-height: 80px;
 }
 
 .jules-options-toggle {
@@ -1482,23 +1491,30 @@ a { color: inherit; }
 }
 
 .jules-submit {
-  background: #4ade80;
-  color: #064e3b;
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  color: #fff;
   border: none;
-  padding: 10px;
+  padding: 12px;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   margin-top: 8px;
+  transition: all var(--transition);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 .jules-submit:disabled {
-  background: #333;
+  background: rgba(255, 255, 255, 0.1);
   color: #666;
+  box-shadow: none;
   cursor: not-allowed;
 }
-.jules-submit:hover:not(:disabled) { background: #22c55e; }
+.jules-submit:hover:not(:disabled) { 
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5);
+  transform: translateY(-1px);
+}
 
 .jules-sessions-list {
   display: flex;
@@ -1507,20 +1523,21 @@ a { color: inherit; }
 }
 
 .jules-session-card {
-  background: #1a1a1a;
-  border: 1px solid #333;
-  padding: 10px 12px;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 14px;
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   cursor: pointer;
   text-align: left;
   transition: all var(--transition);
 }
 .jules-session-card:hover {
-  background: #2a2a2a;
-  border-color: #444;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(167, 139, 250, 0.3);
+  transform: translateX(2px);
 }
 
 .jules-session-top {

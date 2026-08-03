@@ -191,25 +191,71 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
+          <div className="bento-card" style={{ marginTop: 24 }}>
+            <div className="bento-header">
+              <h2 className="bento-title">Work Packages</h2>
+              <span className="section-meta">{workPackages?.length || 0} active</span>
+            </div>
+            <div style={{ overflowX: 'auto', marginTop: 16 }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Task</th>
+                    <th>Progress</th>
+                    <th>Owner</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {!workPackages || workPackages.length === 0 ? (
+                    <tr><td colSpan="4" style={{ color: 'var(--text-tertiary)' }}>No work packages found.</td></tr>
+                  ) : (
+                    workPackages.map(wp => (
+                      <tr key={wp.id}>
+                        <td style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>{wp.id}</td>
+                        <td>{wp.name}</td>
+                        <td style={{ minWidth: 100 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontSize: 12, minWidth: 32 }}>{wp.progress}%</span>
+                            <div className="progress-bar" style={{ flex: 1, marginTop: 0 }}>
+                              <div className="progress-fill" style={{ width: `${wp.progress}%`, background: wp.progress === 100 ? 'var(--green)' : 'var(--text-primary)' }} />
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{wp.owner}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         {/* MIDDLE COLUMN: Core Project */}
         <div className="bento-col">
           <div className="bento-card">
             <div className="bento-header">
-              <h2 className="bento-title">Goals</h2>
-              <span className="section-meta">{goals.length} active</span>
+              <h2 className="bento-title">Milestones</h2>
+              <span className="section-meta">{milestones?.length || 0} tracking</span>
             </div>
-            <div className="timeline" style={{ paddingLeft: 8 }}>
-              {goals.map((g, i) => (
-                <div className="timeline-item" key={i}>
-                  <div className={`timeline-dot ${g.status}`} />
-                  <div className="timeline-body">
-                    <span className={`timeline-title ${g.status}`}>{g.title}</span>
-                    <span className="timeline-date">{g.deadline}</span>
-                  </div>
-                </div>
-              ))}
+            <div className="timeline" style={{ paddingLeft: 8, marginTop: 16 }}>
+              {!milestones || milestones.length === 0 ? (
+                <div style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>No milestones found.</div>
+              ) : (
+                milestones.map((m, i) => {
+                  const statusClass = m.status?.toLowerCase() === 'done' ? 'done' : m.status?.toLowerCase() === 'upcoming' ? 'upcoming' : 'active';
+                  return (
+                    <div className="timeline-item" key={i}>
+                      <div className={`timeline-dot ${statusClass}`} />
+                      <div className="timeline-body">
+                        <span className={`timeline-title ${statusClass}`}>{m.title}</span>
+                        <span className="timeline-date">{m.date}</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
