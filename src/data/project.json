@@ -209,6 +209,7 @@
     { "name": "z.AI Coordinator", "role": "Scrum Master & PM", "status": "Active", "task": "Monitoring Sprint 1 progress" },
     { "name": "Lark Bot", "role": "Notifier", "status": "Idle", "task": "Waiting for webhook" },
     { "name": "Code Agent", "role": "Dev Assist", "status": "Working", "task": "Refactoring DOM observer" },
+    { "name": "Google Jules", "role": "Coding Agent", "status": "Active", "task": "Ready for task dispatch" },
     { "name": "Research Agent", "role": "Literature", "status": "Error", "task": "API rate limit exceeded" }
   ],
   "agentInteractions": [

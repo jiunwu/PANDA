@@ -24,6 +24,17 @@
       "capabilities": ["Push milestone notifications", "Weekly progress summaries", "Alert on deadline changes"]
     },
     {
+      "id": "jules",
+      "name": "Google Jules",
+      "description": "Google's asynchronous AI coding agent — dispatches coding tasks to GitHub repos, generates plans, and auto-creates pull requests",
+      "docsUrl": "https://jules.google.com/settings",
+      "fields": [
+        { "key": "apiKey", "label": "API Key", "type": "password", "placeholder": "AQ.Ab8..." },
+        { "key": "source", "label": "GitHub Repo Source", "type": "text", "placeholder": "sources/github-org-repo" }
+      ],
+      "capabilities": ["Create coding sessions", "Auto-create pull requests", "Plan approval workflow", "Monitor session activities", "Bug fixes & feature development"]
+    },
+    {
       "id": "custom",
       "name": "Custom Model",
       "description": "Connect any OpenAI-compatible model — Ollama, Claude, GPT, Gemini, or self-hosted",
