@@ -10,32 +10,67 @@ export default function IntegrationCard({ integration }) {
   );
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState(null);
+  const [testMessage, setTestMessage] = useState('');
 
   function handleChange(key, value) {
     setValues((prev) => ({ ...prev, [key]: value }));
   }
 
-  function handleTest() {
+  async function handleTest() {
     setTesting(true);
     setTestResult(null);
-    // Simulate test — in Phase 2, this calls the actual API
-    setTimeout(() => {
-      const allFilled = integration.fields
-        .filter((f) => f.key !== 'keyword')
-        .every((f) => values[f.key]?.trim());
+    setTestMessage('');
+
+    const allFilled = integration.fields
+      .filter((f) => f.key !== 'keyword')
+      .every((f) => values[f.key]?.trim());
+
+    if (!allFilled) {
       setTesting(false);
-      if (allFilled) {
-        setTestResult('success');
-        setConnected(true);
-      } else {
+      setTestResult('error');
+      setTestMessage('Please fill in all required fields');
+      return;
+    }
+
+    // Real API test for Jules
+    if (integration.id === 'jules') {
+      try {
+        const res = await fetch('/api/jules/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ apiKey: values.apiKey }),
+        });
+        const data = await res.json();
+        setTesting(false);
+        if (data.ok) {
+          setTestResult('success');
+          setTestMessage(data.message);
+          setConnected(true);
+        } else {
+          setTestResult('error');
+          setTestMessage(data.error || 'Connection failed');
+        }
+      } catch (err) {
+        setTesting(false);
         setTestResult('error');
+        setTestMessage('Network error — could not reach the server');
       }
+      return;
+    }
+
+    // Simulated test for other integrations
+    setTimeout(() => {
+      setTesting(false);
+      setTestResult('success');
+      setTestMessage('Connection successful');
+      setConnected(true);
     }, 1200);
   }
 
   function handleDisconnect() {
     setConnected(false);
     setTestResult(null);
+    setTestMessage('');
     setValues(Object.fromEntries(integration.fields.map((f) => [f.key, ''])));
   }
 
@@ -85,10 +120,10 @@ export default function IntegrationCard({ integration }) {
           </div>
 
           {testResult === 'success' && (
-            <div className="test-message test-success">Connection successful</div>
+            <div className="test-message test-success">{testMessage}</div>
           )}
           {testResult === 'error' && (
-            <div className="test-message test-error">Please fill in all required fields</div>
+            <div className="test-message test-error">{testMessage}</div>
           )}
 
           <div className="integration-capabilities">
@@ -130,3 +165,4 @@ export default function IntegrationCard({ integration }) {
     </div>
   );
 }
+
