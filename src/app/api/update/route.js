@@ -17,14 +17,14 @@ export async function POST(request) {
     return NextResponse.json(
       {
         error: 'Missing required fields',
-        required: { type: 'milestone | progress | note | budget', action: 'update | add', data: '{}' },
+        required: { type: 'milestone | progress | note | budget | sprint', action: 'update | add', data: '{}' },
         optional: { agent: 'z.ai | lark | custom', author: 'Jiun | Nina | Agent' },
       },
       { status: 400 }
     );
   }
 
-  const validTypes = ['milestone', 'progress', 'note', 'budget'];
+  const validTypes = ['milestone', 'progress', 'note', 'budget', 'sprint'];
   const validActions = ['update', 'add'];
 
   if (!validTypes.includes(type)) {
@@ -114,6 +114,31 @@ export async function POST(request) {
         if (data.pct !== undefined) bg.pct = data.pct;
       } else {
         return NextResponse.json({ error: 'Budget item not found' }, { status: 404 });
+      }
+    }
+  } else if (type === 'sprint') {
+    if (!projectData.sprints) projectData.sprints = [];
+    if (action === 'add') {
+      projectData.sprints.unshift({
+        id: data.id,
+        name: data.name || '',
+        status: data.status || 'Active',
+        startDate: data.startDate || new Date().toISOString().split('T')[0],
+        endDate: data.endDate || '',
+        progress: data.progress || 0,
+        tasks: data.tasks || []
+      });
+    } else if (action === 'update') {
+      const sp = projectData.sprints.find(s => s.id === data.id);
+      if (sp) {
+        if (data.name !== undefined) sp.name = data.name;
+        if (data.status !== undefined) sp.status = data.status;
+        if (data.startDate !== undefined) sp.startDate = data.startDate;
+        if (data.endDate !== undefined) sp.endDate = data.endDate;
+        if (data.progress !== undefined) sp.progress = data.progress;
+        if (data.tasks !== undefined) sp.tasks = data.tasks;
+      } else {
+        return NextResponse.json({ error: 'Sprint not found' }, { status: 404 });
       }
     }
   }
