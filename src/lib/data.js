@@ -1,5 +1,6 @@
 import { createClient } from '@libsql/client';
 import defaultData from '@/data/project.json';
+import integrationsData from '@/data/integrations.json';
 import { dbConfig } from '@/lib/config';
 
 // Keep the client singleton alive
@@ -59,6 +60,13 @@ export async function ensureTables(db) {
       label TEXT PRIMARY KEY,
       amount INTEGER,
       pct INTEGER
+    )`,
+    `CREATE TABLE IF NOT EXISTS activity_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      timestamp TEXT NOT NULL,
+      source TEXT,
+      action TEXT NOT NULL,
+      type TEXT
     )`
   ]);
   
@@ -101,3 +109,19 @@ export async function getProjectData() {
   }
 }
 
+
+export async function getActivityLog() {
+  try {
+    const db = getClient();
+    if (!db) return integrationsData.activityLog;
+    await ensureTables(db);
+
+    const res = await db.execute('SELECT timestamp, source, action, type FROM activity_log ORDER BY id DESC');
+    if (res.rows.length === 0) return integrationsData.activityLog;
+
+    return res.rows;
+  } catch (error) {
+    console.error('Error fetching activity log from Turso:', error);
+    return integrationsData.activityLog;
+  }
+}
