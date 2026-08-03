@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import defaultData from '@/data/project.json';
+import JulesPanel from '@/components/JulesPanel';
 
 function statusLabel(s) {
   if (s === 'done') return 'Erledigt';
@@ -265,22 +266,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bento-card" style={{ padding: 0, background: '#111', borderColor: '#111' }}>
-            <div className="chat-console">
-              {agentInteractions.map((msg, i) => (
-                <div className="chat-msg" key={i}>
-                  <span className={msg.role === 'agent' ? 'chat-agent' : 'chat-user'}>
-                    {msg.role === 'agent' ? msg.agent : 'You'} <span style={{color:'#666', fontSize:10}}>[{msg.time}]</span>
-                  </span>
-                  <span className="chat-text">{msg.message}</span>
-                </div>
-              ))}
-              <div className="chat-input-wrapper">
-                <span style={{color: '#60a5fa'}}>&gt;</span>
-                <input type="text" className="chat-input" placeholder="Dispatch task to agents..." />
-              </div>
-            </div>
-          </div>
+          <JulesPanel />
         </div>
       </div>
 
