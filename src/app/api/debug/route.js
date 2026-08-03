@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@libsql/client';
+import { dbConfig } from '@/lib/config';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const url = process.env.TURSO_DATABASE_URL;
-  const authToken = process.env.TURSO_AUTH_TOKEN;
+  const url = dbConfig.TURSO_DATABASE_URL;
+  const authToken = dbConfig.TURSO_AUTH_TOKEN;
 
   const debugInfo = {
     environment: {
@@ -14,6 +15,7 @@ export async function GET() {
       WEBAUTHN_RP_ID: process.env.WEBAUTHN_RP_ID || 'NOT SET',
       WEBAUTHN_ORIGIN: process.env.WEBAUTHN_ORIGIN || 'NOT SET',
       NODE_ENV: process.env.NODE_ENV,
+      NOTE: "Using hardcoded Turso DB config from src/lib/config.js",
     },
     connection: 'pending',
     tables: [],

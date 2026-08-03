@@ -1,5 +1,6 @@
 import { createClient } from '@libsql/client';
 import defaultData from '@/data/project.json';
+import { dbConfig } from '@/lib/config';
 
 const PROJECT_DATA_KEY = 'panda_project_data';
 
@@ -9,8 +10,8 @@ let tableReady = false;
 
 function getClient() {
   if (!client) {
-    const url = process.env.TURSO_DATABASE_URL;
-    const authToken = process.env.TURSO_AUTH_TOKEN;
+    const url = dbConfig.TURSO_DATABASE_URL;
+    const authToken = dbConfig.TURSO_AUTH_TOKEN;
 
     if (!url || !authToken) {
       console.warn('Turso credentials not configured (TURSO_DATABASE_URL / TURSO_AUTH_TOKEN). Falling back to default data.');
