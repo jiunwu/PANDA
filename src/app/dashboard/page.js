@@ -44,14 +44,14 @@ export default function DashboardPage() {
       .catch(console.error);
   }, []);
 
-  const { project, team, mentors, contact, funding, goals, dataRoom, milestones, workPackages, budget, sprints, github, agentsOverview, agentInteractions, notes } = data;
+  const { project, team, mentors, contact, funding, goals, dataRoom, milestones, workPackages, budget, sprints, agentsOverview, notes } = data;
 
   const [newNote, setNewNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const overallProgress = Math.round(
-    workPackages.reduce((s, w) => s + w.progress, 0) / workPackages.length
-  );
+  const overallProgress = workPackages && workPackages.length > 0 
+    ? Math.round(workPackages.reduce((s, w) => s + w.progress, 0) / workPackages.length)
+    : 0;
 
   async function handleAddNote(e) {
     e.preventDefault();
@@ -126,8 +126,8 @@ export default function DashboardPage() {
           <div className="stat-label">Fördervolumen EUR</div>
         </div>
         <div className="stat">
-          <div className="stat-value">{sprints[0].progress}%</div>
-          <div className="stat-label">{sprints[0].id} Progress</div>
+          <div className="stat-value">{sprints && sprints.length > 0 ? `${sprints[0].progress}%` : '-'}</div>
+          <div className="stat-label">{sprints && sprints.length > 0 ? `${sprints[0].id} Progress` : 'Sprint Progress'}</div>
         </div>
       </div>
 
@@ -137,15 +137,19 @@ export default function DashboardPage() {
           <h2 className="section-title">Project Notes</h2>
         </div>
         <div className="list-stack" style={{ marginBottom: 16 }}>
-          {(notes || []).map((note, i) => (
-            <div className="list-item" key={i}>
-              <div className="item-title" style={{ fontWeight: 'normal', color: 'var(--text-secondary)' }}>{note.text}</div>
-              <div className="item-meta">
-                <span>{note.author}</span>
-                <span>{note.date}</span>
+          {!notes || notes.length === 0 ? (
+            <div style={{ color: 'var(--text-tertiary)', fontSize: 13, padding: '12px 0' }}>No notes yet.</div>
+          ) : (
+            notes.map((note, i) => (
+              <div className="list-item" key={i}>
+                <div className="item-title" style={{ fontWeight: 'normal', color: 'var(--text-secondary)' }}>{note.text}</div>
+                <div className="item-meta">
+                  <span>{note.author}</span>
+                  <span>{note.date}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
         <form onSubmit={handleAddNote} style={{ display: 'flex', gap: '8px' }}>
           <input
@@ -170,34 +174,21 @@ export default function DashboardPage() {
           <div className="bento-card">
             <div className="bento-header">
               <h2 className="bento-title">Agile Sprint</h2>
-              <span className="section-meta">{sprints[0].id}</span>
+              <span className="section-meta">{sprints && sprints.length > 0 ? sprints[0].id : 'No active sprint'}</span>
             </div>
             <div className="list-stack">
-              {sprints[0].tasks.map((task, i) => (
-                <div className="list-item" key={i}>
-                  <div className="item-title">{task.title}</div>
-                  <div className="item-meta">
-                    <span className={`item-tag ${task.status === 'done' ? 'active' : ''}`}>{task.status}</span>
+              {!sprints || sprints.length === 0 ? (
+                <div style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>Waiting for external agent to sync sprints...</div>
+              ) : (
+                sprints[0].tasks.map((task, i) => (
+                  <div className="list-item" key={i}>
+                    <div className="item-title">{task.title}</div>
+                    <div className="item-meta">
+                      <span className={`item-tag ${task.status === 'done' ? 'active' : ''}`}>{task.status}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bento-card">
-            <div className="bento-header">
-              <h2 className="bento-title">GitHub Development</h2>
-            </div>
-            <div className="list-stack">
-              {github.map((item, i) => (
-                <div className="list-item" key={i}>
-                  <div className="item-title">{item.title}</div>
-                  <div className="item-meta">
-                    <span className={`item-tag ${item.status === 'Merged' ? 'active' : ''}`}>{item.type}</span>
-                    <span>{item.author} • {item.time}</span>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -229,7 +220,11 @@ export default function DashboardPage() {
             <div className="list-stack">
               {dataRoom.map((doc, i) => (
                 <div className="list-item" key={i}>
-                  <div className="item-title">{doc.title}</div>
+                  <div className="item-title">
+                    <a href={doc.url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+                      {doc.title} {doc.url !== '#' && '↗'}
+                    </a>
+                  </div>
                   <div className="item-meta">
                     <span className={`type-tag ${doc.status === 'Empty' ? 'type-system' : doc.status === 'Draft' ? 'type-note' : 'type-milestone'}`}>
                       {doc.status}

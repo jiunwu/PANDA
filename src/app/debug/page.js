@@ -6,6 +6,7 @@ export default function DebugPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [resetting, setResetting] = useState(false);
 
   async function fetchDebug() {
     setLoading(true);
@@ -23,6 +24,25 @@ export default function DebugPage() {
   useEffect(() => {
     fetchDebug();
   }, []);
+
+  async function handleResetDB() {
+    if (!confirm('Are you sure you want to reset the database to the clean project.json state? All current notes and dynamic data will be lost.')) return;
+    setResetting(true);
+    try {
+      const res = await fetch('/api/debug', { method: 'POST' });
+      const json = await res.json();
+      if (res.ok) {
+        alert(json.message);
+        fetchDebug();
+      } else {
+        alert('Error: ' + json.error);
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      setResetting(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -51,12 +71,21 @@ export default function DebugPage() {
           <h1 className="page-title">Database Debug</h1>
           <p className="page-subtitle">Verify environment variables, database connection, and raw data.</p>
         </div>
-        <button 
-          onClick={fetchDebug} 
-          style={{ padding: '8px 16px', background: 'var(--text-primary)', color: 'var(--white)', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-        >
-          Refresh Data
-        </button>
+        <div style={{ display: 'flex', gap: 12, alignSelf: 'flex-start' }}>
+          <button 
+            onClick={handleResetDB} 
+            disabled={resetting}
+            style={{ padding: '8px 16px', background: 'var(--red-bg)', color: 'var(--red)', border: 'none', borderRadius: '4px', cursor: resetting ? 'not-allowed' : 'pointer' }}
+          >
+            {resetting ? 'Resetting...' : 'Reset DB'}
+          </button>
+          <button 
+            onClick={fetchDebug} 
+            style={{ padding: '8px 16px', background: 'var(--text-primary)', color: 'var(--white)', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+          >
+            Refresh Data
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 32 }}>

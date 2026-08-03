@@ -57,83 +57,30 @@
     {
       "title": "Pitch Deck",
       "status": "Draft",
-      "lastUpdated": "2026-08-01"
+      "lastUpdated": "2026-08-01",
+      "url": "#"
     },
     {
       "title": "Business Plan",
       "status": "In Progress",
-      "lastUpdated": "2026-08-01"
+      "lastUpdated": "2026-08-01",
+      "url": "#"
     },
     {
       "title": "Financial Plan",
       "status": "Empty",
-      "lastUpdated": "-"
+      "lastUpdated": "-",
+      "url": "#"
     },
     {
       "title": "IP Agreement",
       "status": "In Discussion",
-      "lastUpdated": "2026-08-01"
+      "lastUpdated": "2026-08-01",
+      "url": "#"
     }
   ],
-  "milestones": [
-    {
-      "title": "Ideenpapier eingereicht",
-      "date": "April 2026",
-      "status": "done"
-    },
-    {
-      "title": "PTJ Positiv Begutachtung",
-      "date": "Jun 2026",
-      "status": "done"
-    },
-    {
-      "title": "EXIST Zuwendungsbescheid",
-      "date": "Jul 2026",
-      "status": "done"
-    },
-    {
-      "title": "Projektstart",
-      "date": "Aug 2026",
-      "status": "active"
-    },
-    {
-      "title": "Company Setup",
-      "date": "Sep 2026",
-      "status": "upcoming"
-    }
-  ],
-  "workPackages": [
-    {
-      "id": "AP1",
-      "name": "Marktanalyse & Validierung",
-      "progress": 75,
-      "owner": "Nina"
-    },
-    {
-      "id": "AP2",
-      "name": "Prototyp-Entwicklung",
-      "progress": 40,
-      "owner": "Jiun"
-    },
-    {
-      "id": "AP3",
-      "name": "Businessplan erstellen",
-      "progress": 55,
-      "owner": "Jiun & Nina"
-    },
-    {
-      "id": "AP4",
-      "name": "Team & Gründungskonzept",
-      "progress": 30,
-      "owner": "Nina"
-    },
-    {
-      "id": "AP5",
-      "name": "Pitchdeck & Kommunikation",
-      "progress": 20,
-      "owner": "Jiun"
-    }
-  ],
+  "milestones": [],
+  "workPackages": [],
   "budget": [
     {
       "label": "Personal (Stipendien)",
@@ -156,64 +103,9 @@
       "pct": 15
     }
   ],
-  "notes": [
-    {
-      "text": "Letter of Intent von Pilotpartner steht noch aus — Reminder senden",
-      "author": "Nina",
-      "date": "2026-07-30"
-    },
-    {
-      "text": "IHK Gründerworkshop am 15.08. — beide angemeldet",
-      "author": "Nina",
-      "date": "2026-07-28"
-    },
-    {
-      "text": "Tech-Stack-Entscheidung dokumentieren für Antrag Anhang",
-      "author": "Jiun",
-      "date": "2026-07-25"
-    }
-  ],
-  "sprints": [
-    {
-      "id": "Sprint 1",
-      "name": "Foundation & MVP Scope",
-      "status": "Active",
-      "startDate": "2026-08-01",
-      "endDate": "2026-08-14",
-      "progress": 35,
-      "tasks": [
-        { "title": "Define extension manifest V3", "status": "done" },
-        { "title": "Setup local LLM bridge", "status": "in-progress" },
-        { "title": "Draft IP agreement", "status": "in-progress" }
-      ]
-    },
-    {
-      "id": "Sprint 2",
-      "name": "Core Detection Logic",
-      "status": "Upcoming",
-      "startDate": "2026-08-15",
-      "endDate": "2026-08-28",
-      "progress": 0,
-      "tasks": [
-        { "title": "Train classifier on 500 samples", "status": "todo" },
-        { "title": "Implement DOM observer", "status": "todo" }
-      ]
-    }
-  ],
-  "github": [
-    { "type": "pr", "repo": "panda-ext", "title": "Feat: Add DOM traversal engine", "status": "Open", "author": "Jiun", "time": "2h ago" },
-    { "type": "commit", "repo": "panda-ext", "title": "fix: background script memory leak", "status": "Merged", "author": "Jiun", "time": "5h ago" },
-    { "type": "issue", "repo": "panda-model", "title": "False positive on cookie banners", "status": "Open", "author": "Nina", "time": "1d ago" }
-  ],
+  "notes": [],
+  "sprints": [],
   "agentsOverview": [
-    { "name": "z.AI Coordinator", "role": "Scrum Master & PM", "status": "Active", "task": "Monitoring Sprint 1 progress" },
-    { "name": "Lark Bot", "role": "Notifier", "status": "Idle", "task": "Waiting for webhook" },
-    { "name": "Code Agent", "role": "Dev Assist", "status": "Working", "task": "Refactoring DOM observer" },
-    { "name": "Google Jules", "role": "Coding Agent", "status": "Active", "task": "Ready for task dispatch" },
-    { "name": "Research Agent", "role": "Literature", "status": "Error", "task": "API rate limit exceeded" }
-  ],
-  "agentInteractions": [
-    { "role": "user", "agent": "z.AI Coordinator", "message": "Summarize today's GitHub activity.", "time": "10:00 AM" },
-    { "role": "agent", "agent": "z.AI Coordinator", "message": "Jiun opened a PR for DOM traversal and fixed a memory leak. Nina reported an issue on the model.", "time": "10:01 AM" }
+    { "name": "Google Jules", "role": "Coding Agent", "status": "Active", "task": "Ready for task dispatch" }
   ]
 }

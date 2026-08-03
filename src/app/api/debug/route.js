@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@libsql/client';
 import { dbConfig } from '@/lib/config';
+import defaultData from '@/data/project.json';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,4 +61,32 @@ export async function GET() {
   }
 
   return NextResponse.json(debugInfo);
+}
+
+export async function POST() {
+  const url = dbConfig.TURSO_DATABASE_URL;
+  const authToken = dbConfig.TURSO_AUTH_TOKEN;
+
+  if (!url || !authToken) {
+    return NextResponse.json({ error: 'Missing credentials' }, { status: 500 });
+  }
+
+  try {
+    const db = createClient({ url, authToken });
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS kv_store (
+        key TEXT PRIMARY KEY,
+        value TEXT
+      )
+    `);
+    
+    await db.execute({
+      sql: 'INSERT INTO kv_store (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
+      args: ['panda_project_data', JSON.stringify(defaultData)],
+    });
+
+    return NextResponse.json({ success: true, message: 'Database reset to local project.json' });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
