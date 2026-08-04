@@ -1,22 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
+import { useDashboardData } from '@/hooks/useDashboardData';
 
 export default function MilestonesPage() {
-  const [milestones, setMilestones] = useState([]);
+  const { data, loading } = useDashboardData();
+  const milestones = data?.milestones || [];
   const [filter, setFilter] = useState('all');
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch('/api/dashboard-data')
-      .then((res) => res.json())
-      .then((data) => {
-        setMilestones(data.milestones || []);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
 
   const filteredMilestones = milestones.filter((m) => {
     if (filter === 'all') return true;

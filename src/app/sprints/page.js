@@ -1,21 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useDashboardData } from '@/hooks/useDashboardData';
 
 export default function SprintsPage() {
-  const [sprints, setSprints] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch('/api/dashboard-data')
-      .then((res) => res.json())
-      .then((data) => {
-        setSprints(data.sprints || []);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  const { data, loading } = useDashboardData();
+  const sprints = data?.sprints || [];
 
   return (
     <>

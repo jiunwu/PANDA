@@ -104,7 +104,7 @@ export default function DebugPage() {
             ))}
           </div>
           <p style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 12 }}>
-            If TURSO_DATABASE_URL is "NOT SET", Vercel is falling back to the local static project.json and your data will wipe on every deploy.
+            If TURSO_DATABASE_URL is &quot;NOT SET&quot;, Vercel is falling back to the local static project.json and your data will wipe on every deploy.
           </p>
         </div>
 

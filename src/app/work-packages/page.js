@@ -1,22 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
+import { useDashboardData } from '@/hooks/useDashboardData';
 
 export default function WorkPackagesPage() {
-  const [workPackages, setWorkPackages] = useState([]);
+  const { data, loading } = useDashboardData();
+  const workPackages = data?.workPackages || [];
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch('/api/dashboard-data')
-      .then((res) => res.json())
-      .then((data) => {
-        setWorkPackages(data.workPackages || []);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
 
   const filteredWP = workPackages.filter(
     (wp) =>
