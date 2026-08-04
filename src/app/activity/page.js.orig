@@ -39,7 +39,7 @@ export default function ActivityPage() {
       try {
         const res = await fetch('/api/activity');
         const data = await res.json();
-        setActivityLog(Array.isArray(data) ? data : []);
+        setActivityLog(data || []);
       } catch (error) {
         console.error('Failed to fetch activity log:', error);
       } finally {

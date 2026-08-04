@@ -51,16 +51,28 @@ export async function POST(request) {
         sql: 'INSERT INTO notes (text, author, date) VALUES (?, ?, ?)',
         args: [data.text, author || agent || 'Unknown', new Date().toISOString().split('T')[0]]
       });
+      await db.execute({
+        sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+        args: [new Date().toISOString(), author || agent || 'System', `Added note: ${data.text}`, 'note']
+      });
     } else if (type === 'milestone') {
       if (action === 'add') {
         await db.execute({
           sql: 'INSERT INTO milestones (title, date, status) VALUES (?, ?, ?)',
           args: [data.title, data.date || new Date().toISOString().split('T')[0], data.status || 'upcoming']
         });
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Added milestone: ${data.title}`, 'milestone']
+        });
       } else if (action === 'update') {
         await db.execute({
           sql: 'UPDATE milestones SET date = COALESCE(?, date), status = COALESCE(?, status) WHERE title = ?',
           args: [data.date || null, data.status || null, data.title]
+        });
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Updated milestone ${data.title} to ${data.status || 'unknown status'}`, 'milestone']
         });
       }
     } else if (type === 'progress') {
@@ -69,10 +81,18 @@ export async function POST(request) {
           sql: 'INSERT INTO work_packages (id, name, progress, owner) VALUES (?, ?, ?, ?)',
           args: [data.id, data.name, data.progress || 0, data.owner || author || agent || 'Unknown']
         });
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Added work package ${data.id} (${data.name})`, 'progress']
+        });
       } else if (action === 'update') {
         await db.execute({
           sql: 'UPDATE work_packages SET name = COALESCE(?, name), progress = COALESCE(?, progress), owner = COALESCE(?, owner) WHERE id = ?',
           args: [data.name || null, data.progress !== undefined ? data.progress : null, data.owner || null, data.id]
+        });
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Updated progress for ${data.id} to ${data.progress}%`, 'progress']
         });
       }
     } else if (type === 'budget') {
@@ -81,10 +101,18 @@ export async function POST(request) {
           sql: 'INSERT INTO budget (label, amount, pct) VALUES (?, ?, ?)',
           args: [data.label, data.amount, data.pct || 0]
         });
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Added budget: ${data.label}`, 'system']
+        });
       } else if (action === 'update') {
         await db.execute({
           sql: 'UPDATE budget SET amount = COALESCE(?, amount), pct = COALESCE(?, pct) WHERE label = ?',
           args: [data.amount !== undefined ? data.amount : null, data.pct !== undefined ? data.pct : null, data.label]
+        });
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Updated budget for ${data.label}`, 'system']
         });
       }
     } else if (type === 'sprint') {
@@ -101,6 +129,10 @@ export async function POST(request) {
             });
           }
         }
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Created sprint ${data.id}`, 'system']
+        });
       } else if (action === 'update') {
         await db.execute({
           sql: 'UPDATE sprints SET name = COALESCE(?, name), status = COALESCE(?, status), start_date = COALESCE(?, start_date), end_date = COALESCE(?, end_date), progress = COALESCE(?, progress) WHERE id = ?',
@@ -117,6 +149,10 @@ export async function POST(request) {
             });
           }
         }
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Updated sprint ${data.id}`, 'system']
+        });
       }
     }
 
