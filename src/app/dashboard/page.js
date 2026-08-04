@@ -269,16 +269,6 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
-                      <div className="timeline-body">
-                        <span className={`timeline-title ${statusClass}`}>{m.title}</span>
-                        <span className="timeline-date">{m.date}</span>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
 
           <div className="bento-card">
             <div className="bento-header">

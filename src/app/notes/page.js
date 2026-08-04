@@ -1,30 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
+import { useDashboardData } from '@/hooks/useDashboardData';
 
 export default function NotesPage() {
-  const [notes, setNotes] = useState([]);
+  const { data, loading, refetch } = useDashboardData();
+  const notes = data?.notes || [];
+
   const [newNote, setNewNote] = useState('');
   const [author, setAuthor] = useState('User');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const fetchNotes = async () => {
-    try {
-      const res = await fetch('/api/dashboard-data');
-      const data = await res.json();
-      setNotes(data.notes || []);
-    } catch (err) {
-      console.error('Failed to load notes:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchNotes();
-  }, []);
 
   async function handleAddNote(e) {
     e.preventDefault();
@@ -45,7 +31,7 @@ export default function NotesPage() {
 
       if (res.ok) {
         setNewNote('');
-        fetchNotes();
+        refetch();
       }
     } catch (error) {
       console.error('Failed to add note:', error);
