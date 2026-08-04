@@ -1,6 +1,15 @@
 import { NextResponse } from 'next/server';
 
-const PROTECTED_PATHS = ['/dashboard', '/integrations', '/activity', '/api/'];
+const PROTECTED_PATHS = [
+  '/dashboard',
+  '/sprints',
+  '/milestones',
+  '/work-packages',
+  '/notes',
+  '/integrations',
+  '/activity',
+  '/api/',
+];
 const PUBLIC_API_PATHS = ['/api/auth', '/api/logout'];
 const VALID_SESSIONS = ['authenticated', 'nina', 'jiun'];
 
@@ -48,5 +57,14 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/integrations/:path*', '/activity/:path*', '/api/:path*'],
+  matcher: [
+    '/dashboard/:path*',
+    '/sprints/:path*',
+    '/milestones/:path*',
+    '/work-packages/:path*',
+    '/notes/:path*',
+    '/integrations/:path*',
+    '/activity/:path*',
+    '/api/:path*',
+  ],
 };

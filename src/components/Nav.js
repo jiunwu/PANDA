@@ -5,6 +5,10 @@ import { usePathname } from 'next/navigation';
 
 const links = [
   { href: '/dashboard', label: 'Dashboard' },
+  { href: '/sprints', label: 'Sprints' },
+  { href: '/milestones', label: 'Milestones' },
+  { href: '/work-packages', label: 'Work Packages' },
+  { href: '/notes', label: 'Notes' },
   { href: '/integrations', label: 'Integrations' },
   { href: '/activity', label: 'Activity' },
   { href: '/debug', label: 'Debug' },

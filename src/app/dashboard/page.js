@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import defaultData from '@/data/project.json';
 import JulesPanel from '@/components/JulesPanel';
@@ -135,12 +136,13 @@ export default function DashboardPage() {
       <section className="section" style={{ marginTop: 24, paddingBottom: 24, borderBottom: '1px solid var(--border)' }}>
         <div className="section-head">
           <h2 className="section-title">Project Notes</h2>
+          <Link href="/notes" className="section-meta" style={{ color: 'var(--accent)', fontWeight: 500 }}>View all notes ({notes?.length || 0}) →</Link>
         </div>
         <div className="list-stack" style={{ marginBottom: 16 }}>
           {!notes || notes.length === 0 ? (
             <div style={{ color: 'var(--text-tertiary)', fontSize: 13, padding: '12px 0' }}>No notes yet.</div>
           ) : (
-            notes.map((note, i) => (
+            notes.slice(0, 3).map((note, i) => (
               <div className="list-item" key={i}>
                 <div className="item-title" style={{ fontWeight: 'normal', color: 'var(--text-secondary)' }}>{note.text}</div>
                 <div className="item-meta">
@@ -173,14 +175,17 @@ export default function DashboardPage() {
         <div className="bento-col">
           <div className="bento-card">
             <div className="bento-header">
-              <h2 className="bento-title">Agile Sprint</h2>
-              <span className="section-meta">{sprints && sprints.length > 0 ? sprints[0].id : 'No active sprint'}</span>
+              <div>
+                <h2 className="bento-title">Agile Sprint</h2>
+                <span className="section-meta">{sprints && sprints.length > 0 ? sprints[0].id : 'No active sprint'}</span>
+              </div>
+              <Link href="/sprints" className="section-meta" style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>View all →</Link>
             </div>
             <div className="list-stack">
               {!sprints || sprints.length === 0 ? (
                 <div style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>Waiting for external agent to sync sprints...</div>
               ) : (
-                sprints[0].tasks.map((task, i) => (
+                sprints[0].tasks.slice(0, 3).map((task, i) => (
                   <div className="list-item" key={i}>
                     <div className="item-title">{task.title}</div>
                     <div className="item-meta">
@@ -193,8 +198,11 @@ export default function DashboardPage() {
           </div>
           <div className="bento-card" style={{ marginTop: 24 }}>
             <div className="bento-header">
-              <h2 className="bento-title">Work Packages</h2>
-              <span className="section-meta">{workPackages?.length || 0} active</span>
+              <div>
+                <h2 className="bento-title">Work Packages</h2>
+                <span className="section-meta">{workPackages?.length || 0} active</span>
+              </div>
+              <Link href="/work-packages" className="section-meta" style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>View all →</Link>
             </div>
             <div style={{ overflowX: 'auto', marginTop: 16 }}>
               <table className="table">
@@ -210,7 +218,7 @@ export default function DashboardPage() {
                   {!workPackages || workPackages.length === 0 ? (
                     <tr><td colSpan="4" style={{ color: 'var(--text-tertiary)' }}>No work packages found.</td></tr>
                   ) : (
-                    workPackages.map(wp => (
+                    workPackages.slice(0, 3).map(wp => (
                       <tr key={wp.id}>
                         <td style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>{wp.id}</td>
                         <td>{wp.name}</td>
@@ -236,18 +244,31 @@ export default function DashboardPage() {
         <div className="bento-col">
           <div className="bento-card">
             <div className="bento-header">
-              <h2 className="bento-title">Milestones</h2>
-              <span className="section-meta">{milestones?.length || 0} tracking</span>
+              <div>
+                <h2 className="bento-title">Milestones</h2>
+                <span className="section-meta">{milestones?.length || 0} tracking</span>
+              </div>
+              <Link href="/milestones" className="section-meta" style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>View all →</Link>
             </div>
             <div className="timeline" style={{ paddingLeft: 8, marginTop: 16 }}>
               {!milestones || milestones.length === 0 ? (
                 <div style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>No milestones found.</div>
               ) : (
-                milestones.map((m, i) => {
+                milestones.slice(0, 4).map((m, i) => {
                   const statusClass = m.status?.toLowerCase() === 'done' ? 'done' : m.status?.toLowerCase() === 'upcoming' ? 'upcoming' : 'active';
                   return (
                     <div className="timeline-item" key={i}>
                       <div className={`timeline-dot ${statusClass}`} />
+                      <div className="timeline-body">
+                        <span className={`timeline-title ${statusClass}`}>{m.title}</span>
+                        <span className="timeline-date">{m.date}</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
                       <div className="timeline-body">
                         <span className={`timeline-title ${statusClass}`}>{m.title}</span>
                         <span className="timeline-date">{m.date}</span>
