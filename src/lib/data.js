@@ -74,6 +74,17 @@ export async function ensureTables(db) {
       content TEXT,
       author TEXT,
       updated_at TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS schedules (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      date TEXT NOT NULL,
+      time_start TEXT,
+      time_end TEXT,
+      color TEXT,
+      author TEXT,
+      created_at TEXT
     )`
   ]);
   
@@ -142,6 +153,19 @@ export async function getTopics() {
     return res.rows;
   } catch (error) {
     console.error('Error fetching topics from Turso:', error);
+    return [];
+  }
+}
+
+export async function getSchedules() {
+  try {
+    const db = getClient();
+    if (!db) return [];
+    await ensureTables(db);
+    const res = await db.execute('SELECT id, title, description, date, time_start, time_end, color, author, created_at FROM schedules ORDER BY date ASC, time_start ASC');
+    return res.rows;
+  } catch (error) {
+    console.error('Error fetching schedules from Turso:', error);
     return [];
   }
 }

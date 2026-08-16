@@ -8,6 +8,7 @@ const primaryLinks = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/sprints', label: 'Sprints' },
   { href: '/topics', label: 'Topics' },
+  { href: '/calendar', label: 'Calendar' },
 ];
 
 const moreLinks = [

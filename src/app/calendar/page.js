@@ -1,0 +1,369 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+
+const EVENT_COLORS = [
+  { value: '#111111', label: 'Black' },
+  { value: '#1a8c5b', label: 'Green' },
+  { value: '#2563eb', label: 'Blue' },
+  { value: '#9333ea', label: 'Purple' },
+  { value: '#dc2626', label: 'Red' },
+  { value: '#ea580c', label: 'Orange' },
+  { value: '#ca8a04', label: 'Gold' },
+];
+
+const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+function getMonthGrid(year, month) {
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  // Monday = 0, Sunday = 6
+  let startDow = firstDay.getDay() - 1;
+  if (startDow < 0) startDow = 6;
+
+  const days = [];
+
+  // Fill leading blanks
+  for (let i = 0; i < startDow; i++) {
+    const d = new Date(year, month, -(startDow - 1 - i));
+    days.push({ date: d, isCurrentMonth: false });
+  }
+
+  // Fill actual days
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    days.push({ date: new Date(year, month, d), isCurrentMonth: true });
+  }
+
+  // Fill trailing blanks to complete the grid
+  while (days.length % 7 !== 0) {
+    const lastDate = days[days.length - 1].date;
+    const next = new Date(lastDate);
+    next.setDate(next.getDate() + 1);
+    days.push({ date: next, isCurrentMonth: false });
+  }
+
+  return days;
+}
+
+function formatDateKey(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function formatTimeDisplay(t) {
+  if (!t) return '';
+  return t;
+}
+
+export default function CalendarPage() {
+  const today = new Date();
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    date: '',
+    time_start: '',
+    time_end: '',
+    color: '#111111',
+  });
+
+  useEffect(() => { fetchEvents(); }, []);
+
+  async function fetchEvents() {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/schedules');
+      if (res.ok) setEvents(await res.json());
+    } catch (err) {
+      console.error('Failed to fetch schedules', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function prevMonth() {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear(y => y - 1);
+    } else {
+      setCurrentMonth(m => m - 1);
+    }
+  }
+
+  function nextMonth() {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear(y => y + 1);
+    } else {
+      setCurrentMonth(m => m + 1);
+    }
+  }
+
+  function goToToday() {
+    setCurrentYear(today.getFullYear());
+    setCurrentMonth(today.getMonth());
+  }
+
+  function handleDayClick(dateKey) {
+    setSelectedDate(dateKey);
+    setForm(prev => ({ ...prev, date: dateKey }));
+  }
+
+  function openNewEvent() {
+    setForm({
+      title: '',
+      description: '',
+      date: selectedDate || formatDateKey(today),
+      time_start: '',
+      time_end: '',
+      color: '#111111',
+    });
+    setShowForm(true);
+  }
+
+  async function handleSaveEvent(e) {
+    e.preventDefault();
+    if (!form.title.trim() || !form.date) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'schedule',
+          action: 'add',
+          data: {
+            id: crypto.randomUUID(),
+            ...form,
+          },
+          author: 'User',
+        }),
+      });
+      if (res.ok) {
+        setShowForm(false);
+        await fetchEvents();
+      }
+    } catch (err) {
+      console.error('Failed to save event', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleDeleteEvent(id) {
+    if (!confirm('Delete this event?')) return;
+    try {
+      await fetch('/api/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'schedule',
+          action: 'delete',
+          data: { id },
+          author: 'User',
+        }),
+      });
+      await fetchEvents();
+    } catch (err) {
+      console.error('Failed to delete event', err);
+    }
+  }
+
+  const grid = getMonthGrid(currentYear, currentMonth);
+  const todayKey = formatDateKey(today);
+
+  // Group events by date
+  const eventsByDate = {};
+  events.forEach(ev => {
+    if (!eventsByDate[ev.date]) eventsByDate[ev.date] = [];
+    eventsByDate[ev.date].push(ev);
+  });
+
+  const selectedEvents = selectedDate ? (eventsByDate[selectedDate] || []) : [];
+
+  return (
+    <>
+      <header className="page-header" id="calendar-hero">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h1>Calendar</h1>
+            <p>Team schedules, deadlines, and events at a glance.</p>
+          </div>
+          <Link href="/dashboard" className="btn btn-secondary">
+            ← Back to Dashboard
+          </Link>
+        </div>
+      </header>
+
+      <section className="section" style={{ paddingTop: '32px' }}>
+        <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+
+          {/* Calendar grid */}
+          <div style={{ flex: '1 1 600px', minWidth: 0 }}>
+            {/* Month controls */}
+            <div className="cal-header">
+              <div className="cal-header-left">
+                <h2 className="cal-month-title">{MONTH_NAMES[currentMonth]} {currentYear}</h2>
+                <button className="btn btn-secondary cal-today-btn" onClick={goToToday}>Today</button>
+              </div>
+              <div className="cal-nav-btns">
+                <button className="cal-arrow" onClick={prevMonth} aria-label="Previous month">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+                <button className="cal-arrow" onClick={nextMonth} aria-label="Next month">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Day headers */}
+            <div className="cal-grid cal-day-headers">
+              {DAY_NAMES.map(d => (
+                <div key={d} className="cal-day-header">{d}</div>
+              ))}
+            </div>
+
+            {/* Day cells */}
+            <div className="cal-grid cal-cells">
+              {grid.map(({ date, isCurrentMonth }, i) => {
+                const key = formatDateKey(date);
+                const isToday = key === todayKey;
+                const isSelected = key === selectedDate;
+                const dayEvents = eventsByDate[key] || [];
+                return (
+                  <div
+                    key={i}
+                    className={`cal-cell ${!isCurrentMonth ? 'cal-cell-outside' : ''} ${isToday ? 'cal-cell-today' : ''} ${isSelected ? 'cal-cell-selected' : ''}`}
+                    onClick={() => handleDayClick(key)}
+                  >
+                    <span className={`cal-date-num ${isToday ? 'cal-date-today' : ''}`}>{date.getDate()}</span>
+                    {dayEvents.length > 0 && (
+                      <div className="cal-cell-dots">
+                        {dayEvents.slice(0, 3).map((ev, j) => (
+                          <span key={j} className="cal-dot" style={{ background: ev.color || '#111' }}></span>
+                        ))}
+                        {dayEvents.length > 3 && <span className="cal-dot-more">+{dayEvents.length - 3}</span>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Sidebar: selected day detail */}
+          <div style={{ flex: '0 0 320px', minWidth: '280px' }}>
+            <div className="cal-sidebar">
+              <div className="cal-sidebar-header">
+                <h3>{selectedDate
+                  ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+                  : 'Select a day'
+                }</h3>
+                {selectedDate && (
+                  <button className="btn btn-primary" style={{ padding: '5px 12px', fontSize: '12px' }} onClick={openNewEvent}>
+                    + Event
+                  </button>
+                )}
+              </div>
+
+              {!selectedDate ? (
+                <div className="cal-sidebar-empty">Click on a day to see its events.</div>
+              ) : selectedEvents.length === 0 ? (
+                <div className="cal-sidebar-empty">No events on this day.</div>
+              ) : (
+                <div className="cal-event-list">
+                  {selectedEvents.map(ev => (
+                    <div key={ev.id} className="cal-event-card">
+                      <div className="cal-event-color" style={{ background: ev.color || '#111' }}></div>
+                      <div className="cal-event-body">
+                        <div className="cal-event-title">{ev.title}</div>
+                        {(ev.time_start || ev.time_end) && (
+                          <div className="cal-event-time">
+                            {formatTimeDisplay(ev.time_start)}{ev.time_end ? ` – ${formatTimeDisplay(ev.time_end)}` : ''}
+                          </div>
+                        )}
+                        {ev.description && <div className="cal-event-desc">{ev.description}</div>}
+                        <div className="cal-event-footer">
+                          <span className="source-tag" style={{ fontSize: '11px' }}>{ev.author || 'Unknown'}</span>
+                          <button className="cal-event-delete" onClick={() => handleDeleteEvent(ev.id)}>Delete</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* New event modal */}
+      {showForm && (
+        <div className="cal-modal-overlay" onClick={() => setShowForm(false)}>
+          <div className="cal-modal" onClick={e => e.stopPropagation()}>
+            <h3 style={{ marginBottom: '20px', fontSize: '18px' }}>New Event</h3>
+            <form onSubmit={handleSaveEvent} className="cal-form">
+              <label className="cal-field">
+                <span className="cal-label">Title</span>
+                <input type="text" className="field-input" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Meeting, deadline..." required />
+              </label>
+              <label className="cal-field">
+                <span className="cal-label">Date</span>
+                <input type="date" className="field-input" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} required />
+              </label>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <label className="cal-field" style={{ flex: 1 }}>
+                  <span className="cal-label">Start Time</span>
+                  <input type="time" className="field-input" value={form.time_start} onChange={e => setForm(p => ({ ...p, time_start: e.target.value }))} />
+                </label>
+                <label className="cal-field" style={{ flex: 1 }}>
+                  <span className="cal-label">End Time</span>
+                  <input type="time" className="field-input" value={form.time_end} onChange={e => setForm(p => ({ ...p, time_end: e.target.value }))} />
+                </label>
+              </div>
+              <label className="cal-field">
+                <span className="cal-label">Description</span>
+                <textarea className="field-input" style={{ minHeight: '60px', resize: 'vertical' }} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Optional details..." />
+              </label>
+              <label className="cal-field">
+                <span className="cal-label">Color</span>
+                <div className="cal-color-picker">
+                  {EVENT_COLORS.map(c => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      className={`cal-color-swatch ${form.color === c.value ? 'cal-color-active' : ''}`}
+                      style={{ background: c.value }}
+                      onClick={() => setForm(p => ({ ...p, color: c.value }))}
+                      title={c.label}
+                    />
+                  ))}
+                </div>
+              </label>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '8px' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : 'Save Event'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

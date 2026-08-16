@@ -23,7 +23,7 @@ export async function POST(request) {
     );
   }
 
-  const validTypes = ['milestone', 'progress', 'note', 'budget', 'sprint', 'topic'];
+  const validTypes = ['milestone', 'progress', 'note', 'budget', 'sprint', 'topic', 'schedule'];
   const validActions = ['update', 'add', 'delete'];
 
   if (!validTypes.includes(type)) return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
@@ -181,6 +181,35 @@ export async function POST(request) {
         await db.execute({
           sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
           args: [new Date().toISOString(), author || agent || 'System', `Deleted topic`, 'topic']
+        });
+      }
+    } else if (type === 'schedule') {
+      if (action === 'add') {
+        await db.execute({
+          sql: 'INSERT INTO schedules (id, title, description, date, time_start, time_end, color, author, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          args: [data.id || crypto.randomUUID(), data.title, data.description || '', data.date, data.time_start || '', data.time_end || '', data.color || '#111111', author || agent || 'Unknown', new Date().toISOString()]
+        });
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Added schedule: ${data.title}`, 'schedule']
+        });
+      } else if (action === 'update') {
+        await db.execute({
+          sql: 'UPDATE schedules SET title = COALESCE(?, title), description = COALESCE(?, description), date = COALESCE(?, date), time_start = COALESCE(?, time_start), time_end = COALESCE(?, time_end), color = COALESCE(?, color) WHERE id = ?',
+          args: [data.title || null, data.description || null, data.date || null, data.time_start || null, data.time_end || null, data.color || null, data.id]
+        });
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Updated schedule: ${data.title || data.id}`, 'schedule']
+        });
+      } else if (action === 'delete') {
+        await db.execute({
+          sql: 'DELETE FROM schedules WHERE id = ?',
+          args: [data.id]
+        });
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Deleted schedule event`, 'schedule']
         });
       }
     }
