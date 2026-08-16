@@ -53,32 +53,7 @@
       "status": "upcoming"
     }
   ],
-  "dataRoom": [
-    {
-      "title": "Pitch Deck",
-      "status": "Draft",
-      "lastUpdated": "2026-08-01",
-      "url": "#"
-    },
-    {
-      "title": "Business Plan",
-      "status": "In Progress",
-      "lastUpdated": "2026-08-01",
-      "url": "#"
-    },
-    {
-      "title": "Financial Plan",
-      "status": "Empty",
-      "lastUpdated": "-",
-      "url": "#"
-    },
-    {
-      "title": "IP Agreement",
-      "status": "In Discussion",
-      "lastUpdated": "2026-08-01",
-      "url": "#"
-    }
-  ],
+  "dataRoom": [],
   "milestones": [],
   "workPackages": [],
   "budget": [
