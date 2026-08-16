@@ -73,6 +73,36 @@ function LoginForm() {
     }
   }
 
+  async function handleDevLogin() {
+    if (!selectedUser) return;
+
+    setError('');
+    setLoading(true);
+
+    try {
+      const verifyRes = await fetch('/api/auth/dev-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: selectedUser }),
+      });
+
+      if (!verifyRes.ok) {
+        const err = await verifyRes.json();
+        throw new Error(err.error || 'Dev login failed');
+      }
+
+      const result = await verifyRes.json();
+      if (result.verified) {
+        router.push(from);
+        router.refresh();
+      }
+    } catch (error) {
+      setError(error.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const user = USERS.find((u) => u.id === selectedUser);
 
   return (
@@ -117,6 +147,19 @@ function LoginForm() {
         <span className="passkey-icon">🔑</span>
         {loading ? 'Waiting for browser...' : 'Login with Passkey'}
       </button>
+
+      {(process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview') && (
+        <button
+          type="button"
+          className="btn btn-secondary login-btn"
+          style={{ marginTop: '10px' }}
+          disabled={loading || !selectedUser}
+          onClick={handleDevLogin}
+        >
+          <span className="passkey-icon">🛠️</span>
+          Bypass Passkey (Dev/Preview)
+        </button>
+      )}
 
       <div className="login-setup-link">
         <span>First time?</span>{' '}
