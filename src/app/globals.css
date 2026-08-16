@@ -2394,7 +2394,7 @@ a { color: inherit; }
 
 .cal-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 .cal-day-headers {
@@ -2430,6 +2430,7 @@ a { color: inherit; }
   transition: background var(--transition);
   position: relative;
   min-height: 64px;
+  min-width: 0; /* Important for flex children in grid */
 }
 .cal-cell:hover {
   background: var(--accent-light);
@@ -2487,6 +2488,8 @@ a { color: inherit; }
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 500;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .cal-cell-more {
