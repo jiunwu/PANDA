@@ -28,6 +28,8 @@ export default function SprintsPage() {
   const [showNewSprint, setShowNewSprint] = useState(false);
   const [newSprintName, setNewSprintName] = useState('');
   const [draggedTask, setDraggedTask] = useState(null);
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editTaskData, setEditTaskData] = useState({ title: '', description: '', assignee: '' });
 
   // Auto-select first sprint
   useEffect(() => {
@@ -153,6 +155,55 @@ export default function SprintsPage() {
       }
     } catch (err) {
       console.error('Failed to create sprint:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  function startEditTask(task) {
+    setEditingTaskId(task.id);
+    setEditTaskData({
+      title: task.title || '',
+      description: task.description || '',
+      assignee: task.assignee || '',
+    });
+  }
+
+  function cancelEditTask() {
+    setEditingTaskId(null);
+    setEditTaskData({ title: '', description: '', assignee: '' });
+  }
+
+  async function saveEditTask(taskId) {
+    if (!editTaskData.title.trim() || !activeSprint) return;
+    setIsSubmitting(true);
+
+    const updatedTasks = tasks.map(t =>
+      t.id === taskId ? {
+        ...t,
+        title: editTaskData.title.trim(),
+        description: editTaskData.description.trim(),
+        assignee: editTaskData.assignee
+      } : t
+    );
+
+    try {
+      const res = await fetch('/api/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'sprint',
+          action: 'update',
+          data: { id: activeSprint, tasks: updatedTasks },
+          author: 'User',
+        }),
+      });
+      if (res.ok) {
+        await refetch();
+        cancelEditTask();
+      }
+    } catch (err) {
+      console.error('Failed to update task:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -329,35 +380,105 @@ export default function SprintsPage() {
                       <div
                         key={task.id}
                         className="board-task-card"
-                        draggable
-                        onDragStart={e => handleDragStart(e, task)}
+                        draggable={editingTaskId !== task.id}
+                        onDragStart={e => {
+                          if (editingTaskId !== task.id) handleDragStart(e, task);
+                        }}
                         onDragEnd={handleDragEnd}
                       >
-                        <div className="board-task-title">{task.title}</div>
-                        <div className="board-task-actions">
-                          <span className="board-task-id">{task.id}</span>
-                          <div className="board-task-move-btns">
-                            {col.id !== 'todo' && (
+                        {editingTaskId === task.id ? (
+                          <div className="board-task-form">
+                            <input
+                              className="field-input"
+                              type="text"
+                              placeholder="Task title..."
+                              value={editTaskData.title}
+                              onChange={e => setEditTaskData({ ...editTaskData, title: e.target.value })}
+                              disabled={isSubmitting}
+                              autoFocus
+                            />
+                            <textarea
+                              className="field-input"
+                              placeholder="Short description..."
+                              value={editTaskData.description}
+                              onChange={e => setEditTaskData({ ...editTaskData, description: e.target.value })}
+                              disabled={isSubmitting}
+                              rows={2}
+                              style={{ resize: 'vertical' }}
+                            />
+                            <select
+                              className="field-input"
+                              value={editTaskData.assignee}
+                              onChange={e => setEditTaskData({ ...editTaskData, assignee: e.target.value })}
+                              disabled={isSubmitting}
+                            >
+                              <option value="">Unassigned</option>
+                              <option value="Nina">Nina</option>
+                              <option value="Jiun">Jiun</option>
+                            </select>
+                            <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
                               <button
-                                className="board-move-btn"
-                                onClick={() => handleMoveTask(task.id, col.id === 'done' ? 'in_progress' : 'todo')}
-                                title="Move left"
-                              >←</button>
-                            )}
-                            {col.id !== 'done' && (
+                                className="btn btn-primary"
+                                style={{ padding: '4px 10px', fontSize: '12px' }}
+                                onClick={() => saveEditTask(task.id)}
+                                disabled={isSubmitting || !editTaskData.title.trim()}
+                              >
+                                Save
+                              </button>
                               <button
-                                className="board-move-btn"
-                                onClick={() => handleMoveTask(task.id, col.id === 'todo' ? 'in_progress' : 'done')}
-                                title="Move right"
-                              >→</button>
-                            )}
-                            <button
-                              className="board-move-btn board-delete-btn"
-                              onClick={() => handleDeleteTask(task.id)}
-                              title="Delete task"
-                            >✕</button>
+                                className="btn btn-secondary"
+                                style={{ padding: '4px 10px', fontSize: '12px' }}
+                                onClick={cancelEditTask}
+                                disabled={isSubmitting}
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           </div>
-                        </div>
+                        ) : (
+                          <>
+                            <div className="board-task-title">{task.title}</div>
+                            {task.description && (
+                              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px', whiteSpace: 'pre-wrap' }}>
+                                {task.description}
+                              </div>
+                            )}
+                            {task.assignee && (
+                              <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginBottom: '8px' }}>
+                                👤 {task.assignee}
+                              </div>
+                            )}
+                            <div className="board-task-actions">
+                              <span className="board-task-id">{task.id}</span>
+                              <div className="board-task-move-btns">
+                                <button
+                                  className="board-move-btn"
+                                  onClick={() => startEditTask(task)}
+                                  title="Edit task"
+                                >✎</button>
+                                {col.id !== 'todo' && (
+                                  <button
+                                    className="board-move-btn"
+                                    onClick={() => handleMoveTask(task.id, col.id === 'done' ? 'in_progress' : 'todo')}
+                                    title="Move left"
+                                  >←</button>
+                                )}
+                                {col.id !== 'done' && (
+                                  <button
+                                    className="board-move-btn"
+                                    onClick={() => handleMoveTask(task.id, col.id === 'todo' ? 'in_progress' : 'done')}
+                                    title="Move right"
+                                  >→</button>
+                                )}
+                                <button
+                                  className="board-move-btn board-delete-btn"
+                                  onClick={() => handleDeleteTask(task.id)}
+                                  title="Delete task"
+                                >✕</button>
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>
