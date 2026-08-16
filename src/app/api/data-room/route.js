@@ -32,6 +32,7 @@ export async function POST(request) {
     // Upload to Vercel Blob
     const blob = await put(file.name, file, {
       access: 'private',
+      addRandomSuffix: true,
     });
 
     const db = getClient();
@@ -54,6 +55,6 @@ export async function POST(request) {
     return NextResponse.json({ id, title, url, status, lastUpdated, folder });
   } catch (error) {
     console.error('Error uploading file:', error);
-    return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Failed to upload file' }, { status: 500 });
   }
 }
