@@ -86,9 +86,23 @@ export async function ensureTables(db) {
       color TEXT,
       author TEXT,
       created_at TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS data_room_files (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      url TEXT NOT NULL,
+      status TEXT,
+      last_updated TEXT NOT NULL,
+      folder TEXT DEFAULT "Other"
     )`
   ]);
   
+  try {
+    await db.execute('ALTER TABLE data_room_files ADD COLUMN folder TEXT DEFAULT "Other"');
+  } catch (err) {
+    // Column might already exist, ignore error
+  }
+
   // Try to migrate existing table
   try {
     await db.execute('ALTER TABLE schedules ADD COLUMN date_end TEXT');
@@ -121,13 +135,16 @@ export async function getProjectData() {
       return { ...s, tasks: sprintTasks };
     });
 
+    const dataRoomRes = await db.execute('SELECT id, title, url, status, last_updated as lastUpdated, folder FROM data_room_files ORDER BY last_updated DESC');
+
     return {
       ...defaultData,
       notes: notesRes.rows,
       milestones: milestonesRes.rows,
       workPackages: wpRes.rows,
       budget: budgetRes.rows.length > 0 ? budgetRes.rows : defaultData.budget,
-      sprints: sprints
+      sprints: sprints,
+      dataRoom: dataRoomRes.rows.length > 0 ? dataRoomRes.rows : defaultData.dataRoom
     };
   } catch (error) {
     console.error('Error fetching relational data from Turso:', error);

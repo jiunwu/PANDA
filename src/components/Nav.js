@@ -14,6 +14,7 @@ const primaryLinks = [
 const moreLinks = [
   { href: '/milestones', label: 'Milestones' },
   { href: '/work-packages', label: 'Work Packages' },
+  { href: '/data-room', label: 'Data Room' },
   { href: '/notes', label: 'Notes' },
   { href: '/integrations', label: 'Integrations' },
   { href: '/activity', label: 'Activity' },
