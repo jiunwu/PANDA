@@ -144,7 +144,7 @@ export default function DataRoomPage() {
                     files.map((doc) => (
                       <tr key={doc.id || doc.title}>
                         <td style={{ fontWeight: 500 }}>
-                          <a href={doc.url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+                          <a href={doc.id ? `/api/data-room/${doc.id}/download` : doc.url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
                             {doc.title} {doc.url !== '#' && '↗'}
                           </a>
                         </td>
