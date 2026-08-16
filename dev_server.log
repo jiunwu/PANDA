@@ -1,0 +1,20 @@
+
+> panda-exist@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 1488ms
+ ○ Compiling /data-room ...
+ ✓ Compiled /data-room in 4.3s (510 modules)
+ GET /data-room 200 in 4757ms
+ ○ Compiling /src/middleware ...
+ ✓ Compiled /src/middleware in 619ms (72 modules)
+ ○ Compiling /login ...
+ ✓ Compiled /login in 590ms (534 modules)
+ GET /login 200 in 755ms
+ GET /data-room 200 in 46ms
+ GET /login 200 in 42ms
+ GET /data-room 200 in 38ms

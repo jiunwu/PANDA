@@ -18,6 +18,8 @@ export default function DataRoomPage() {
   const { data, loading, refetch: mutate } = useDashboardData();
   const [uploading, setUploading] = useState(false);
   const [selectedFolder, setSelectedFolder] = useState('Other');
+  const [editingId, setEditingId] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
   const fileInputRef = useRef(null);
 
   if (loading) {
@@ -90,6 +92,37 @@ export default function DataRoomPage() {
     }
   };
 
+  const handleEdit = (id, currentTitle) => {
+    setEditingId(id);
+    setEditTitle(currentTitle);
+  };
+
+  const handleSaveEdit = async (id) => {
+    try {
+      const res = await fetch(`/api/data-room/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: editTitle }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to update file title');
+      }
+
+      await mutate();
+      setEditingId(null);
+      setEditTitle('');
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to update title');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditTitle('');
+  };
+
   return (
     <div className="page-container fade-in">
       <header className="page-header">
@@ -151,9 +184,19 @@ export default function DataRoomPage() {
                     files.map((doc) => (
                       <tr key={doc.id || doc.title}>
                         <td style={{ fontWeight: 500 }}>
-                          <a href={doc.id ? `/api/data-room/${doc.id}/download` : doc.url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
-                            {doc.title} {doc.url !== '#' && '↗'}
-                          </a>
+                          {editingId === doc.id ? (
+                            <input
+                              type="text"
+                              value={editTitle}
+                              onChange={(e) => setEditTitle(e.target.value)}
+                              style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border)', width: '100%', boxSizing: 'border-box' }}
+                              autoFocus
+                            />
+                          ) : (
+                            <a href={doc.id ? `/api/data-room/${doc.id}/download` : doc.url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+                              {doc.title} {doc.url !== '#' && '↗'}
+                            </a>
+                          )}
                         </td>
                         <td>
                           <span className={`type-tag ${doc.status === 'Empty' ? 'type-system' : doc.status === 'Draft' ? 'type-note' : 'type-milestone'}`}>
@@ -162,14 +205,42 @@ export default function DataRoomPage() {
                         </td>
                         <td style={{ color: 'var(--text-secondary)' }}>{doc.lastUpdated}</td>
                         <td style={{ textAlign: 'right' }}>
-                          {doc.id && (
-                            <button
-                              className="btn btn-secondary"
-                              style={{ padding: '4px 8px', fontSize: '12px', color: 'var(--red)', borderColor: 'var(--red)' }}
-                              onClick={() => handleDelete(doc.id)}
-                            >
-                              Delete
-                            </button>
+                          {doc.id && editingId === doc.id ? (
+                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                              <button
+                                className="btn btn-secondary"
+                                style={{ padding: '4px 8px', fontSize: '12px' }}
+                                onClick={() => handleSaveEdit(doc.id)}
+                              >
+                                Save
+                              </button>
+                              <button
+                                className="btn btn-secondary"
+                                style={{ padding: '4px 8px', fontSize: '12px' }}
+                                onClick={handleCancelEdit}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            doc.id && (
+                              <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                                <button
+                                  className="btn btn-secondary"
+                                  style={{ padding: '4px 8px', fontSize: '12px' }}
+                                  onClick={() => handleEdit(doc.id, doc.title)}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  className="btn btn-secondary"
+                                  style={{ padding: '4px 8px', fontSize: '12px', color: 'var(--red)', borderColor: 'var(--red)' }}
+                                  onClick={() => handleDelete(doc.id)}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            )
                           )}
                         </td>
                       </tr>
