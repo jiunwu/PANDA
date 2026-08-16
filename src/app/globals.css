@@ -1899,6 +1899,162 @@ a { color: inherit; }
 .jules-message-send:hover:not(:disabled) { background: #444; }
 .jules-message-send:disabled { color: #666; cursor: not-allowed; }
 
+/* ── Topic Editor ── */
+.topic-editor-wrapper {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 400px;
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+}
+
+.topic-editor-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--accent-light);
+  border-bottom: 1px solid var(--border-light);
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.topic-editor-hint kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+}
+
+.topic-editor-hint-sep {
+  color: var(--border);
+}
+
+/* BlockNote overrides */
+.topic-editor-wrapper .bn-container {
+  flex: 1;
+}
+
+.topic-editor-wrapper .bn-editor {
+  padding: 16px 24px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+
+/* Placeholder */
+.topic-editor-wrapper .bn-editor .bn-block-content::before {
+  color: var(--text-tertiary) !important;
+  font-style: normal !important;
+}
+
+/* Headings */
+.topic-editor-wrapper .bn-editor [data-content-type="heading"][data-level="1"] .bn-inline-content {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.25 !important;
+}
+
+.topic-editor-wrapper .bn-editor [data-content-type="heading"][data-level="2"] .bn-inline-content {
+  font-size: 22px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.3 !important;
+}
+
+.topic-editor-wrapper .bn-editor [data-content-type="heading"][data-level="3"] .bn-inline-content {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+}
+
+/* Check list items */
+.topic-editor-wrapper .bn-editor [data-content-type="checkListItem"] {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.topic-editor-wrapper .bn-editor [data-content-type="checkListItem"] input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  margin-top: 3px;
+  cursor: pointer;
+}
+
+/* Bullet & numbered lists */
+.topic-editor-wrapper .bn-editor [data-content-type="bulletListItem"],
+.topic-editor-wrapper .bn-editor [data-content-type="numberedListItem"] {
+  padding-left: 4px;
+}
+
+/* Code blocks */
+.topic-editor-wrapper .bn-editor [data-content-type="codeBlock"] pre {
+  background: #1e1e1e !important;
+  color: #d4d4d4 !important;
+  border-radius: 6px !important;
+  padding: 16px !important;
+  font-size: 13px !important;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace !important;
+  overflow-x: auto;
+}
+
+/* Side menu (drag handle) */
+.topic-editor-wrapper .bn-side-menu {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.topic-editor-wrapper .bn-block-group:hover > .bn-block-outer > .bn-block > .bn-side-menu,
+.topic-editor-wrapper .bn-side-menu:hover {
+  opacity: 1;
+}
+
+/* Formatting toolbar polish */
+.topic-editor-wrapper .bn-toolbar {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Slash menu polish */
+.topic-editor-wrapper .bn-suggestion-menu {
+  border-radius: 8px !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important;
+  border: 1px solid var(--border) !important;
+  max-height: 350px;
+}
+
+/* Table styles */
+.topic-editor-wrapper .bn-editor table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.topic-editor-wrapper .bn-editor td,
+.topic-editor-wrapper .bn-editor th {
+  border: 1px solid var(--border) !important;
+  padding: 8px 12px !important;
+  font-size: 14px;
+}
+
+.topic-editor-wrapper .bn-editor th {
+  background: var(--accent-light) !important;
+  font-weight: 600;
+}
+
 /* ── Calendar ── */
 .cal-header {
   display: flex;

@@ -166,19 +166,20 @@ export default function TopicsPage() {
         {/* Editor Area */}
         <div style={{ flexGrow: 1 }}>
           {selectedTopic ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'var(--white)', padding: '24px', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'var(--white)', padding: '28px', borderRadius: '8px', border: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <input 
                   type="text" 
                   value={selectedTopic.title}
                   onChange={(e) => setSelectedTopic(prev => ({ ...prev, title: e.target.value }))}
                   style={{ 
-                    fontSize: '24px', 
+                    fontSize: '28px', 
                     fontWeight: 'bold', 
                     border: 'none', 
                     outline: 'none',
                     width: '100%',
-                    background: 'transparent'
+                    background: 'transparent',
+                    letterSpacing: '-0.02em'
                   }}
                   placeholder="Topic Title"
                 />
@@ -186,12 +187,14 @@ export default function TopicsPage() {
                   onClick={handleSaveTopic} 
                   className="btn btn-primary"
                   disabled={isSubmitting}
+                  style={{ flexShrink: 0 }}
                 >
                   {isSubmitting ? 'Saving...' : 'Save'}
                 </button>
               </div>
               
               <TopicEditor 
+                key={selectedTopic.id}
                 initialContent={selectedTopic.content}
                 onChange={(content) => {
                   setSelectedTopic(prev => ({ ...prev, content }));

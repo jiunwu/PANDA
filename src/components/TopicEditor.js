@@ -4,7 +4,6 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
-import { useEffect } from "react";
 
 export default function TopicEditor({ initialContent, onChange }) {
   let parsedContent = undefined;
@@ -17,17 +16,39 @@ export default function TopicEditor({ initialContent, onChange }) {
   }
 
   const editor = useCreateBlockNote({
-    initialContent: parsedContent
+    initialContent: parsedContent,
+    // Default schema already includes:
+    // - paragraph, heading (h1, h2, h3)
+    // - bulletListItem, numberedListItem, checkListItem
+    // - table, image, video, audio, file
+    // - codeBlock
+    // Slash menu items are auto-generated from the schema
+    domAttributes: {
+      editor: {
+        class: "topic-blocknote-editor",
+      },
+    },
   });
 
   return (
-    <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden', minHeight: '300px', background: 'var(--white)' }}>
+    <div className="topic-editor-wrapper">
+      {/* Hint bar */}
+      <div className="topic-editor-hint">
+        <span>Type <kbd>/</kbd> for commands</span>
+        <span className="topic-editor-hint-sep">·</span>
+        <span>Select text for formatting</span>
+        <span className="topic-editor-hint-sep">·</span>
+        <span>Drag blocks with <kbd>⠿</kbd></span>
+      </div>
       <BlockNoteView
         editor={editor}
         onChange={() => {
           onChange(JSON.stringify(editor.document));
         }}
         theme="light"
+        sideMenu={true}
+        slashMenu={true}
+        formattingToolbar={true}
       />
     </div>
   );
