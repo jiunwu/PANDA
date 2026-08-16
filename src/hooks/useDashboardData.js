@@ -8,7 +8,7 @@ export function useDashboardData() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/dashboard-data');
+      const res = await fetch('/api/dashboard-data', { cache: 'no-store' });
       if (!res.ok) throw new Error('Failed to fetch data');
       const result = await res.json();
       setData(result);

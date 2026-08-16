@@ -49,13 +49,20 @@ export default function DataRoomPage() {
       });
 
       if (!res.ok) {
-        throw new Error('Upload failed');
+        let errorMsg = 'Upload failed';
+        try {
+          const errorData = await res.json();
+          if (errorData.error) errorMsg = errorData.error;
+        } catch (e) {
+          // ignore
+        }
+        throw new Error(errorMsg);
       }
 
       await mutate();
     } catch (err) {
       console.error(err);
-      alert('Failed to upload file');
+      alert(err.message || 'Failed to upload file');
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
