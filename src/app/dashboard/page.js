@@ -115,16 +115,12 @@ export default function DashboardPage() {
       {/* Stats Bar */}
       <div className="stats" id="stats">
         <div className="stat">
-          <div className="stat-value">{overallProgress}%</div>
-          <div className="stat-label">Fortschritt</div>
-        </div>
-        <div className="stat">
           <div className="stat-value">{daysLeft}</div>
           <div className="stat-label">Tage bis Deadline</div>
         </div>
         <div className="stat">
-          <div className="stat-value">{formatAmount(funding.volume)}</div>
-          <div className="stat-label">Fördervolumen EUR</div>
+          <div className="stat-value">107.500 €</div>
+          <div className="stat-label">Fördervolumen</div>
         </div>
         <div className="stat">
           <div className="stat-value">{sprints && sprints.length > 0 ? `${sprints[0].progress}%` : '-'}</div>
