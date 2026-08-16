@@ -128,6 +128,7 @@ export default function CalendarPage() {
       title: '',
       description: '',
       date: selectedDate || formatDateKey(today),
+      date_end: '',
       time_start: '',
       time_end: '',
       color: '#111111',
@@ -150,7 +151,7 @@ export default function CalendarPage() {
             id: crypto.randomUUID(),
             ...form,
           },
-          author: 'User',
+          author: 'Jiun',
         }),
       });
       if (res.ok) {
@@ -174,7 +175,7 @@ export default function CalendarPage() {
           type: 'schedule',
           action: 'delete',
           data: { id },
-          author: 'User',
+          author: 'Jiun',
         }),
       });
       await fetchEvents();
@@ -186,11 +187,21 @@ export default function CalendarPage() {
   const grid = getMonthGrid(currentYear, currentMonth);
   const todayKey = formatDateKey(today);
 
-  // Group events by date
+  // Group events by date (including multi-day events)
   const eventsByDate = {};
   events.forEach(ev => {
-    if (!eventsByDate[ev.date]) eventsByDate[ev.date] = [];
-    eventsByDate[ev.date].push(ev);
+    let current = ev.date;
+    const end = ev.date_end || ev.date;
+    let safety = 0;
+    while (current <= end && safety < 100) {
+      if (!eventsByDate[current]) eventsByDate[current] = [];
+      eventsByDate[current].push(ev);
+      
+      const d = new Date(current + 'T12:00:00');
+      d.setDate(d.getDate() + 1);
+      current = d.toISOString().split('T')[0];
+      safety++;
+    }
   });
 
   const selectedEvents = selectedDate ? (eventsByDate[selectedDate] || []) : [];
@@ -386,10 +397,16 @@ export default function CalendarPage() {
                 <span className="cal-label">Title</span>
                 <input type="text" className="field-input" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Meeting, deadline..." required />
               </label>
-              <label className="cal-field">
-                <span className="cal-label">Date</span>
-                <input type="date" className="field-input" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} required />
-              </label>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <label className="cal-field" style={{ flex: 1 }}>
+                  <span className="cal-label">Start Date</span>
+                  <input type="date" className="field-input" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} required />
+                </label>
+                <label className="cal-field" style={{ flex: 1 }}>
+                  <span className="cal-label">End Date (optional)</span>
+                  <input type="date" className="field-input" value={form.date_end || ''} onChange={e => setForm(p => ({ ...p, date_end: e.target.value }))} />
+                </label>
+              </div>
               <div style={{ display: 'flex', gap: '12px' }}>
                 <label className="cal-field" style={{ flex: 1 }}>
                   <span className="cal-label">Start Time</span>

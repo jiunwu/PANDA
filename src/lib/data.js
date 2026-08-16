@@ -80,6 +80,7 @@ export async function ensureTables(db) {
       title TEXT NOT NULL,
       description TEXT,
       date TEXT NOT NULL,
+      date_end TEXT,
       time_start TEXT,
       time_end TEXT,
       color TEXT,
@@ -87,6 +88,13 @@ export async function ensureTables(db) {
       created_at TEXT
     )`
   ]);
+  
+  // Try to migrate existing table
+  try {
+    await db.execute('ALTER TABLE schedules ADD COLUMN date_end TEXT');
+  } catch (err) {
+    // Column might already exist, ignore error
+  }
   
   tablesReady = true;
 }
@@ -162,7 +170,7 @@ export async function getSchedules() {
     const db = getClient();
     if (!db) return [];
     await ensureTables(db);
-    const res = await db.execute('SELECT id, title, description, date, time_start, time_end, color, author, created_at FROM schedules ORDER BY date ASC, time_start ASC');
+    const res = await db.execute('SELECT id, title, description, date, date_end, time_start, time_end, color, author, created_at FROM schedules ORDER BY date ASC, time_start ASC');
     return res.rows;
   } catch (error) {
     console.error('Error fetching schedules from Turso:', error);
