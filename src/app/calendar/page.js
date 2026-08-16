@@ -252,11 +252,15 @@ export default function CalendarPage() {
                   >
                     <span className={`cal-date-num ${isToday ? 'cal-date-today' : ''}`}>{date.getDate()}</span>
                     {dayEvents.length > 0 && (
-                      <div className="cal-cell-dots">
-                        {dayEvents.slice(0, 3).map((ev, j) => (
-                          <span key={j} className="cal-dot" style={{ background: ev.color || '#111' }}></span>
+                      <div className="cal-cell-events">
+                        {dayEvents.slice(0, 2).map((ev, j) => (
+                          <div key={j} className="cal-cell-caption" style={{ '--ev-color': ev.color || '#111' }}>
+                            {ev.title}
+                          </div>
                         ))}
-                        {dayEvents.length > 3 && <span className="cal-dot-more">+{dayEvents.length - 3}</span>}
+                        {dayEvents.length > 2 && (
+                          <div className="cal-cell-more">+{dayEvents.length - 2} more</div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -265,8 +269,9 @@ export default function CalendarPage() {
             </div>
           </div>
 
-          {/* Sidebar: selected day detail */}
-          <div style={{ flex: '0 0 320px', minWidth: '280px' }}>
+          {/* Sidebar: selected day detail + upcoming/previous */}
+          <div style={{ flex: '0 0 340px', minWidth: '280px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Selected day */}
             <div className="cal-sidebar">
               <div className="cal-sidebar-header">
                 <h3>{selectedDate
@@ -304,6 +309,66 @@ export default function CalendarPage() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+
+            {/* Upcoming Events */}
+            <div className="cal-sidebar">
+              <div className="cal-sidebar-section-title">
+                <span className="cal-section-icon cal-section-icon-upcoming">▲</span>
+                Upcoming Events
+              </div>
+              {events.filter(ev => ev.date >= todayKey).length === 0 ? (
+                <div className="cal-sidebar-empty">No upcoming events.</div>
+              ) : (
+                <div className="cal-event-list">
+                  {events
+                    .filter(ev => ev.date >= todayKey)
+                    .sort((a, b) => a.date.localeCompare(b.date) || (a.time_start || '').localeCompare(b.time_start || ''))
+                    .slice(0, 5)
+                    .map(ev => (
+                      <div key={ev.id} className="cal-timeline-item" onClick={() => handleDayClick(ev.date)}>
+                        <div className="cal-timeline-color" style={{ background: ev.color || '#111' }}></div>
+                        <div className="cal-timeline-body">
+                          <div className="cal-timeline-title">{ev.title}</div>
+                          <div className="cal-timeline-meta">
+                            {new Date(ev.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            {ev.time_start && ` · ${ev.time_start}`}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+
+            {/* Previous Events */}
+            <div className="cal-sidebar">
+              <div className="cal-sidebar-section-title">
+                <span className="cal-section-icon cal-section-icon-past">▼</span>
+                Previous Events
+              </div>
+              {events.filter(ev => ev.date < todayKey).length === 0 ? (
+                <div className="cal-sidebar-empty">No past events.</div>
+              ) : (
+                <div className="cal-event-list">
+                  {events
+                    .filter(ev => ev.date < todayKey)
+                    .sort((a, b) => b.date.localeCompare(a.date) || (b.time_start || '').localeCompare(a.time_start || ''))
+                    .slice(0, 5)
+                    .map(ev => (
+                      <div key={ev.id} className="cal-timeline-item cal-timeline-past" onClick={() => handleDayClick(ev.date)}>
+                        <div className="cal-timeline-color" style={{ background: ev.color || '#111' }}></div>
+                        <div className="cal-timeline-body">
+                          <div className="cal-timeline-title">{ev.title}</div>
+                          <div className="cal-timeline-meta">
+                            {new Date(ev.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            {ev.time_start && ` · ${ev.time_start}`}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                 </div>
               )}
             </div>
