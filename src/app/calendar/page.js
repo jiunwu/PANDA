@@ -210,7 +210,7 @@ export default function CalendarPage() {
       </header>
 
       <section className="section" style={{ paddingTop: '32px' }}>
-        <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
 
           {/* Calendar grid */}
           <div style={{ flex: '1 1 600px', minWidth: 0 }}>
