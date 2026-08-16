@@ -3,7 +3,16 @@
 import { useState, useRef } from 'react';
 import { useDashboardData } from '@/hooks/useDashboardData';
 
-const FOLDERS = ['Pitch & Strategy', 'Financials', 'Legal', 'Technical', 'Other'];
+const FOLDERS = [
+  '1 Business and Product Overview',
+  '2 Company',
+  '3 Team',
+  '4 Financial Situation',
+  '5 Customers',
+  '6 IP, Data Protection and Security',
+  '7 Software Development and Production',
+  'Other'
+];
 
 export default function DataRoomPage() {
   const { data, loading, refetch: mutate } = useDashboardData();
