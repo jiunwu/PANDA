@@ -67,6 +67,13 @@ export async function ensureTables(db) {
       source TEXT,
       action TEXT NOT NULL,
       type TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS topics (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      content TEXT,
+      author TEXT,
+      updated_at TEXT
     )`
   ]);
   
@@ -123,5 +130,18 @@ export async function getActivityLog() {
   } catch (error) {
     console.error('Error fetching activity log from Turso:', error);
     return integrationsData.activityLog;
+  }
+}
+
+export async function getTopics() {
+  try {
+    const db = getClient();
+    if (!db) return [];
+    await ensureTables(db);
+    const res = await db.execute('SELECT id, title, content, author, updated_at FROM topics ORDER BY updated_at DESC');
+    return res.rows;
+  } catch (error) {
+    console.error('Error fetching topics from Turso:', error);
+    return [];
   }
 }

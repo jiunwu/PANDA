@@ -23,8 +23,8 @@ export async function POST(request) {
     );
   }
 
-  const validTypes = ['milestone', 'progress', 'note', 'budget', 'sprint'];
-  const validActions = ['update', 'add'];
+  const validTypes = ['milestone', 'progress', 'note', 'budget', 'sprint', 'topic'];
+  const validActions = ['update', 'add', 'delete'];
 
   if (!validTypes.includes(type)) return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
   if (!validActions.includes(action)) return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
@@ -152,6 +152,35 @@ export async function POST(request) {
         await db.execute({
           sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
           args: [new Date().toISOString(), author || agent || 'System', `Updated sprint ${data.id}`, 'system']
+        });
+      }
+    } else if (type === 'topic') {
+      if (action === 'add') {
+        await db.execute({
+          sql: 'INSERT INTO topics (id, title, content, author, updated_at) VALUES (?, ?, ?, ?, ?)',
+          args: [data.id || crypto.randomUUID(), data.title || 'Untitled', data.content || '', author || agent || 'Unknown', new Date().toISOString()]
+        });
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Created topic: ${data.title}`, 'topic']
+        });
+      } else if (action === 'update') {
+        await db.execute({
+          sql: 'UPDATE topics SET title = COALESCE(?, title), content = COALESCE(?, content), updated_at = ? WHERE id = ?',
+          args: [data.title || null, data.content || null, new Date().toISOString(), data.id]
+        });
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Updated topic: ${data.title || data.id}`, 'topic']
+        });
+      } else if (action === 'delete') {
+        await db.execute({
+          sql: 'DELETE FROM topics WHERE id = ?',
+          args: [data.id]
+        });
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Deleted topic`, 'topic']
         });
       }
     }
