@@ -517,10 +517,9 @@ export default function SprintsPage() {
                               <div style={{
                                 display: 'inline-block',
                                 marginTop: '4px',
-                                fontSize: '12px',
-                                filter: task.note ? 'none' : 'grayscale(100%)',
-                                opacity: task.note ? 0.8 : 0.5
-                              }}>
+                                fontSize: '14px',
+                                color: task.note ? 'rgba(144, 238, 144, 0.8)' : 'gray'
+                              }} title={task.note ? "Note attached" : "No note"}>
                                 📝
                               </div>
                             </div>
@@ -567,16 +566,22 @@ export default function SprintsPage() {
 
       {/* Task Details Modal */}
       {selectedTask && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000,
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <div style={{
-            background: 'var(--white)', padding: '24px', borderRadius: '8px',
-            width: '90%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: '16px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-          }}>
+        <div
+          onClick={closeTaskModal}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000,
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'var(--white)', padding: '24px', borderRadius: '8px',
+              width: '90%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: '16px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            }}
+          >
             <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>Task Details</h2>
 
             <div>

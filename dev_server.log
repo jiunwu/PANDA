@@ -53,3 +53,6 @@
  GET /sprints 200 in 120ms
  GET /api/dashboard-data 200 in 797ms
  GET /api/dashboard-data 200 in 801ms
+ ✓ Compiled in 6.2s (534 modules)
+ ✓ Compiled in 2.3s (534 modules)
+[?25h
