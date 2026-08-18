@@ -518,7 +518,7 @@ export default function SprintsPage() {
                                 display: 'inline-block',
                                 marginTop: '4px',
                                 fontSize: '14px',
-                                color: task.note ? 'rgba(144, 238, 144, 0.8)' : 'gray'
+                                filter: task.note ? 'none' : 'grayscale(100%) opacity(50%)'
                               }} title={task.note ? "Note attached" : "No note"}>
                                 📝
                               </div>
