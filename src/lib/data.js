@@ -133,12 +133,14 @@ export async function getProjectData() {
     if (!db) return defaultData;
     await ensureTables(db);
 
-    const notesRes = await db.execute('SELECT text, author, date FROM notes ORDER BY id DESC');
-    const milestonesRes = await db.execute('SELECT title, date, status FROM milestones');
-    const wpRes = await db.execute('SELECT id, name, progress, owner FROM work_packages');
-    const sprintsRes = await db.execute('SELECT id, name, status, start_date as startDate, end_date as endDate, progress FROM sprints');
-    const tasksRes = await db.execute('SELECT id, sprint_id as sprintId, title, status, description, assignee FROM sprint_tasks');
-    const budgetRes = await db.execute('SELECT label, amount, pct FROM budget');
+    const [notesRes, milestonesRes, wpRes, sprintsRes, tasksRes, budgetRes] = await db.batch([
+      'SELECT text, author, date FROM notes ORDER BY id DESC',
+      'SELECT title, date, status FROM milestones',
+      'SELECT id, name, progress, owner FROM work_packages',
+      'SELECT id, name, status, start_date as startDate, end_date as endDate, progress FROM sprints',
+      'SELECT id, sprint_id as sprintId, title, status, description, assignee FROM sprint_tasks',
+      'SELECT label, amount, pct FROM budget'
+    ]);
 
     const sprints = sprintsRes.rows.map(s => {
       const sprintTasks = tasksRes.rows.filter(t => t.sprintId === s.id).map(t => ({
