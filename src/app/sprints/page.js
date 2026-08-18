@@ -125,6 +125,31 @@ export default function SprintsPage() {
     }
   }
 
+  async function handleDeleteSprint(sprintId) {
+    if (!confirm('Are you sure you want to delete this sprint?')) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'sprint',
+          action: 'delete',
+          data: { id: sprintId },
+          author: 'User',
+        }),
+      });
+      if (res.ok) {
+        setActiveSprint(sprints.length > 1 ? sprints.find(s => s.id !== sprintId)?.id : null);
+        await refetch();
+      }
+    } catch (err) {
+      console.error('Failed to delete sprint:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   async function handleCreateSprint(e) {
     e.preventDefault();
     if (!newSprintName.trim()) return;
@@ -277,6 +302,15 @@ export default function SprintsPage() {
                   {currentSprint.startDate}{currentSprint.endDate ? ` → ${currentSprint.endDate}` : ''}
                 </span>
               )}
+              <button
+                className="btn btn-secondary"
+                style={{ padding: '4px 8px', fontSize: '12px', marginLeft: '12px', color: 'var(--error, #e53e3e)' }}
+                onClick={() => handleDeleteSprint(currentSprint.id)}
+                disabled={isSubmitting}
+                title="Delete Sprint"
+              >
+                Delete Sprint
+              </button>
             </div>
           )}
         </div>
