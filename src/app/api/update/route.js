@@ -124,8 +124,8 @@ export async function POST(request) {
         if (data.tasks && data.tasks.length > 0) {
           for (const task of data.tasks) {
             await db.execute({
-              sql: 'INSERT INTO sprint_tasks (id, sprint_id, title, status, description, assignee) VALUES (?, ?, ?, ?, ?, ?)',
-              args: [task.id || crypto.randomUUID(), data.id, task.title, task.status || 'todo', task.description || '', task.assignee || '']
+              sql: 'INSERT INTO sprint_tasks (id, sprint_id, title, status, description, assignee, note) VALUES (?, ?, ?, ?, ?, ?, ?)',
+              args: [task.id || crypto.randomUUID(), data.id, task.title, task.status || 'todo', task.description || '', task.assignee || '', task.note || '']
             });
           }
         }
@@ -144,8 +144,8 @@ export async function POST(request) {
           await db.execute({ sql: 'DELETE FROM sprint_tasks WHERE sprint_id = ?', args: [data.id] });
           for (const task of data.tasks) {
             await db.execute({
-              sql: 'INSERT INTO sprint_tasks (id, sprint_id, title, status, description, assignee) VALUES (?, ?, ?, ?, ?, ?)',
-              args: [task.id || crypto.randomUUID(), data.id, task.title, task.status || 'todo', task.description || '', task.assignee || '']
+              sql: 'INSERT INTO sprint_tasks (id, sprint_id, title, status, description, assignee, note) VALUES (?, ?, ?, ?, ?, ?, ?)',
+              args: [task.id || crypto.randomUUID(), data.id, task.title, task.status || 'todo', task.description || '', task.assignee || '', task.note || '']
             });
           }
         }

@@ -2,19 +2,54 @@
 > panda-exist@0.1.0 dev
 > next dev
 
+ ⚠ Port 3000 is in use, trying 3001 instead.
   ▲ Next.js 14.2.35
-  - Local:        http://localhost:3000
+  - Local:        http://localhost:3001
 
  ✓ Starting...
- ✓ Ready in 1488ms
- ○ Compiling /data-room ...
- ✓ Compiled /data-room in 4.3s (510 modules)
- GET /data-room 200 in 4757ms
+ ✓ Ready in 3s
  ○ Compiling /src/middleware ...
- ✓ Compiled /src/middleware in 619ms (72 modules)
+ ✓ Compiled /src/middleware in 618ms (72 modules)
  ○ Compiling /login ...
- ✓ Compiled /login in 590ms (534 modules)
- GET /login 200 in 755ms
- GET /data-room 200 in 46ms
- GET /login 200 in 42ms
- GET /data-room 200 in 38ms
+ ✓ Compiled /login in 11.7s (540 modules)
+ GET /login?from=%2Fsprints 200 in 12472ms
+ GET /login?from=%2Fsprints 200 in 48ms
+ ○ Compiling /api/auth/dev-login ...
+ ✓ Compiled /api/auth/dev-login in 506ms (294 modules)
+ POST /api/auth/dev-login 200 in 671ms
+ ○ Compiling /sprints ...
+ ✓ Compiled /sprints in 533ms (565 modules)
+ ✓ Compiled /api/dashboard-data in 145ms (307 modules)
+ GET /api/dashboard-data 200 in 678ms
+ GET /api/dashboard-data 200 in 681ms
+ GET /sprints 200 in 140ms
+ GET /api/dashboard-data 200 in 1453ms
+ GET /api/dashboard-data 200 in 1910ms
+ GET /login?from=%2Fsprints 200 in 63ms
+ POST /api/auth/dev-login 200 in 35ms
+ GET /api/dashboard-data 200 in 1355ms
+ GET /api/dashboard-data 200 in 1562ms
+ GET /sprints 200 in 34ms
+ GET /api/dashboard-data 200 in 797ms
+ GET /api/dashboard-data 200 in 807ms
+ ✓ Compiled /api/update in 314ms (309 modules)
+[PANDA API] Update received: {"timestamp":"2026-08-18T07:53:48.230Z","type":"sprint","action":"update","data":{"id":"sprint-1786879361158","tasks":[{"id":"task-1786879417362","title":"Meeting Laura Franze, discussing governance","status":"todo","description":"","assignee":"","note":""},{"id":"task-1786879474510","title":"Discussion of Computer: Jiun prefers Uni Free Laptop","status":"done","description":"","assignee":"","note":""},{"id":"task-1786879658066","title":"Team: Fragebogen gemeinsam ausfüllen","status":"todo","description":"","assignee":"","note":""},{"id":"task-1786879683001","title":"Nina: draft email to Tim Weitzel","status":"done","description":"","assignee":"Nina","note":""},{"id":"task-1786882360933","title":"Prepare Spending of August","status":"in_progress","description":"","assignee":"","note":""},{"id":"task-1786887081252","title":"Nationale EIC-Kontaktstelle kontaktieren","status":"todo","description":"Kontakte: https://www.eubuero.de/de/service-ansprechpartner-2498.html","assignee":"Nina","note":""},{"id":"task-1786887301729","title":"Clear Structure of Company Setup for Review","status":"in_progress","description":"","assignee":"Jiun","note":""},{"id":"task-1786887322786","title":"Added Calender for PANDA Portal","status":"done","description":"","assignee":"Jiun","note":""},{"id":"task-1786887339009","title":"Added Topics for PANDA Portal","status":"done","description":"","assignee":"Jiun","note":""},{"id":"task-1786887361273","title":"Invite Tim Weitzel and Dominik Herrmann for Portal","status":"todo","description":"","assignee":"Jiun","note":""},{"id":"task-1786887375577","title":"Long Task Edited","status":"done","description":"Line 1\nLine 2\nLine 3\nLine 4\nLine 5","assignee":"Together","note":"This is my private note."},{"id":"task-1786887402514","title":"Resolve the issue that z.AI bot session will be expired.","status":"in_progress","description":"","assignee":"Jiun","note":""},{"id":"task-1786914557079","title":"Discuss about Open Forest https://www.openforest.co/","status":"todo","description":"","assignee":"","note":""},{"id":"task-1786973276850","title":"Sprint Page Optimization","status":"in_progress","description":"- Assignee @beide\n- Description vs. Notes","assignee":"Nina","note":""},{"id":"task-1786975254530","title":"Termin vereinbart: Tim Weitzel 10.September um 16 Uhr","status":"done","description":"","assignee":"Nina","note":""},{"id":"task-1787038772589","title":"Für Sebastian: Zusammenfassung der zentralen Inhalte liefern (Kurzprofil, Zielbild, Bedarfe)","status":"todo","description":"Damit er die Fördermittelrecherche starten kann.\n(Sebastian erstmal im Urlaub)","assignee":"","note":""}]},"agent":"unknown","author":"User","status":"received"}
+ POST /api/update 200 in 4068ms
+ GET /api/dashboard-data 200 in 796ms
+ GET /login?from=%2Fsprints 200 in 119ms
+ POST /api/auth/dev-login 200 in 30ms
+ GET /api/dashboard-data 200 in 1133ms
+ GET /api/dashboard-data 200 in 1376ms
+ GET /sprints 200 in 37ms
+ GET /api/dashboard-data 200 in 788ms
+ GET /api/dashboard-data 200 in 1011ms
+ ✓ Compiled in 683ms (534 modules)
+ GET /login?from=%2Fsprints 200 in 270ms
+ ✓ Compiled /api/auth/dev-login in 215ms (299 modules)
+ POST /api/auth/dev-login 200 in 324ms
+ ✓ Compiled /api/dashboard-data in 77ms (307 modules)
+ GET /api/dashboard-data 200 in 1563ms
+ GET /api/dashboard-data 200 in 1564ms
+ GET /sprints 200 in 120ms
+ GET /api/dashboard-data 200 in 797ms
+ GET /api/dashboard-data 200 in 801ms
