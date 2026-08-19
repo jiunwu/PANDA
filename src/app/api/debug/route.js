@@ -64,6 +64,13 @@ export async function GET() {
 }
 
 export async function POST() {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { error: 'Forbidden: Destructive operations are not allowed in production' },
+      { status: 403 }
+    );
+  }
+
   const url = dbConfig.TURSO_DATABASE_URL;
   const authToken = dbConfig.TURSO_AUTH_TOKEN;
 
