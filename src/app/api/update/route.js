@@ -153,6 +153,19 @@ export async function POST(request) {
           sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
           args: [new Date().toISOString(), author || agent || 'System', `Updated sprint ${data.id}`, 'system']
         });
+      } else if (action === 'delete') {
+        await db.execute({
+          sql: 'DELETE FROM sprint_tasks WHERE sprint_id = ?',
+          args: [data.id]
+        });
+        await db.execute({
+          sql: 'DELETE FROM sprints WHERE id = ?',
+          args: [data.id]
+        });
+        await db.execute({
+          sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
+          args: [new Date().toISOString(), author || agent || 'System', `Deleted sprint ${data.id}`, 'system']
+        });
       }
     } else if (type === 'topic') {
       if (action === 'add') {
