@@ -29,7 +29,9 @@ export default function SprintsPage() {
   const [newSprintName, setNewSprintName] = useState('');
   const [draggedTask, setDraggedTask] = useState(null);
   const [editingTaskId, setEditingTaskId] = useState(null);
-  const [editTaskData, setEditTaskData] = useState({ title: '', description: '', assignee: '' });
+  const [editTaskData, setEditTaskData] = useState({ title: '', description: '', assignee: '', note: '' });
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [modalEditData, setModalEditData] = useState({ title: '', description: '', assignee: '', note: '' });
 
   // Auto-select first sprint
   useEffect(() => {
@@ -160,18 +162,70 @@ export default function SprintsPage() {
     }
   }
 
+  function openTaskModal(task) {
+    setSelectedTask(task);
+    setModalEditData({
+      title: task.title || '',
+      description: task.description || '',
+      assignee: task.assignee || '',
+      note: task.note || '',
+    });
+  }
+
+  function closeTaskModal() {
+    setSelectedTask(null);
+    setModalEditData({ title: '', description: '', assignee: '', note: '' });
+  }
+
+  async function saveModalTask() {
+    if (!selectedTask || !modalEditData.title.trim() || !activeSprint) return;
+    setIsSubmitting(true);
+
+    const updatedTasks = tasks.map(t =>
+      t.id === selectedTask.id ? {
+        ...t,
+        title: modalEditData.title.trim(),
+        description: modalEditData.description.trim(),
+        assignee: modalEditData.assignee,
+        note: modalEditData.note.trim()
+      } : t
+    );
+
+    try {
+      const res = await fetch('/api/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'sprint',
+          action: 'update',
+          data: { id: activeSprint, tasks: updatedTasks },
+          author: 'User',
+        }),
+      });
+      if (res.ok) {
+        await refetch();
+        closeTaskModal();
+      }
+    } catch (err) {
+      console.error('Failed to update task from modal:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   function startEditTask(task) {
     setEditingTaskId(task.id);
     setEditTaskData({
       title: task.title || '',
       description: task.description || '',
       assignee: task.assignee || '',
+      note: task.note || '',
     });
   }
 
   function cancelEditTask() {
     setEditingTaskId(null);
-    setEditTaskData({ title: '', description: '', assignee: '' });
+    setEditTaskData({ title: '', description: '', assignee: '', note: '' });
   }
 
   async function saveEditTask(taskId) {
@@ -182,8 +236,9 @@ export default function SprintsPage() {
       t.id === taskId ? {
         ...t,
         title: editTaskData.title.trim(),
-        description: editTaskData.description.trim(),
-        assignee: editTaskData.assignee
+        description: editTaskData.description !== undefined ? editTaskData.description.trim() : t.description,
+        assignee: editTaskData.assignee !== undefined ? editTaskData.assignee : t.assignee,
+        note: editTaskData.note !== undefined ? editTaskData.note.trim() : t.note
       } : t
     );
 
@@ -415,6 +470,7 @@ export default function SprintsPage() {
                               <option value="">Unassigned</option>
                               <option value="Nina">Nina</option>
                               <option value="Jiun">Jiun</option>
+                              <option value="Together">Together</option>
                             </select>
                             <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
                               <button
@@ -437,17 +493,36 @@ export default function SprintsPage() {
                           </div>
                         ) : (
                           <>
-                            <div className="board-task-title">{task.title}</div>
-                            {task.description && (
-                              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px', whiteSpace: 'pre-wrap' }}>
-                                {task.description}
+                            <div style={{ cursor: 'pointer' }} onClick={() => openTaskModal(task)}>
+                              <div className="board-task-title">{task.title}</div>
+                              {task.description && (
+                                <div style={{
+                                  fontSize: '12px',
+                                  color: 'var(--text-secondary)',
+                                  marginBottom: '8px',
+                                  whiteSpace: 'pre-wrap',
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: 'vertical',
+                                  overflow: 'hidden'
+                                }}>
+                                  {task.description}
+                                </div>
+                              )}
+                              {task.assignee && (
+                                <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginBottom: '8px' }}>
+                                  👤 {task.assignee}
+                                </div>
+                              )}
+                              <div style={{
+                                display: 'inline-block',
+                                marginTop: '4px',
+                                fontSize: '14px',
+                                filter: task.note ? 'none' : 'grayscale(100%) opacity(50%)'
+                              }} title={task.note ? "Note attached" : "No note"}>
+                                📝
                               </div>
-                            )}
-                            {task.assignee && (
-                              <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginBottom: '8px' }}>
-                                👤 {task.assignee}
-                              </div>
-                            )}
+                            </div>
                             <div className="board-task-actions">
                               <span className="board-task-id">{task.id}</span>
                               <div className="board-task-move-btns">
@@ -488,6 +563,101 @@ export default function SprintsPage() {
           </div>
         )}
       </section>
+
+      {/* Task Details Modal */}
+      {selectedTask && (
+        <div
+          onClick={closeTaskModal}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000,
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'var(--white)', padding: '24px', borderRadius: '8px',
+              width: '90%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: '16px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            }}
+          >
+            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>Task Details</h2>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', fontWeight: 500 }}>Title</label>
+              <input
+                className="field-input"
+                type="text"
+                placeholder="Task title..."
+                value={modalEditData.title}
+                onChange={e => setModalEditData({ ...modalEditData, title: e.target.value })}
+                disabled={isSubmitting}
+                style={{ width: '100%', padding: '8px' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', fontWeight: 500 }}>Description</label>
+              <textarea
+                className="field-input"
+                placeholder="Full description..."
+                value={modalEditData.description}
+                onChange={e => setModalEditData({ ...modalEditData, description: e.target.value })}
+                disabled={isSubmitting}
+                rows={3}
+                style={{ resize: 'vertical', width: '100%', padding: '8px' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', fontWeight: 500 }}>Note</label>
+              <textarea
+                className="field-input"
+                placeholder="Private note..."
+                value={modalEditData.note}
+                onChange={e => setModalEditData({ ...modalEditData, note: e.target.value })}
+                disabled={isSubmitting}
+                rows={5}
+                style={{ resize: 'vertical', width: '100%', padding: '8px' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', fontWeight: 500 }}>Assignee</label>
+              <select
+                className="field-input"
+                value={modalEditData.assignee}
+                onChange={e => setModalEditData({ ...modalEditData, assignee: e.target.value })}
+                disabled={isSubmitting}
+                style={{ width: '100%', padding: '8px' }}
+              >
+                <option value="">Unassigned</option>
+                <option value="Nina">Nina</option>
+                <option value="Jiun">Jiun</option>
+                <option value="Together">Together</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '8px' }}>
+              <button
+                className="btn btn-secondary"
+                onClick={closeTaskModal}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={saveModalTask}
+                disabled={isSubmitting || !modalEditData.title.trim()}
+              >
+                {isSubmitting ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -56,7 +56,8 @@ export async function ensureTables(db) {
       title TEXT NOT NULL,
       status TEXT,
       description TEXT,
-      assignee TEXT
+      assignee TEXT,
+      note TEXT
     )`,
     `CREATE TABLE IF NOT EXISTS budget (
       label TEXT PRIMARY KEY,
@@ -123,6 +124,11 @@ export async function ensureTables(db) {
   } catch (err) {
     // Column might already exist, ignore error
   }
+  try {
+    await db.execute('ALTER TABLE sprint_tasks ADD COLUMN note TEXT');
+  } catch (err) {
+    // Column might already exist, ignore error
+  }
   
   tablesReady = true;
 }
@@ -137,7 +143,7 @@ export async function getProjectData() {
     const milestonesRes = await db.execute('SELECT title, date, status FROM milestones');
     const wpRes = await db.execute('SELECT id, name, progress, owner FROM work_packages');
     const sprintsRes = await db.execute('SELECT id, name, status, start_date as startDate, end_date as endDate, progress FROM sprints');
-    const tasksRes = await db.execute('SELECT id, sprint_id as sprintId, title, status, description, assignee FROM sprint_tasks');
+    const tasksRes = await db.execute('SELECT id, sprint_id as sprintId, title, status, description, assignee, note FROM sprint_tasks');
     const budgetRes = await db.execute('SELECT label, amount, pct FROM budget');
 
     const sprints = sprintsRes.rows.map(s => {
@@ -146,7 +152,8 @@ export async function getProjectData() {
         title: t.title,
         status: t.status,
         description: t.description || '',
-        assignee: t.assignee || ''
+        assignee: t.assignee || '',
+        note: t.note || ''
       }));
       return { ...s, tasks: sprintTasks };
     });
