@@ -5,8 +5,8 @@ export function useDashboardData() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
+  const fetchData = useCallback(async (isRefetch = false) => {
+    if (!isRefetch) setLoading(true);
     try {
       const res = await fetch('/api/dashboard-data', { cache: 'no-store' });
       if (!res.ok) throw new Error('Failed to fetch data');
@@ -16,7 +16,7 @@ export function useDashboardData() {
       console.error('Error fetching dashboard data:', err);
       setError(err);
     } finally {
-      setLoading(false);
+      if (!isRefetch) setLoading(false);
     }
   }, []);
 
@@ -24,5 +24,5 @@ export function useDashboardData() {
     fetchData();
   }, [fetchData]);
 
-  return { data, loading, error, refetch: fetchData };
+  return { data, loading, error, refetch: () => fetchData(true) };
 }
