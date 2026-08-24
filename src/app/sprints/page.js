@@ -75,7 +75,7 @@ export default function SprintsPage() {
       if (res.ok) {
         setNewTaskTitle('');
         setShowAddTask(null);
-        await refetch();
+        await refetch(true);
       }
     } catch (err) {
       console.error('Failed to add task:', err);
@@ -101,7 +101,7 @@ export default function SprintsPage() {
           author: 'User',
         }),
       });
-      await refetch();
+      await refetch(true);
     } catch (err) {
       console.error('Failed to move task:', err);
     }
@@ -121,7 +121,7 @@ export default function SprintsPage() {
           author: 'User',
         }),
       });
-      await refetch();
+      await refetch(true);
     } catch (err) {
       console.error('Failed to delete task:', err);
     }
@@ -163,7 +163,7 @@ export default function SprintsPage() {
           }),
         })
       ]);
-      await refetch();
+      await refetch(true);
     } catch (err) {
       console.error('Failed to move task to another sprint:', err);
     } finally {
@@ -187,7 +187,7 @@ export default function SprintsPage() {
       });
       if (res.ok) {
         setActiveSprint(sprints.length > 1 ? sprints.find(s => s.id !== sprintId)?.id : null);
-        await refetch();
+        await refetch(true);
       }
     } catch (err) {
       console.error('Failed to delete sprint:', err);
@@ -221,7 +221,7 @@ export default function SprintsPage() {
       if (res.ok) {
         setNewSprintName('');
         setShowNewSprint(false);
-        await refetch();
+        await refetch(true);
         setActiveSprint(id);
       }
     } catch (err) {
@@ -288,7 +288,7 @@ export default function SprintsPage() {
         }),
       });
       if (res.ok) {
-        await refetch();
+        await refetch(true);
         closeTaskModal();
       }
     } catch (err) {
@@ -357,7 +357,7 @@ export default function SprintsPage() {
         }),
       });
       if (res.ok) {
-        await refetch();
+        await refetch(true);
         cancelEditTask();
       }
     } catch (err) {
