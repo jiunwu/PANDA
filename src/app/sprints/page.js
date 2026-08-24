@@ -29,9 +29,9 @@ export default function SprintsPage() {
   const [newSprintName, setNewSprintName] = useState('');
   const [draggedTask, setDraggedTask] = useState(null);
   const [editingTaskId, setEditingTaskId] = useState(null);
-  const [editTaskData, setEditTaskData] = useState({ title: '', description: '', assignee: '', note: '' });
+  const [editTaskData, setEditTaskData] = useState({ title: '', description: '', assignee: '', note: '', sprintId: '' });
   const [selectedTask, setSelectedTask] = useState(null);
-  const [modalEditData, setModalEditData] = useState({ title: '', description: '', assignee: '', note: '' });
+  const [modalEditData, setModalEditData] = useState({ title: '', description: '', assignee: '', note: '', sprintId: '' });
 
   // Auto-select first sprint
   useEffect(() => {
@@ -127,6 +127,50 @@ export default function SprintsPage() {
     }
   }
 
+  async function handleMoveToSprint(task, targetSprintId) {
+    if (!activeSprint || !targetSprintId) return;
+    setIsSubmitting(true);
+
+    const targetSprint = sprints.find(s => s.id === targetSprintId);
+    if (!targetSprint) {
+      setIsSubmitting(false);
+      return;
+    }
+
+    const updatedCurrentTasks = tasks.filter(t => t.id !== task.id);
+    const updatedTargetTasks = [...(targetSprint.tasks || []), task];
+
+    try {
+      await Promise.all([
+        fetch('/api/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'sprint',
+            action: 'update',
+            data: { id: activeSprint, tasks: updatedCurrentTasks },
+            author: 'User',
+          }),
+        }),
+        fetch('/api/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'sprint',
+            action: 'update',
+            data: { id: targetSprintId, tasks: updatedTargetTasks },
+            author: 'User',
+          }),
+        })
+      ]);
+      await refetch();
+    } catch (err) {
+      console.error('Failed to move task to another sprint:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   async function handleDeleteSprint(sprintId) {
     if (!confirm('Are you sure you want to delete this sprint?')) return;
     setIsSubmitting(true);
@@ -194,16 +238,32 @@ export default function SprintsPage() {
       description: task.description || '',
       assignee: task.assignee || '',
       note: task.note || '',
+      sprintId: activeSprint,
     });
   }
 
   function closeTaskModal() {
     setSelectedTask(null);
-    setModalEditData({ title: '', description: '', assignee: '', note: '' });
+    setModalEditData({ title: '', description: '', assignee: '', note: '', sprintId: '' });
   }
 
   async function saveModalTask() {
     if (!selectedTask || !modalEditData.title.trim() || !activeSprint) return;
+
+    if (modalEditData.sprintId !== activeSprint) {
+      // Sprint was changed, move the task
+      const updatedTask = {
+        ...selectedTask,
+        title: modalEditData.title.trim(),
+        description: modalEditData.description.trim(),
+        assignee: modalEditData.assignee,
+        note: modalEditData.note.trim(),
+      };
+      await handleMoveToSprint(updatedTask, modalEditData.sprintId);
+      closeTaskModal();
+      return;
+    }
+
     setIsSubmitting(true);
 
     const updatedTasks = tasks.map(t =>
@@ -245,16 +305,34 @@ export default function SprintsPage() {
       description: task.description || '',
       assignee: task.assignee || '',
       note: task.note || '',
+      sprintId: activeSprint,
     });
   }
 
   function cancelEditTask() {
     setEditingTaskId(null);
-    setEditTaskData({ title: '', description: '', assignee: '', note: '' });
+    setEditTaskData({ title: '', description: '', assignee: '', note: '', sprintId: '' });
   }
 
   async function saveEditTask(taskId) {
     if (!editTaskData.title.trim() || !activeSprint) return;
+
+    const originalTask = tasks.find(t => t.id === taskId);
+
+    if (editTaskData.sprintId !== activeSprint) {
+       // Sprint was changed, move the task
+       const updatedTask = {
+         ...originalTask,
+         title: editTaskData.title.trim(),
+         description: editTaskData.description !== undefined ? editTaskData.description.trim() : originalTask.description,
+         assignee: editTaskData.assignee !== undefined ? editTaskData.assignee : originalTask.assignee,
+         note: editTaskData.note !== undefined ? editTaskData.note.trim() : originalTask.note,
+       };
+       await handleMoveToSprint(updatedTask, editTaskData.sprintId);
+       cancelEditTask();
+       return;
+    }
+
     setIsSubmitting(true);
 
     const updatedTasks = tasks.map(t =>
@@ -506,6 +584,17 @@ export default function SprintsPage() {
                               <option value="Jiun">Jiun</option>
                               <option value="Together">Together</option>
                             </select>
+                            <select
+                              className="field-input"
+                              value={editTaskData.sprintId}
+                              onChange={e => setEditTaskData({ ...editTaskData, sprintId: e.target.value })}
+                              disabled={isSubmitting}
+                              style={{ marginTop: '4px' }}
+                            >
+                              {sprints.map(s => (
+                                <option key={s.id} value={s.id}>{s.name || s.id}</option>
+                              ))}
+                            </select>
                             <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
                               <button
                                 className="btn btn-primary"
@@ -578,6 +667,13 @@ export default function SprintsPage() {
                                     onClick={() => handleMoveTask(task.id, col.id === 'todo' ? 'in_progress' : 'done')}
                                     title="Move right"
                                   >→</button>
+                                )}
+                                {sprints.findIndex(s => s.id === activeSprint) < sprints.length - 1 && (
+                                  <button
+                                    className="board-move-btn"
+                                    onClick={() => handleMoveToSprint(task, sprints[sprints.findIndex(s => s.id === activeSprint) + 1].id)}
+                                    title="Push to next sprint"
+                                  >⏭</button>
                                 )}
                                 <button
                                   className="board-move-btn board-delete-btn"
@@ -670,6 +766,21 @@ export default function SprintsPage() {
                 <option value="Nina">Nina</option>
                 <option value="Jiun">Jiun</option>
                 <option value="Together">Together</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', fontWeight: 500 }}>Sprint</label>
+              <select
+                className="field-input"
+                value={modalEditData.sprintId}
+                onChange={e => setModalEditData({ ...modalEditData, sprintId: e.target.value })}
+                disabled={isSubmitting}
+                style={{ width: '100%', padding: '8px' }}
+              >
+                {sprints.map(s => (
+                  <option key={s.id} value={s.id}>{s.name || s.id}</option>
+                ))}
               </select>
             </div>
 
