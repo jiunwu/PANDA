@@ -211,10 +211,16 @@ export default function SprintsPage() {
       const id = `sprint-${Date.now()}`;
       const startDateObj = new Date(newSprintStartDate + 'T00:00:00');
       const endDateObj = new Date(newSprintEndDate + 'T00:00:00');
-      const monthName = startDateObj.toLocaleString('en-US', { month: 'long' });
-      const startDay = startDateObj.getDate();
-      const endDay = endDateObj.getDate();
-      const name = `Sprint ${monthName}: ${startDay} to ${endDay}`;
+
+      const startDay = startDateObj.getDate().toString().padStart(2, '0');
+      const startMonth = (startDateObj.getMonth() + 1).toString().padStart(2, '0');
+
+      const endDay = endDateObj.getDate().toString().padStart(2, '0');
+      const endMonth = (endDateObj.getMonth() + 1).toString().padStart(2, '0');
+
+      const sprintNumber = sprints.length + 1;
+      const name = `Sprint ${sprintNumber}: ${startDay}.${startMonth}. to ${endDay}.${endMonth}.`;
+
       const res = await fetch('/api/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
