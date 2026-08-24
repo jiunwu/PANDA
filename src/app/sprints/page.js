@@ -26,17 +26,24 @@ export default function SprintsPage() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewSprint, setShowNewSprint] = useState(false);
-  const [newSprintName, setNewSprintName] = useState('');
+  const [newSprintStartDate, setNewSprintStartDate] = useState('');
+  const [newSprintEndDate, setNewSprintEndDate] = useState('');
   const [draggedTask, setDraggedTask] = useState(null);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editTaskData, setEditTaskData] = useState({ title: '', description: '', assignee: '', note: '', sprintId: '' });
   const [selectedTask, setSelectedTask] = useState(null);
   const [modalEditData, setModalEditData] = useState({ title: '', description: '', assignee: '', note: '', sprintId: '' });
 
-  // Auto-select first sprint
+  // Auto-select first sprint or current active sprint
   useEffect(() => {
     if (sprints.length > 0 && !activeSprint) {
-      setActiveSprint(sprints[0].id);
+      const today = new Date().toISOString().split('T')[0];
+      const currentActiveSprint = sprints.find(s => s.startDate && s.endDate && s.startDate <= today && s.endDate >= today);
+      if (currentActiveSprint) {
+        setActiveSprint(currentActiveSprint.id);
+      } else {
+        setActiveSprint(sprints[0].id);
+      }
     }
   }, [sprints, activeSprint]);
 
@@ -198,10 +205,11 @@ export default function SprintsPage() {
 
   async function handleCreateSprint(e) {
     e.preventDefault();
-    if (!newSprintName.trim()) return;
+    if (!newSprintStartDate || !newSprintEndDate) return;
     setIsSubmitting(true);
     try {
       const id = `sprint-${Date.now()}`;
+      const name = `Sprint: ${newSprintStartDate} to ${newSprintEndDate}`;
       const res = await fetch('/api/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -210,16 +218,18 @@ export default function SprintsPage() {
           action: 'add',
           data: {
             id,
-            name: newSprintName.trim(),
+            name,
             status: 'Active',
-            startDate: new Date().toISOString().split('T')[0],
+            startDate: newSprintStartDate,
+            endDate: newSprintEndDate,
             tasks: [],
           },
           author: 'User',
         }),
       });
       if (res.ok) {
-        setNewSprintName('');
+        setNewSprintStartDate('');
+        setNewSprintEndDate('');
         setShowNewSprint(false);
         await refetch(true);
         setActiveSprint(id);
@@ -451,15 +461,12 @@ export default function SprintsPage() {
         {/* New sprint form */}
         {showNewSprint && (
           <form onSubmit={handleCreateSprint} className="board-new-sprint-form">
-            <input
-              className="field-input"
-              type="text"
-              placeholder="Sprint name (e.g. Sprint 4 – UI Polish)"
-              value={newSprintName}
-              onChange={e => setNewSprintName(e.target.value)}
-              autoFocus
-            />
-            <button type="submit" className="btn btn-primary" disabled={isSubmitting || !newSprintName.trim()}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
+              <input type="date" className="field-input" value={newSprintStartDate} onChange={e => setNewSprintStartDate(e.target.value)} required />
+              <span>to</span>
+              <input type="date" className="field-input" value={newSprintEndDate} onChange={e => setNewSprintEndDate(e.target.value)} required />
+            </div>
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting || !newSprintStartDate || !newSprintEndDate}>
               {isSubmitting ? 'Creating...' : 'Create'}
             </button>
             <button type="button" className="btn btn-secondary" onClick={() => setShowNewSprint(false)}>
