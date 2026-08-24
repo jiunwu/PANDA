@@ -71,6 +71,7 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const [form, setForm] = useState({
     title: '',
@@ -79,6 +80,7 @@ export default function CalendarPage() {
     time_start: '',
     time_end: '',
     color: '#111111',
+    author: 'Together',
   });
 
   useEffect(() => { fetchEvents(); }, []);
@@ -124,6 +126,7 @@ export default function CalendarPage() {
   }
 
   function openNewEvent() {
+    setEditingId(null);
     setForm({
       title: '',
       description: '',
@@ -132,6 +135,23 @@ export default function CalendarPage() {
       time_start: '',
       time_end: '',
       color: '#111111',
+      author: 'Together'
+    });
+    setShowForm(true);
+  }
+
+
+  function openEditEvent(ev) {
+    setEditingId(ev.id);
+    setForm({
+      title: ev.title || '',
+      description: ev.description || '',
+      date: ev.date || selectedDate || '',
+      date_end: ev.date_end || '',
+      time_start: ev.time_start || '',
+      time_end: ev.time_end || '',
+      color: ev.color || '#111111',
+      author: ev.author || 'Together'
     });
     setShowForm(true);
   }
@@ -141,17 +161,18 @@ export default function CalendarPage() {
     if (!form.title.trim() || !form.date) return;
     setIsSubmitting(true);
     try {
+      const isEdit = !!editingId;
       const res = await fetch('/api/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'schedule',
-          action: 'add',
+          action: isEdit ? 'update' : 'add',
           data: {
-            id: crypto.randomUUID(),
+            id: isEdit ? editingId : crypto.randomUUID(),
             ...form,
           },
-          author: 'Jiun',
+          author: form.author,
         }),
       });
       if (res.ok) {
@@ -315,6 +336,7 @@ export default function CalendarPage() {
                         {ev.description && <div className="cal-event-desc">{ev.description}</div>}
                         <div className="cal-event-footer">
                           <span className="source-tag" style={{ fontSize: '11px' }}>{ev.author || 'Unknown'}</span>
+                          <button className="cal-event-edit" onClick={() => openEditEvent(ev)} style={{marginRight: '8px', border: 'none', background: 'none', color: '#666', cursor: 'pointer', fontSize: '12px'}}>Edit</button>
                           <button className="cal-event-delete" onClick={() => handleDeleteEvent(ev.id)}>Delete</button>
                         </div>
                       </div>
@@ -391,11 +413,11 @@ export default function CalendarPage() {
       {showForm && (
         <div className="cal-modal-overlay" onClick={() => setShowForm(false)}>
           <div className="cal-modal" onClick={e => e.stopPropagation()}>
-            <h3 style={{ marginBottom: '20px', fontSize: '18px' }}>New Event</h3>
+            <h3 style={{ marginBottom: '20px', fontSize: '18px' }}>{editingId ? 'Edit Event' : 'New Event'}</h3>
             <form onSubmit={handleSaveEvent} className="cal-form">
               <label className="cal-field">
                 <span className="cal-label">Title</span>
-                <input type="text" className="field-input" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Meeting, deadline..." required />
+                <input type="text" className="field-input" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="Seminar, Urlaub, Meeting..." required />
               </label>
               <div style={{ display: 'flex', gap: '12px' }}>
                 <label className="cal-field" style={{ flex: 1 }}>
@@ -417,6 +439,14 @@ export default function CalendarPage() {
                   <input type="time" className="field-input" value={form.time_end} onChange={e => setForm(p => ({ ...p, time_end: e.target.value }))} />
                 </label>
               </div>
+                            <label className="cal-field">
+                <span className="cal-label">Assignee</span>
+                <select className="field-input" value={form.author} onChange={e => setForm(p => ({ ...p, author: e.target.value }))}>
+                  <option value="Together">Together</option>
+                  <option value="Nina">Nina</option>
+                  <option value="Jiun">Jiun</option>
+                </select>
+              </label>
               <label className="cal-field">
                 <span className="cal-label">Description</span>
                 <textarea className="field-input" style={{ minHeight: '60px', resize: 'vertical' }} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Optional details..." />
