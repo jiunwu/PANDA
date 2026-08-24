@@ -116,56 +116,60 @@ export async function POST(request) {
         });
       }
     } else if (type === 'sprint') {
+      const stmts = [];
       if (action === 'add') {
-        await db.execute({
+        stmts.push({
           sql: 'INSERT INTO sprints (id, name, status, start_date, end_date, progress) VALUES (?, ?, ?, ?, ?, ?)',
           args: [data.id, data.name || '', data.status || 'Active', data.startDate || new Date().toISOString().split('T')[0], data.endDate || '', data.progress || 0]
         });
         if (data.tasks && data.tasks.length > 0) {
           for (const task of data.tasks) {
-            await db.execute({
+            stmts.push({
               sql: 'INSERT INTO sprint_tasks (id, sprint_id, title, status, description, assignee, note) VALUES (?, ?, ?, ?, ?, ?, ?)',
               args: [task.id || crypto.randomUUID(), data.id, task.title, task.status || 'todo', task.description || '', task.assignee || '', task.note || '']
             });
           }
         }
-        await db.execute({
+        stmts.push({
           sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
           args: [new Date().toISOString(), author || agent || 'System', `Created sprint ${data.id}`, 'system']
         });
       } else if (action === 'update') {
-        await db.execute({
+        stmts.push({
           sql: 'UPDATE sprints SET name = COALESCE(?, name), status = COALESCE(?, status), start_date = COALESCE(?, start_date), end_date = COALESCE(?, end_date), progress = COALESCE(?, progress) WHERE id = ?',
           args: [data.name || null, data.status || null, data.startDate || null, data.endDate || null, data.progress !== undefined ? data.progress : null, data.id]
         });
         
         // If tasks are provided, we do a full replacement of tasks for this sprint
         if (data.tasks !== undefined) {
-          await db.execute({ sql: 'DELETE FROM sprint_tasks WHERE sprint_id = ?', args: [data.id] });
+          stmts.push({ sql: 'DELETE FROM sprint_tasks WHERE sprint_id = ?', args: [data.id] });
           for (const task of data.tasks) {
-            await db.execute({
+            stmts.push({
               sql: 'INSERT INTO sprint_tasks (id, sprint_id, title, status, description, assignee, note) VALUES (?, ?, ?, ?, ?, ?, ?)',
               args: [task.id || crypto.randomUUID(), data.id, task.title, task.status || 'todo', task.description || '', task.assignee || '', task.note || '']
             });
           }
         }
-        await db.execute({
+        stmts.push({
           sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
           args: [new Date().toISOString(), author || agent || 'System', `Updated sprint ${data.id}`, 'system']
         });
       } else if (action === 'delete') {
-        await db.execute({
+        stmts.push({
           sql: 'DELETE FROM sprint_tasks WHERE sprint_id = ?',
           args: [data.id]
         });
-        await db.execute({
+        stmts.push({
           sql: 'DELETE FROM sprints WHERE id = ?',
           args: [data.id]
         });
-        await db.execute({
+        stmts.push({
           sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
           args: [new Date().toISOString(), author || agent || 'System', `Deleted sprint ${data.id}`, 'system']
         });
+      }
+      if (stmts.length > 0) {
+        await db.batch(stmts);
       }
     } else if (type === 'topic') {
       if (action === 'add') {

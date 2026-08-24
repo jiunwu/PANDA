@@ -5,10 +5,11 @@ export function useDashboardData() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
+  const fetchData = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
-      const res = await fetch('/api/dashboard-data', { cache: 'no-store' });
+      const cacheBuster = Date.now();
+      const res = await fetch(`/api/dashboard-data?t=${cacheBuster}`, { cache: 'no-store' });
       if (!res.ok) throw new Error('Failed to fetch data');
       const result = await res.json();
       setData(result);
@@ -24,5 +25,5 @@ export function useDashboardData() {
     fetchData();
   }, [fetchData]);
 
-  return { data, loading, error, refetch: fetchData };
+  return { data, loading, error, refetch: () => fetchData(true) };
 }
