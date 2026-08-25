@@ -24,8 +24,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setMounted(true);
+    const cacheBuster = Date.now();
     // Fetch live data on mount
-    fetch('/api/status')
+    fetch(`/api/status?t=${cacheBuster}`, { cache: 'no-store' })
       .then(res => res.json())
       .then(fetchedData => {
         // api/status only returns partial data (for public/status endpoint)
@@ -37,7 +38,7 @@ export default function DashboardPage() {
     // Better yet, just fetch the whole project data in a Server Component
     // or let's create an API endpoint to get all data for the dashboard.
     // I'll make a dedicated fetch for the full data.
-    fetch('/api/dashboard-data')
+    fetch(`/api/dashboard-data?t=${cacheBuster}`, { cache: 'no-store' })
       .then(res => res.json())
       .then(fullData => {
         if (fullData.project) setData(fullData);
@@ -74,7 +75,8 @@ export default function DashboardPage() {
       if (res.ok) {
         setNewNote('');
         // Refresh data
-        fetch('/api/dashboard-data')
+        const cacheBuster = Date.now();
+        fetch(`/api/dashboard-data?t=${cacheBuster}`, { cache: 'no-store' })
           .then(res => res.json())
           .then(fullData => {
             if (fullData.project) setData(fullData);

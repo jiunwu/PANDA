@@ -37,7 +37,8 @@ export default function ActivityPage() {
   useEffect(() => {
     const fetchActivity = async () => {
       try {
-        const res = await fetch('/api/activity');
+        const cacheBuster = Date.now();
+        const res = await fetch(`/api/activity?t=${cacheBuster}`, { cache: 'no-store' });
         const data = await res.json();
         setActivityLog(Array.isArray(data) ? data : []);
       } catch (error) {

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getProjectData } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 // GET /api/status — returns current project state
 // Auth is handled by middleware (cookie or Bearer token)
@@ -16,7 +18,7 @@ export async function GET() {
   const deadline = new Date(funding.deadline);
   const daysLeft = Math.max(0, Math.ceil((deadline - new Date()) / 86400000));
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     project: projectData.project,
     team: projectData.team,
     funding: projectData.funding,
@@ -29,4 +31,6 @@ export async function GET() {
       daysLeft,
     },
   });
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  return response;
 }

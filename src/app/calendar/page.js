@@ -88,7 +88,8 @@ export default function CalendarPage() {
   async function fetchEvents() {
     setLoading(true);
     try {
-      const res = await fetch('/api/schedules');
+      const cacheBuster = Date.now();
+      const res = await fetch(`/api/schedules?t=${cacheBuster}`, { cache: 'no-store' });
       if (res.ok) setEvents(await res.json());
     } catch (err) {
       console.error('Failed to fetch schedules', err);

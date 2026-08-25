@@ -3,6 +3,8 @@ import { put } from '@vercel/blob';
 import { getClient, ensureTables } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 export async function GET() {
   try {
@@ -12,7 +14,9 @@ export async function GET() {
     }
     await ensureTables(db);
     const res = await db.execute('SELECT id, title, url, status, last_updated as lastUpdated, folder FROM data_room_files ORDER BY last_updated DESC');
-    return NextResponse.json(res.rows);
+    const response = NextResponse.json(res.rows);
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    return response;
   } catch (error) {
     console.error('Error listing data room files:', error);
     return NextResponse.json({ error: 'Failed to list files' }, { status: 500 });
