@@ -133,7 +133,9 @@ export default function SetupPage() {
               <div>
                 <p className="setup-info-name">{user.label}</p>
                 <p className="setup-info-desc">
-                  Register a passkey to sign in with biometrics, Face ID, or your device PIN.
+                  Register a passkey to sign in with Face ID, biometrics, or your device PIN.
+                  Your passkey syncs via iCloud Keychain and works across devices — you can
+                  sign in from any computer by scanning a QR code with your phone.
                 </p>
               </div>
             </div>

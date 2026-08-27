@@ -64,9 +64,11 @@ function LoginForm() {
       }
     } catch (error) {
       if (error.name === 'NotAllowedError') {
-        setError('Authentication was cancelled or timed out.');
+        setError('Authentication was cancelled or timed out. If on a public computer, choose "Use a phone or tablet" and scan the QR code with your iPhone.');
+      } else if (error.name === 'SecurityError') {
+        setError('Security error. Make sure you are accessing this site over HTTPS.');
       } else {
-        setError(error.message || 'Login failed');
+        setError(error.message || 'Login failed. If on a public computer, try the "Use a phone or tablet" option in the browser popup.');
       }
     } finally {
       setLoading(false);
@@ -147,6 +149,10 @@ function LoginForm() {
         <span className="passkey-icon">🔑</span>
         {loading ? 'Waiting for browser...' : 'Login with Passkey'}
       </button>
+
+      <p className="login-hint" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '8px', textAlign: 'center', lineHeight: 1.4 }}>
+        📱 On a public computer? Choose <strong>&quot;Use a phone or tablet&quot;</strong> in the browser popup, then scan the QR code with your iPhone.
+      </p>
 
       {(process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview') && (
         <button

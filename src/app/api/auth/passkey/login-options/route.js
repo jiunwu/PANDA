@@ -32,9 +32,13 @@ export async function POST(request) {
     rpID,
     allowCredentials: existingPasskeys.map((pk) => ({
       id: pk.id,
-      // Omit transports to allow cross-device passkey usage (e.g. from public computer)
+      // Include stored transports + 'hybrid' so Chrome knows it can reach
+      // this credential via QR code (cross-device) on public computers
+      transports: [...new Set([...(pk.transports || []), 'hybrid'])],
     })),
-    userVerification: 'required',
+    // 'preferred' allows login on public PCs without biometric readers
+    // (still uses user verification when available)
+    userVerification: 'preferred',
   });
 
   await saveChallenge(userId, options.challenge);
