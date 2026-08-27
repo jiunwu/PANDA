@@ -34,7 +34,7 @@ export async function POST(request) {
       id: pk.id,
       // Omit transports to allow cross-device passkey usage (e.g. from public computer)
     })),
-    userVerification: 'preferred',
+    userVerification: 'required',
   });
 
   await saveChallenge(userId, options.challenge);
