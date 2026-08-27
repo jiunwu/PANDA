@@ -35,8 +35,11 @@ export async function POST(request) {
     attestationType: 'none',
     excludeCredentials,
     authenticatorSelection: {
-      residentKey: 'preferred',
-      userVerification: 'preferred',
+      // 'required' ensures the passkey is discoverable (synced via iCloud Keychain / Google Password Manager)
+      // This is what enables cross-device usage (e.g. iPhone passkey on a public computer)
+      residentKey: 'required',
+      userVerification: 'required',
+      // No authenticatorAttachment — allow any authenticator type (platform, cross-platform, hybrid)
     },
   });
 
