@@ -48,6 +48,7 @@ export async function POST(request) {
       expectedChallenge,
       expectedOrigin: origin,
       expectedRPID: rpID,
+      requireUserVerification: false,
       credential: {
         id: storedPasskey.id,
         publicKey: Uint8Array.from(Buffer.from(storedPasskey.publicKey, 'base64url')),
