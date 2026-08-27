@@ -19,7 +19,8 @@ export default function TopicsPage() {
   async function fetchTopics() {
     setLoading(true);
     try {
-      const res = await fetch('/api/topics');
+      const cacheBuster = Date.now();
+      const res = await fetch(`/api/topics?t=${cacheBuster}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setTopics(data);
