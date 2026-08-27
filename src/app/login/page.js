@@ -8,6 +8,7 @@ import Link from 'next/link';
 const USERS = [
   { id: 'nina', label: 'Nina', initial: 'N' },
   { id: 'jiun', label: 'Jiun', initial: 'J' },
+  { id: 'herrmann', label: 'Prof. Herrmann', initial: 'H' },
 ];
 
 function LoginForm() {
