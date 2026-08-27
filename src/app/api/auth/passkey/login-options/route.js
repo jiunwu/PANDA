@@ -32,7 +32,7 @@ export async function POST(request) {
     rpID,
     allowCredentials: existingPasskeys.map((pk) => ({
       id: pk.id,
-      transports: pk.transports,
+      // Omit transports to allow cross-device passkey usage (e.g. from public computer)
     })),
     userVerification: 'preferred',
   });
