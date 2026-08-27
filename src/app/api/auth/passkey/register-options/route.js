@@ -24,7 +24,7 @@ export async function POST(request) {
   const existingPasskeys = await getPasskeysByUser(userId);
   const excludeCredentials = existingPasskeys.map((pk) => ({
     id: pk.id,
-    transports: pk.transports,
+    // Omit transports to allow cross-device passkey checking
   }));
 
   const options = await generateRegistrationOptions({
