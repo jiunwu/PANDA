@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 // ─── EXIST Budget Configuration ───
 const COACHING_BUDGET = 5000;
-const SACHMITTEL_BUDGET = 25000;
+const SACHMITTEL_BUDGET = 30000;
 const TOTAL_BUDGET = COACHING_BUDGET + SACHMITTEL_BUDGET;
 
 // ─── Category System (EXIST Guideline) ───
