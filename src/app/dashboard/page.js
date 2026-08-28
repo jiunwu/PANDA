@@ -140,15 +140,19 @@ export default function DashboardPage() {
           {!notes || notes.length === 0 ? (
             <div style={{ color: 'var(--text-tertiary)', fontSize: 13, padding: '12px 0' }}>No notes yet.</div>
           ) : (
-            notes.slice(0, 3).map((note, i) => (
-              <div className="list-item" key={i}>
-                <div className="item-title" style={{ fontWeight: 'normal', color: 'var(--text-secondary)' }}>{note.text}</div>
-                <div className="item-meta">
-                  <span>{note.author}</span>
-                  <span>{note.date}</span>
+            notes.slice(0, 3).map((note, i) => {
+              const bgColors = ['var(--ice-melt)', 'var(--peach-dust)', 'var(--almost-aqua)', 'var(--orchid-tint)'];
+              const bgColor = bgColors[i % bgColors.length];
+              return (
+                <div className="list-item" key={i} style={{ background: bgColor, padding: '16px', borderRadius: '8px', border: 'none', marginBottom: '8px' }}>
+                  <div className="item-title" style={{ fontWeight: 'normal', color: 'var(--text-primary)', fontFamily: '"Nebula Sans", sans-serif', fontSize: '15px' }}>{note.text}</div>
+                  <div className="item-meta" style={{ marginTop: '8px', color: 'rgba(0,0,0,0.6)' }}>
+                    <span>{note.author}</span>
+                    <span>{note.date}</span>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
         <form onSubmit={handleAddNote} style={{ display: 'flex', gap: '8px' }}>

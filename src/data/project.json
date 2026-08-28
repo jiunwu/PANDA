@@ -78,9 +78,30 @@
       "pct": 15
     }
   ],
-  "notes": [],
+  "notes": [
+    {
+      "text": "Update dashboard design with new colors",
+      "author": "Nina",
+      "date": "Aug 29, 2026"
+    },
+    {
+      "text": "Refactor backend API endpoints for notes",
+      "author": "Jiun",
+      "date": "Aug 28, 2026"
+    },
+    {
+      "text": "Verify playwright integration",
+      "author": "Jules",
+      "date": "Aug 28, 2026"
+    }
+  ],
   "sprints": [],
   "agentsOverview": [
-    { "name": "Google Jules", "role": "Coding Agent", "status": "Active", "task": "Ready for task dispatch" }
+    {
+      "name": "Google Jules",
+      "role": "Coding Agent",
+      "status": "Active",
+      "task": "Ready for task dispatch"
+    }
   ]
 }
