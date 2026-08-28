@@ -171,7 +171,7 @@ export default function DashboardPage() {
       <div className="bento-grid" style={{ marginTop: 24 }}>
         {/* LEFT COLUMN: Operations */}
         <div className="bento-col">
-          <div className="bento-card">
+          <div className="bento-card" style={{ background: 'var(--ice-melt)', border: 'none' }}>
             <div className="bento-header">
               <div>
                 <h2 className="bento-title">Agile Sprint</h2>
@@ -184,17 +184,17 @@ export default function DashboardPage() {
                 <div style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>Waiting for external agent to sync sprints...</div>
               ) : (
                 sprints[0].tasks.slice(0, 3).map((task, i) => (
-                  <div className="list-item" key={i}>
+                  <div className="list-item" key={i} style={{ borderBottomColor: 'rgba(0,0,0,0.1)' }}>
                     <div className="item-title">{task.title}</div>
                     <div className="item-meta">
-                      <span className={`item-tag ${task.status === 'done' ? 'active' : ''}`}>{task.status}</span>
+                      <span className={`item-tag ${task.status === 'done' ? 'active' : ''}`} style={{ backgroundColor: task.status === 'done' ? '' : 'rgba(255,255,255,0.5)' }}>{task.status}</span>
                     </div>
                   </div>
                 ))
               )}
             </div>
           </div>
-          <div className="bento-card" style={{ marginTop: 24 }}>
+          <div className="bento-card" style={{ background: 'var(--peach-dust)', border: 'none', marginTop: 24 }}>
             <div className="bento-header">
               <div>
                 <h2 className="bento-title">Work Packages</h2>
@@ -214,21 +214,21 @@ export default function DashboardPage() {
                 </thead>
                 <tbody>
                   {!workPackages || workPackages.length === 0 ? (
-                    <tr><td colSpan="4" style={{ color: 'var(--text-tertiary)' }}>No work packages found.</td></tr>
+                    <tr><td colSpan="4" style={{ color: 'var(--text-tertiary)', borderBottomColor: 'rgba(0,0,0,0.1)' }}>No work packages found.</td></tr>
                   ) : (
                     workPackages.slice(0, 3).map(wp => (
-                      <tr key={wp.id}>
-                        <td style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>{wp.id}</td>
-                        <td>{wp.name}</td>
-                        <td style={{ minWidth: 100 }}>
+                      <tr key={wp.id} style={{ borderBottomColor: 'rgba(0,0,0,0.1)' }}>
+                        <td style={{ color: 'var(--text-tertiary)', fontSize: 12, borderBottomColor: 'rgba(0,0,0,0.1)' }}>{wp.id}</td>
+                        <td style={{ borderBottomColor: 'rgba(0,0,0,0.1)' }}>{wp.name}</td>
+                        <td style={{ minWidth: 100, borderBottomColor: 'rgba(0,0,0,0.1)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             <span style={{ fontSize: 12, minWidth: 32 }}>{wp.progress}%</span>
-                            <div className="progress-bar" style={{ flex: 1, marginTop: 0 }}>
+                            <div className="progress-bar" style={{ flex: 1, marginTop: 0, backgroundColor: 'rgba(0,0,0,0.1)' }}>
                               <div className="progress-fill" style={{ width: `${wp.progress}%`, background: wp.progress === 100 ? 'var(--green)' : 'var(--text-primary)' }} />
                             </div>
                           </div>
                         </td>
-                        <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{wp.owner}</td>
+                        <td style={{ fontSize: 12, color: 'var(--text-secondary)', borderBottomColor: 'rgba(0,0,0,0.1)' }}>{wp.owner}</td>
                       </tr>
                     ))
                   )}
@@ -240,7 +240,7 @@ export default function DashboardPage() {
 
         {/* MIDDLE COLUMN: Core Project */}
         <div className="bento-col">
-          <div className="bento-card">
+          <div className="bento-card" style={{ background: 'var(--almost-aqua)', border: 'none' }}>
             <div className="bento-header">
               <div>
                 <h2 className="bento-title">Milestones</h2>
@@ -266,9 +266,14 @@ export default function DashboardPage() {
                 })
               )}
             </div>
+            <style jsx>{`
+              .timeline::before {
+                background: rgba(0,0,0,0.1);
+              }
+            `}</style>
           </div>
 
-          <div className="bento-card">
+          <div className="bento-card" style={{ background: 'var(--orchid-tint)', border: 'none' }}>
             <div className="bento-header">
               <div>
                 <h2 className="bento-title">Data Room</h2>
@@ -281,14 +286,14 @@ export default function DashboardPage() {
                 <div style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>No documents found.</div>
               ) : (
               dataRoom.map((doc, i) => (
-                <div className="list-item" key={i}>
+                <div className="list-item" key={i} style={{ borderBottomColor: 'rgba(0,0,0,0.1)' }}>
                   <div className="item-title">
                     <a href={doc.id ? `/api/data-room/${doc.id}/download` : doc.url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
                       {doc.title} {doc.url !== '#' && '↗'}
                     </a>
                   </div>
                   <div className="item-meta">
-                    <span className={`type-tag ${doc.status === 'Empty' ? 'type-system' : doc.status === 'Draft' ? 'type-note' : 'type-milestone'}`}>
+                    <span className={`type-tag ${doc.status === 'Empty' ? 'type-system' : doc.status === 'Draft' ? 'type-note' : 'type-milestone'}`} style={{ backgroundColor: doc.status === 'Empty' ? 'rgba(0,0,0,0.05)' : doc.status === 'Draft' ? 'rgba(109,40,217,0.1)' : 'rgba(26,140,91,0.1)' }}>
                       {doc.status}
                     </span>
                     <span>Updated {doc.lastUpdated}</span>
