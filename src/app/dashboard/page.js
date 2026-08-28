@@ -285,7 +285,7 @@ export default function DashboardPage() {
               {!dataRoom || dataRoom.length === 0 ? (
                 <div style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>No documents found.</div>
               ) : (
-              dataRoom.map((doc, i) => (
+              dataRoom.slice(0, 5).map((doc, i) => (
                 <div className="list-item" key={i} style={{ borderBottomColor: 'rgba(0,0,0,0.1)' }}>
                   <div className="item-title">
                     <a href={doc.id ? `/api/data-room/${doc.id}/download` : doc.url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
