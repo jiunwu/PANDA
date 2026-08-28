@@ -3248,7 +3248,53 @@ a { color: inherit; }
   color: #ef4444;
 }
 
-/* Travel cards */
+/* DateTime row for date + time side by side */
+.fin-datetime-row {
+  display: flex;
+  gap: 6px;
+}
+.fin-datetime-row .field-input:first-child {
+  flex: 1;
+}
+.fin-time-input {
+  width: 90px !important;
+  flex-shrink: 0;
+}
+
+/* Tagegeld breakdown in travel cards */
+.fin-tagegeld-breakdown {
+  margin-left: 6px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
+}
+.fin-tagegeld-day {
+  cursor: help;
+}
+
+/* Tagegeld per-day detail in cost preview */
+.fin-tagegeld-detail {
+  padding: 6px 0 2px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.fin-tagegeld-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.fin-tagegeld-dot {
+  font-size: 10px;
+  width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.fin-tagegeld-info {
+  white-space: nowrap;
+}
 .fin-travel-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
@@ -3360,4 +3406,197 @@ a { color: inherit; }
   .fin-travel-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ─── EXIST Guideline UI ─── */
+.fin-guideline-toggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: var(--accent-light);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.fin-guideline-toggle:hover {
+  background: var(--white);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.fin-guideline-toggle-icon {
+  margin-right: 12px;
+  font-size: 18px;
+}
+.fin-guideline-toggle-text {
+  flex: 1;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.fin-guideline-chevron {
+  font-size: 16px;
+  color: var(--text-tertiary);
+  transition: transform 0.2s;
+}
+.fin-chevron-open {
+  transform: rotate(90deg);
+}
+
+.fin-guideline-content {
+  margin-top: 12px;
+  animation: dropdown-in 200ms ease;
+}
+.fin-guideline-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 768px) {
+  .fin-guideline-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.fin-guideline-col {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+.fin-guideline-col-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+.fin-guideline-col-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+.fin-guideline-budget {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.fin-guideline-constraint {
+  font-size: 12px;
+  padding: 8px 12px;
+  background: var(--accent-light);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+.fin-guideline-list-section {
+  margin-bottom: 16px;
+}
+.fin-guideline-list-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.fin-eligible {
+  color: var(--green);
+}
+.fin-not-eligible {
+  color: var(--red);
+}
+.fin-guideline-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.fin-guideline-list li {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding-left: 16px;
+  position: relative;
+  line-height: 1.4;
+}
+.fin-guideline-list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--text-tertiary);
+}
+
+/* ─── Dual Budget UI ─── */
+.fin-dual-budget {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 24px;
+}
+.fin-sub-budget {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+.fin-sub-budget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+.fin-sub-budget-label {
+  font-size: 15px;
+  font-weight: 600;
+  margin-right: 8px;
+}
+.fin-sub-budget-total {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.fin-sub-budget-nums {
+  font-size: 14px;
+}
+.fin-sub-budget-sep {
+  margin: 0 4px;
+  color: var(--text-tertiary);
+}
+.fin-sub-budget-remaining {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 12px;
+}
+.fin-sub-budget-warn {
+  color: var(--red);
+  font-weight: 500;
+  background: #ef444410;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ─── Misc Additions ─── */
+.fin-budget-type-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.fin-badge-coaching {
+  background: #8b5cf618;
+  color: #8b5cf6;
+}
+.fin-badge-sachmittel {
+  background: #2563eb18;
+  color: #2563eb;
+}
+.fin-cat-hint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 6px;
+  line-height: 1.4;
 }

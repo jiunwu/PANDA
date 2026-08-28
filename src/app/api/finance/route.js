@@ -18,7 +18,7 @@ export async function GET() {
       'SELECT id, category, description, amount, date, invoice_url, invoice_name, author, created_at FROM expenses ORDER BY date DESC'
     );
     const travelRes = await db.execute(
-      'SELECT id, destination, purpose, start_date, end_date, city_size, nights, nightly_rate, accommodation_total, transport_cost, daily_allowance_total, total_estimated, status, author, created_at FROM travel_plans ORDER BY start_date DESC'
+      'SELECT id, destination, purpose, start_date, end_date, departure_time, return_time, city_size, nights, nightly_rate, accommodation_total, transport_cost, daily_allowance_total, total_estimated, status, author, created_at FROM travel_plans ORDER BY start_date DESC'
     );
 
     const expenses = expensesRes.rows;
@@ -64,7 +64,7 @@ export async function POST(request) {
       if (action === 'add') {
         const id = data.id || crypto.randomUUID();
         await db.execute({
-          sql: 'INSERT INTO expenses (id, category, description, amount, date, invoice_url, invoice_name, author, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          sql: 'INSERT INTO expenses (id, category, description, amount, date, invoice_url, invoice_name, invoice_to, project_relevance, author, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           args: [
             id,
             data.category || 'other',
@@ -73,6 +73,8 @@ export async function POST(request) {
             data.date || new Date().toISOString().split('T')[0],
             data.invoice_url || null,
             data.invoice_name || null,
+            data.invoice_to || 'hochschule',
+            data.project_relevance || null,
             author || 'Unknown',
             new Date().toISOString()
           ]
@@ -84,7 +86,7 @@ export async function POST(request) {
         return NextResponse.json({ success: true, id });
       } else if (action === 'update') {
         await db.execute({
-          sql: 'UPDATE expenses SET category = COALESCE(?, category), description = COALESCE(?, description), amount = COALESCE(?, amount), date = COALESCE(?, date), invoice_url = COALESCE(?, invoice_url), invoice_name = COALESCE(?, invoice_name) WHERE id = ?',
+          sql: 'UPDATE expenses SET category = COALESCE(?, category), description = COALESCE(?, description), amount = COALESCE(?, amount), date = COALESCE(?, date), invoice_url = COALESCE(?, invoice_url), invoice_name = COALESCE(?, invoice_name), invoice_to = COALESCE(?, invoice_to), project_relevance = COALESCE(?, project_relevance) WHERE id = ?',
           args: [
             data.category || null,
             data.description || null,
@@ -92,6 +94,8 @@ export async function POST(request) {
             data.date || null,
             data.invoice_url || null,
             data.invoice_name || null,
+            data.invoice_to || null,
+            data.project_relevance || null,
             data.id
           ]
         });
@@ -108,13 +112,15 @@ export async function POST(request) {
       if (action === 'add') {
         const id = data.id || crypto.randomUUID();
         await db.execute({
-          sql: 'INSERT INTO travel_plans (id, destination, purpose, start_date, end_date, city_size, nights, nightly_rate, accommodation_total, transport_cost, daily_allowance_total, total_estimated, status, author, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          sql: 'INSERT INTO travel_plans (id, destination, purpose, start_date, end_date, departure_time, return_time, city_size, nights, nightly_rate, accommodation_total, transport_cost, daily_allowance_total, total_estimated, status, author, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           args: [
             id,
             data.destination,
             data.purpose || '',
             data.start_date,
             data.end_date,
+            data.departure_time || null,
+            data.return_time || null,
             data.city_size || 'small',
             data.nights || 0,
             data.nightly_rate || 90,
@@ -134,12 +140,14 @@ export async function POST(request) {
         return NextResponse.json({ success: true, id });
       } else if (action === 'update') {
         await db.execute({
-          sql: 'UPDATE travel_plans SET destination = COALESCE(?, destination), purpose = COALESCE(?, purpose), start_date = COALESCE(?, start_date), end_date = COALESCE(?, end_date), city_size = COALESCE(?, city_size), nights = COALESCE(?, nights), nightly_rate = COALESCE(?, nightly_rate), accommodation_total = COALESCE(?, accommodation_total), transport_cost = COALESCE(?, transport_cost), daily_allowance_total = COALESCE(?, daily_allowance_total), total_estimated = COALESCE(?, total_estimated), status = COALESCE(?, status) WHERE id = ?',
+          sql: 'UPDATE travel_plans SET destination = COALESCE(?, destination), purpose = COALESCE(?, purpose), start_date = COALESCE(?, start_date), end_date = COALESCE(?, end_date), departure_time = COALESCE(?, departure_time), return_time = COALESCE(?, return_time), city_size = COALESCE(?, city_size), nights = COALESCE(?, nights), nightly_rate = COALESCE(?, nightly_rate), accommodation_total = COALESCE(?, accommodation_total), transport_cost = COALESCE(?, transport_cost), daily_allowance_total = COALESCE(?, daily_allowance_total), total_estimated = COALESCE(?, total_estimated), status = COALESCE(?, status) WHERE id = ?',
           args: [
             data.destination || null,
             data.purpose || null,
             data.start_date || null,
             data.end_date || null,
+            data.departure_time !== undefined ? data.departure_time : null,
+            data.return_time !== undefined ? data.return_time : null,
             data.city_size || null,
             data.nights !== undefined ? data.nights : null,
             data.nightly_rate !== undefined ? data.nightly_rate : null,

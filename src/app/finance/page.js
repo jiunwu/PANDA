@@ -2,29 +2,81 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-const TOTAL_BUDGET = 30000;
-const CATEGORIES = ['travel', 'accommodation', 'materials', 'conference', 'other'];
-const CATEGORY_LABELS = {
-  travel: 'Reisekosten',
-  accommodation: 'Übernachtung',
-  materials: 'Sachmittel',
-  conference: 'Konferenz',
-  other: 'Sonstiges',
+// ─── EXIST Budget Configuration ───
+const COACHING_BUDGET = 5000;
+const SACHMITTEL_BUDGET = 25000;
+const TOTAL_BUDGET = COACHING_BUDGET + SACHMITTEL_BUDGET;
+
+// ─── Category System (EXIST Guideline) ───
+const BUDGET_TYPES = {
+  coaching: { label: 'Coaching', budget: COACHING_BUDGET, color: '#8b5cf6' },
+  sachmittel: { label: 'Sachmittel', budget: SACHMITTEL_BUDGET, color: '#2563eb' },
 };
+
+const CATEGORIES = [
+  // Coaching categories
+  { id: 'coaching_strategy', budget: 'coaching', label: 'Strategie & Geschäftsmodell', icon: '📊', hint: 'Geschäftsmodell, Produkt, Vertrieb, Marketing, Innovationsschutz, Finanzierung' },
+  { id: 'coaching_legal', budget: 'coaching', label: 'Rechts- & Steuerberatung', icon: '⚖️', hint: 'Kaufmännische & steuerliche Gestaltung, Rechtsberatung' },
+  { id: 'coaching_training', budget: 'coaching', label: 'Weiterbildung (gründungsbez.)', icon: '🎓', hint: 'Gründungsspezifische Weiterbildung zu den benannten Themenfeldern' },
+  // Sachmittel categories
+  { id: 'sach_material', budget: 'sachmittel', label: 'Material & Lizenzen', icon: '📦', hint: 'Material, Funktionsmuster, Lizenzen, Software' },
+  { id: 'sach_services', budget: 'sachmittel', label: 'Dienstleistungen', icon: '🔧', hint: 'Softwareentwicklung, Marketingkonzepte, Patentrecherchen (Auftragsvergabe/Werkvertrag)' },
+  { id: 'sach_travel', budget: 'sachmittel', label: 'Dienstreisen', icon: '✈️', hint: 'Tagungen, Weiterbildung, Pilotkunden (nach BayRKG)' },
+  { id: 'sach_investment', budget: 'sachmittel', label: 'Investitionen', icon: '💻', hint: 'PC, spezielle Geräte für das Vorhaben' },
+  { id: 'sach_pr', budget: 'sachmittel', label: 'Öffentlichkeitsarbeit', icon: '📢', hint: 'Pilotkunden-Gewinnung, Messen, Präsentationen (mit Förderlogos)' },
+  { id: 'sach_techconsult', budget: 'sachmittel', label: 'Technische Beratung', icon: '🔬', hint: 'Technische/gestalterische Beratungsleistungen & Schulungen' },
+  { id: 'sach_other', budget: 'sachmittel', label: 'Sonstiges', icon: '📁', hint: 'Literatur (sofern nicht ausleihbar), etc.' },
+];
+
+const CATEGORY_MAP = Object.fromEntries(CATEGORIES.map(c => [c.id, c]));
+
+// Legacy category migration mapping
+const LEGACY_CATEGORY_MAP = {
+  travel: 'sach_travel',
+  accommodation: 'sach_travel',
+  materials: 'sach_material',
+  conference: 'sach_travel',
+  other: 'sach_other',
+};
+
+function resolveCategory(catId) {
+  return CATEGORY_MAP[catId] || CATEGORY_MAP[LEGACY_CATEGORY_MAP[catId]] || { id: catId, budget: 'sachmittel', label: catId, icon: '📁', hint: '' };
+}
+
+function resolveBudgetType(catId) {
+  const cat = resolveCategory(catId);
+  return cat.budget;
+}
+
 const CATEGORY_COLORS = {
-  travel: '#2563eb',
-  accommodation: '#7c3aed',
-  materials: '#059669',
-  conference: '#d97706',
+  coaching_strategy: '#8b5cf6',
+  coaching_legal: '#a855f7',
+  coaching_training: '#c084fc',
+  sach_material: '#2563eb',
+  sach_services: '#0891b2',
+  sach_travel: '#059669',
+  sach_investment: '#d97706',
+  sach_pr: '#e11d48',
+  sach_techconsult: '#6366f1',
+  sach_other: '#6b7280',
+  // Legacy fallbacks
+  travel: '#059669',
+  accommodation: '#059669',
+  materials: '#2563eb',
+  conference: '#059669',
   other: '#6b7280',
 };
+
+// Coaching max daily rate per EXIST guideline
+const COACHING_MAX_DAILY_RATE = 1000; // €1.000 netto incl. Reisekosten
 
 // BayRKG rates
 const BAYRKG_RATES = {
   small: { rate: 90, label: '< 300.000 Einwohner' },
   large: { rate: 120, label: '≥ 300.000 Einwohner' },
 };
-const DAILY_ALLOWANCE = 28; // €28/day per BayRKG Tagegeld
+const DAILY_ALLOWANCE_FULL = 28;
+const DAILY_ALLOWANCE_HALF = 14;
 
 function formatEuro(n) {
   return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
@@ -51,6 +103,82 @@ function calcDays(start, end) {
   return Math.max(0, diff);
 }
 
+// Calculate Tagegeld per BayRKG based on departure/return times
+function calcTagegeld(startDate, endDate, departureTime, returnTime) {
+  if (!startDate || !endDate) return { days: [], total: 0 };
+  const totalDays = calcDays(startDate, endDate);
+  if (totalDays <= 0) return { days: [], total: 0 };
+
+  const depHour = departureTime ? parseFloat(departureTime.split(':')[0]) + parseFloat(departureTime.split(':')[1] || 0) / 60 : 8;
+  const retHour = returnTime ? parseFloat(returnTime.split(':')[0]) + parseFloat(returnTime.split(':')[1] || 0) / 60 : 18;
+
+  const days = [];
+
+  if (totalDays === 1) {
+    const hours = Math.max(0, retHour - depHour);
+    const rate = hours >= 8 ? DAILY_ALLOWANCE_HALF : 0;
+    const label = hours >= 8 ? `${hours.toFixed(1)}h → 14 €` : `${hours.toFixed(1)}h → 0 € (<8h)`;
+    days.push({ date: startDate, hours, rate, label });
+  } else {
+    const firstDayHours = Math.max(0, 24 - depHour);
+    const firstRate = firstDayHours >= 8 ? DAILY_ALLOWANCE_HALF : 0;
+    days.push({
+      date: startDate, hours: firstDayHours, rate: firstRate,
+      label: `Anreise ${departureTime || '08:00'} → ${firstDayHours.toFixed(1)}h → ${firstRate} €`,
+    });
+
+    const s = new Date(startDate);
+    for (let i = 1; i < totalDays - 1; i++) {
+      const d = new Date(s);
+      d.setDate(d.getDate() + i);
+      days.push({ date: d.toISOString().split('T')[0], hours: 24, rate: DAILY_ALLOWANCE_FULL, label: `Ganzer Tag → 28 €` });
+    }
+
+    const lastDayHours = Math.max(0, retHour);
+    const lastRate = lastDayHours >= 8 ? DAILY_ALLOWANCE_HALF : 0;
+    days.push({
+      date: endDate, hours: lastDayHours, rate: lastRate,
+      label: `Abreise ${returnTime || '18:00'} → ${lastDayHours.toFixed(1)}h → ${lastRate} €`,
+    });
+  }
+
+  const total = days.reduce((sum, d) => sum + d.rate, 0);
+  return { days, total };
+}
+
+// ─── EXIST Guideline Reference Data ───
+const EXIST_ELIGIBLE_COACHING = [
+  'Geschäftsmodell, Produkt, Vertrieb',
+  'Marketing, Innovationsschutz, Finanzierung',
+  'Kaufmännische & steuerliche Beratung',
+  'Rechtsberatung (begrenzt)',
+  'Gründungsspezifische Weiterbildung',
+];
+const EXIST_NOT_ELIGIBLE_COACHING = [
+  'Technische/gestalterische Beratung → Sachmittel',
+  'Notar- & Anmeldegebühren (Unternehmensausgabe)',
+];
+const EXIST_ELIGIBLE_SACHMITTEL = [
+  'Material, Funktionsmuster, Lizenzen, Software',
+  'Dienstleistungen (Softwareentwicklung, Marketingkonzepte, Patentrecherchen)',
+  'Dienstreisen (Tagungen, Weiterbildung, Pilotkunden)',
+  'Investitionen (PC, spezielle Geräte)',
+  'Technische/gestalterische Beratung & Schulungen',
+  'Öffentlichkeitsarbeit (mit Förderlogos)',
+  'Literatur (sofern nicht ausleihbar)',
+];
+const EXIST_NOT_ELIGIBLE_SACHMITTEL = [
+  'Grundausstattung Hochschule (Miete, Büroausstattung, Standardsoftware, Telefon)',
+  'Personalmittel für studentische Hilfskräfte',
+  'Leistungen innerhalb der Hochschule',
+  'Schutzrechte-Anmeldung auf Privatpersonen/Unternehmen',
+  'Produktwerbung / Unternehmensmarketing',
+  'Bewirtungskosten',
+  'Persönliche Weiterbildung ohne Projektbezug',
+  'Direkte Gründungsaufwendungen (Notar, Gewerbe, Steuer)',
+  'Sachausgaben die nicht mehr wirksam werden',
+];
+
 export default function FinancePage() {
   const [mounted, setMounted] = useState(false);
   const [expenses, setExpenses] = useState([]);
@@ -62,14 +190,17 @@ export default function FinancePage() {
   const [showTravelModal, setShowTravelModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
+  const [guidelineOpen, setGuidelineOpen] = useState(false);
 
   // Expense form state
-  const [expCategory, setExpCategory] = useState('travel');
+  const [expCategory, setExpCategory] = useState('sach_material');
   const [expDescription, setExpDescription] = useState('');
   const [expAmount, setExpAmount] = useState('');
   const [expDate, setExpDate] = useState(new Date().toISOString().split('T')[0]);
   const [expInvoiceUrl, setExpInvoiceUrl] = useState('');
   const [expInvoiceName, setExpInvoiceName] = useState('');
+  const [expInvoiceTo, setExpInvoiceTo] = useState('hochschule');
+  const [expProjectRelevance, setExpProjectRelevance] = useState('');
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -80,6 +211,8 @@ export default function FinancePage() {
   const [trvEndDate, setTrvEndDate] = useState('');
   const [trvCitySize, setTrvCitySize] = useState('small');
   const [trvAccommodationCost, setTrvAccommodationCost] = useState('');
+  const [trvDepartureTime, setTrvDepartureTime] = useState('08:00');
+  const [trvReturnTime, setTrvReturnTime] = useState('18:00');
   const [trvTransportCost, setTrvTransportCost] = useState('');
 
   const fetchData = useCallback(async () => {
@@ -100,30 +233,49 @@ export default function FinancePage() {
     fetchData();
   }, [fetchData]);
 
-  // Derived values
-  const remaining = TOTAL_BUDGET - totalSpent;
-  const spentPct = Math.min(100, (totalSpent / TOTAL_BUDGET) * 100);
-  const plannedPct = Math.min(100 - spentPct, (totalPlanned / TOTAL_BUDGET) * 100);
+  // ─── Derived values ───
+  // Split expenses by budget type
+  const coachingExpenses = expenses.filter(e => resolveBudgetType(e.category) === 'coaching');
+  const sachmittelExpenses = expenses.filter(e => resolveBudgetType(e.category) === 'sachmittel');
+  const coachingSpent = coachingExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+  const sachmittelSpent = sachmittelExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+  const coachingRemaining = COACHING_BUDGET - coachingSpent;
+  const sachmittelRemaining = SACHMITTEL_BUDGET - sachmittelSpent;
+
+  // Category totals grouped by actual categories in use
   const categoryTotals = CATEGORIES.map(cat => ({
-    category: cat,
-    total: expenses.filter(e => e.category === cat).reduce((s, e) => s + (e.amount || 0), 0),
-  }));
+    ...cat,
+    total: expenses.filter(e => {
+      const resolved = LEGACY_CATEGORY_MAP[e.category] || e.category;
+      return resolved === cat.id;
+    }).reduce((s, e) => s + (e.amount || 0), 0),
+  })).filter(ct => ct.total > 0);
 
   const filteredExpenses = activeTab === 'all'
     ? expenses
-    : expenses.filter(e => e.category === activeTab);
+    : activeTab === 'coaching'
+      ? coachingExpenses
+      : activeTab === 'sachmittel'
+        ? sachmittelExpenses
+        : expenses.filter(e => (LEGACY_CATEGORY_MAP[e.category] || e.category) === activeTab);
 
   // Travel plan computed values
   const trvNights = calcNights(trvStartDate, trvEndDate);
   const trvDays = calcDays(trvStartDate, trvEndDate);
-  const trvNightlyRate = BAYRKG_RATES[trvCitySize].rate; // max allowed per BayRKG
+  const trvNightlyRate = BAYRKG_RATES[trvCitySize].rate;
   const trvActualPerNight = parseFloat(trvAccommodationCost) || 0;
   const trvAccommodationTotal = trvNights * trvActualPerNight;
   const trvMaxAccommodation = trvNights * trvNightlyRate;
   const trvAccommodationOverLimit = trvActualPerNight > trvNightlyRate;
-  const trvDailyAllowanceTotal = trvDays * DAILY_ALLOWANCE;
+  const trvTagegeld = calcTagegeld(trvStartDate, trvEndDate, trvDepartureTime, trvReturnTime);
+  const trvDailyAllowanceTotal = trvTagegeld.total;
   const trvTransport = parseFloat(trvTransportCost) || 0;
   const trvTotalEstimated = trvAccommodationTotal + trvTransport + trvDailyAllowanceTotal;
+
+  // Coaching daily rate warning
+  const isCoachingCategory = resolveBudgetType(expCategory) === 'coaching';
+  const expAmountNum = parseFloat(expAmount) || 0;
+  const coachingRateWarning = isCoachingCategory && expAmountNum > COACHING_MAX_DAILY_RATE;
 
   // File upload
   async function handleFileUpload(e) {
@@ -147,12 +299,14 @@ export default function FinancePage() {
   }
 
   function resetExpenseForm() {
-    setExpCategory('travel');
+    setExpCategory('sach_material');
     setExpDescription('');
     setExpAmount('');
     setExpDate(new Date().toISOString().split('T')[0]);
     setExpInvoiceUrl('');
     setExpInvoiceName('');
+    setExpInvoiceTo('hochschule');
+    setExpProjectRelevance('');
     setEditingExpense(null);
   }
 
@@ -163,6 +317,8 @@ export default function FinancePage() {
     setTrvEndDate('');
     setTrvCitySize('small');
     setTrvAccommodationCost('');
+    setTrvDepartureTime('08:00');
+    setTrvReturnTime('18:00');
     setTrvTransportCost('');
   }
 
@@ -182,6 +338,8 @@ export default function FinancePage() {
           date: expDate,
           invoice_url: expInvoiceUrl || null,
           invoice_name: expInvoiceName || null,
+          invoice_to: expInvoiceTo || 'hochschule',
+          project_relevance: expProjectRelevance || null,
         },
         author: 'User',
       };
@@ -222,6 +380,8 @@ export default function FinancePage() {
     setExpDate(exp.date);
     setExpInvoiceUrl(exp.invoice_url || '');
     setExpInvoiceName(exp.invoice_name || '');
+    setExpInvoiceTo(exp.invoice_to || 'hochschule');
+    setExpProjectRelevance(exp.project_relevance || '');
     setShowExpenseModal(true);
   }
 
@@ -241,6 +401,8 @@ export default function FinancePage() {
             purpose: trvPurpose,
             start_date: trvStartDate,
             end_date: trvEndDate,
+            departure_time: trvDepartureTime,
+            return_time: trvReturnTime,
             city_size: trvCitySize,
             nights: trvNights,
             nightly_rate: trvNightlyRate,
@@ -298,7 +460,6 @@ export default function FinancePage() {
   async function handleConvertToExpense(plan) {
     setIsSubmitting(true);
     try {
-      // Add as expense
       await fetch('/api/finance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -306,7 +467,7 @@ export default function FinancePage() {
           type: 'expense',
           action: 'add',
           data: {
-            category: 'travel',
+            category: 'sach_travel',
             description: `Reise: ${plan.destination} — ${plan.purpose || 'Dienstreise'}`,
             amount: plan.total_estimated,
             date: plan.end_date,
@@ -314,7 +475,6 @@ export default function FinancePage() {
           author: 'User',
         }),
       });
-      // Mark travel plan as completed
       await fetch('/api/finance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -335,7 +495,37 @@ export default function FinancePage() {
 
   if (!mounted) return null;
 
-  const budgetHealthColor = spentPct > 90 ? 'var(--red)' : spentPct > 70 ? '#d97706' : 'var(--green)';
+  // Budget health helpers
+  function budgetBar(label, spent, budget, color, planned) {
+    const pct = Math.min(100, (spent / budget) * 100);
+    const planPct = planned ? Math.min(100 - pct, (planned / budget) * 100) : 0;
+    const healthColor = pct > 90 ? 'var(--red)' : pct > 70 ? '#d97706' : 'var(--green)';
+    return (
+      <div className="fin-sub-budget" key={label}>
+        <div className="fin-sub-budget-header">
+          <div>
+            <span className="fin-sub-budget-label">{label}</span>
+            <span className="fin-sub-budget-total">{formatEuro(budget)}</span>
+          </div>
+          <div className="fin-sub-budget-nums">
+            <span style={{ color: healthColor, fontWeight: 600 }}>{formatEuro(spent)}</span>
+            <span className="fin-sub-budget-sep">/</span>
+            <span>{formatEuro(budget)}</span>
+          </div>
+        </div>
+        <div className="fin-budget-bar">
+          <div className="fin-budget-segment fin-segment-spent" style={{ width: `${pct}%`, background: color }} />
+          {planPct > 0 && <div className="fin-budget-segment fin-segment-planned" style={{ width: `${planPct}%` }} />}
+        </div>
+        <div className="fin-sub-budget-remaining">
+          Verbleibend: <strong>{formatEuro(budget - spent)}</strong>
+          {pct > 80 && <span className="fin-sub-budget-warn">⚠️ {pct.toFixed(0)}% verbraucht</span>}
+        </div>
+      </div>
+    );
+  }
+
+  const currentCatInfo = resolveCategory(expCategory);
 
   return (
     <>
@@ -344,12 +534,72 @@ export default function FinancePage() {
         <div className="page-header-row">
           <div>
             <h1>Finance</h1>
-            <p>Ausgaben verfolgen, Rechnungen hochladen & Reisekosten planen nach BayRKG.</p>
+            <p>EXIST Gründungsstipendium — Coaching & Sachmittel nach Richtlinie verwalten.</p>
           </div>
         </div>
       </header>
 
-      {/* Budget Overview */}
+      {/* EXIST Guideline Reference (Collapsible) */}
+      <section className="section" id="exist-guideline">
+        <button
+          className="fin-guideline-toggle"
+          onClick={() => setGuidelineOpen(!guidelineOpen)}
+          id="guideline-toggle-btn"
+        >
+          <span className="fin-guideline-toggle-icon">📋</span>
+          <span className="fin-guideline-toggle-text">EXIST Richtlinien — Förderfähigkeit</span>
+          <span className={`fin-guideline-chevron ${guidelineOpen ? 'fin-chevron-open' : ''}`}>▸</span>
+        </button>
+
+        {guidelineOpen && (
+          <div className="fin-guideline-content">
+            <div className="fin-guideline-grid">
+              {/* Coaching column */}
+              <div className="fin-guideline-col">
+                <div className="fin-guideline-col-header" style={{ borderColor: '#8b5cf6' }}>
+                  <h3>🎯 Coaching</h3>
+                  <span className="fin-guideline-budget">Budget: {formatEuro(COACHING_BUDGET)}</span>
+                </div>
+                <div className="fin-guideline-constraint">
+                  ⚠️ Max. <strong>1.000 €/Tag netto</strong> einschl. Reisekosten pro Berater
+                </div>
+                <div className="fin-guideline-list-section">
+                  <h4 className="fin-guideline-list-title fin-eligible">✅ Förderfähig</h4>
+                  <ul className="fin-guideline-list">{EXIST_ELIGIBLE_COACHING.map((item, i) => <li key={i}>{item}</li>)}</ul>
+                </div>
+                <div className="fin-guideline-list-section">
+                  <h4 className="fin-guideline-list-title fin-not-eligible">❌ Nicht förderfähig</h4>
+                  <ul className="fin-guideline-list">{EXIST_NOT_ELIGIBLE_COACHING.map((item, i) => <li key={i}>{item}</li>)}</ul>
+                </div>
+              </div>
+
+              {/* Sachmittel column */}
+              <div className="fin-guideline-col">
+                <div className="fin-guideline-col-header" style={{ borderColor: '#2563eb' }}>
+                  <h3>🔧 Sachausgaben</h3>
+                  <span className="fin-guideline-budget">Budget: {formatEuro(SACHMITTEL_BUDGET)}</span>
+                </div>
+                <div className="fin-guideline-constraint">
+                  📄 Rechnungen auf <strong>Hochschule/Forschungseinrichtung</strong> · UVgO/VOL-A beachten · Nur innerhalb Laufzeit
+                </div>
+                <div className="fin-guideline-list-section">
+                  <h4 className="fin-guideline-list-title fin-eligible">✅ Förderfähig</h4>
+                  <ul className="fin-guideline-list">{EXIST_ELIGIBLE_SACHMITTEL.map((item, i) => <li key={i}>{item}</li>)}</ul>
+                </div>
+                <div className="fin-guideline-list-section">
+                  <h4 className="fin-guideline-list-title fin-not-eligible">❌ Nicht förderfähig</h4>
+                  <ul className="fin-guideline-list">{EXIST_NOT_ELIGIBLE_SACHMITTEL.map((item, i) => <li key={i}>{item}</li>)}</ul>
+                </div>
+                <div className="fin-guideline-constraint" style={{ marginTop: '8px' }}>
+                  🇪🇺 Vergabe außerhalb EU nur nach Abstimmung mit PtJ (kein EU-Anbieter oder ≥50% günstiger)
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Budget Overview — Split into Coaching & Sachmittel */}
       <section className="section" id="budget-overview">
         <div className="fin-stats-grid">
           <div className="fin-stat-card">
@@ -357,74 +607,55 @@ export default function FinancePage() {
             <span className="fin-stat-value">{formatEuro(TOTAL_BUDGET)}</span>
           </div>
           <div className="fin-stat-card">
-            <span className="fin-stat-label">Ausgegeben</span>
-            <span className="fin-stat-value" style={{ color: budgetHealthColor }}>{formatEuro(totalSpent)}</span>
+            <span className="fin-stat-label">Coaching</span>
+            <span className="fin-stat-value" style={{ color: coachingSpent > COACHING_BUDGET * 0.9 ? 'var(--red)' : '#8b5cf6' }}>
+              {formatEuro(coachingSpent)}
+            </span>
           </div>
           <div className="fin-stat-card">
-            <span className="fin-stat-label">Verbleibend</span>
-            <span className="fin-stat-value">{formatEuro(remaining)}</span>
+            <span className="fin-stat-label">Sachmittel</span>
+            <span className="fin-stat-value" style={{ color: sachmittelSpent > SACHMITTEL_BUDGET * 0.9 ? 'var(--red)' : '#2563eb' }}>
+              {formatEuro(sachmittelSpent)}
+            </span>
           </div>
           <div className="fin-stat-card">
-            <span className="fin-stat-label">Geplant</span>
-            <span className="fin-stat-value" style={{ color: '#7c3aed' }}>{formatEuro(totalPlanned)}</span>
+            <span className="fin-stat-label">Gesamt verbleibend</span>
+            <span className="fin-stat-value">{formatEuro(coachingRemaining + sachmittelRemaining)}</span>
           </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="fin-budget-bar-wrapper">
-          <div className="fin-budget-bar">
-            <div
-              className="fin-budget-segment fin-segment-spent"
-              style={{ width: `${spentPct}%` }}
-              title={`Ausgegeben: ${formatEuro(totalSpent)}`}
-            />
-            <div
-              className="fin-budget-segment fin-segment-planned"
-              style={{ width: `${plannedPct}%` }}
-              title={`Geplant: ${formatEuro(totalPlanned)}`}
-            />
-          </div>
-          <div className="fin-budget-legend">
-            <span className="fin-legend-item">
-              <span className="fin-legend-dot fin-dot-spent" />
-              Ausgegeben ({spentPct.toFixed(1)}%)
-            </span>
-            <span className="fin-legend-item">
-              <span className="fin-legend-dot fin-dot-planned" />
-              Geplant ({plannedPct.toFixed(1)}%)
-            </span>
-            <span className="fin-legend-item">
-              <span className="fin-legend-dot fin-dot-remaining" />
-              Verfügbar ({(100 - spentPct - plannedPct).toFixed(1)}%)
-            </span>
-          </div>
+        <div className="fin-dual-budget">
+          {budgetBar('Coaching', coachingSpent, COACHING_BUDGET, '#8b5cf6')}
+          {budgetBar('Sachmittel', sachmittelSpent, SACHMITTEL_BUDGET, '#2563eb', totalPlanned)}
         </div>
       </section>
 
       {/* Category Breakdown */}
-      <section className="section" id="category-breakdown">
-        <div className="section-head">
-          <h2 className="section-title">Ausgaben nach Kategorie</h2>
-        </div>
-        <div className="fin-category-bars">
-          {categoryTotals.map(ct => (
-            <div className="fin-cat-row" key={ct.category}>
-              <span className="fin-cat-label">{CATEGORY_LABELS[ct.category]}</span>
-              <div className="fin-cat-bar-track">
-                <div
-                  className="fin-cat-bar-fill"
-                  style={{
-                    width: `${TOTAL_BUDGET > 0 ? Math.max(0.5, (ct.total / TOTAL_BUDGET) * 100) : 0}%`,
-                    background: CATEGORY_COLORS[ct.category],
-                    minWidth: ct.total > 0 ? '4px' : '0',
-                  }}
-                />
+      {categoryTotals.length > 0 && (
+        <section className="section" id="category-breakdown">
+          <div className="section-head">
+            <h2 className="section-title">Ausgaben nach Kategorie</h2>
+          </div>
+          <div className="fin-category-bars">
+            {categoryTotals.map(ct => (
+              <div className="fin-cat-row" key={ct.id}>
+                <span className="fin-cat-label">{ct.icon} {ct.label}</span>
+                <div className="fin-cat-bar-track">
+                  <div
+                    className="fin-cat-bar-fill"
+                    style={{
+                      width: `${TOTAL_BUDGET > 0 ? Math.max(0.5, (ct.total / TOTAL_BUDGET) * 100) : 0}%`,
+                      background: CATEGORY_COLORS[ct.id] || '#6b7280',
+                      minWidth: ct.total > 0 ? '4px' : '0',
+                    }}
+                  />
+                </div>
+                <span className="fin-cat-amount">{formatEuro(ct.total)}</span>
               </div>
-              <span className="fin-cat-amount">{formatEuro(ct.total)}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Expense Tracker */}
       <section className="section" id="expense-tracker">
@@ -439,7 +670,7 @@ export default function FinancePage() {
           </button>
         </div>
 
-        {/* Category filter tabs */}
+        {/* Budget type filter tabs */}
         <div className="fin-filter-tabs">
           <button
             className={`fin-filter-tab ${activeTab === 'all' ? 'fin-filter-tab-active' : ''}`}
@@ -448,26 +679,29 @@ export default function FinancePage() {
             Alle
             <span className="fin-filter-count">{expenses.length}</span>
           </button>
-          {CATEGORIES.map(cat => {
-            const count = expenses.filter(e => e.category === cat).length;
-            return (
-              <button
-                key={cat}
-                className={`fin-filter-tab ${activeTab === cat ? 'fin-filter-tab-active' : ''}`}
-                onClick={() => setActiveTab(cat)}
-              >
-                {CATEGORY_LABELS[cat]}
-                {count > 0 && <span className="fin-filter-count">{count}</span>}
-              </button>
-            );
-          })}
+          <button
+            className={`fin-filter-tab ${activeTab === 'coaching' ? 'fin-filter-tab-active' : ''}`}
+            onClick={() => setActiveTab('coaching')}
+            style={activeTab === 'coaching' ? { borderColor: '#8b5cf6', color: '#8b5cf6' } : {}}
+          >
+            🎯 Coaching
+            {coachingExpenses.length > 0 && <span className="fin-filter-count">{coachingExpenses.length}</span>}
+          </button>
+          <button
+            className={`fin-filter-tab ${activeTab === 'sachmittel' ? 'fin-filter-tab-active' : ''}`}
+            onClick={() => setActiveTab('sachmittel')}
+            style={activeTab === 'sachmittel' ? { borderColor: '#2563eb', color: '#2563eb' } : {}}
+          >
+            🔧 Sachmittel
+            {sachmittelExpenses.length > 0 && <span className="fin-filter-count">{sachmittelExpenses.length}</span>}
+          </button>
         </div>
 
         {/* Expense table */}
         {filteredExpenses.length === 0 ? (
           <div className="fin-empty-state">
             <span className="fin-empty-icon">📋</span>
-            <p>Keine Ausgaben{activeTab !== 'all' ? ` in ${CATEGORY_LABELS[activeTab]}` : ''} vorhanden.</p>
+            <p>Keine Ausgaben vorhanden.</p>
             <button className="btn btn-secondary" onClick={() => { resetExpenseForm(); setShowExpenseModal(true); }}>
               Erste Ausgabe hinzufügen
             </button>
@@ -478,6 +712,7 @@ export default function FinancePage() {
               <thead>
                 <tr>
                   <th>Datum</th>
+                  <th>Budget</th>
                   <th>Kategorie</th>
                   <th>Beschreibung</th>
                   <th>Rechnung</th>
@@ -486,37 +721,47 @@ export default function FinancePage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredExpenses.map(exp => (
-                  <tr key={exp.id}>
-                    <td style={{ whiteSpace: 'nowrap' }}>{formatDate(exp.date)}</td>
-                    <td>
-                      <span className="fin-cat-badge" style={{ background: CATEGORY_COLORS[exp.category] + '18', color: CATEGORY_COLORS[exp.category], borderColor: CATEGORY_COLORS[exp.category] + '30' }}>
-                        {CATEGORY_LABELS[exp.category] || exp.category}
-                      </span>
-                    </td>
-                    <td>{exp.description || '—'}</td>
-                    <td>
-                      {exp.invoice_url ? (
-                        <a href={exp.invoice_url} target="_blank" rel="noopener noreferrer" className="fin-invoice-link">
-                          📎 {exp.invoice_name || 'Rechnung'}
-                        </a>
-                      ) : (
-                        <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>—</span>
-                      )}
-                    </td>
-                    <td style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{formatEuro(exp.amount)}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <div className="fin-row-actions">
-                        <button className="fin-action-btn" onClick={() => handleEditExpense(exp)} title="Bearbeiten">✏️</button>
-                        <button className="fin-action-btn fin-action-delete" onClick={() => handleDeleteExpense(exp.id)} title="Löschen">🗑</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {filteredExpenses.map(exp => {
+                  const catInfo = resolveCategory(exp.category);
+                  const budgetType = catInfo.budget;
+                  const catColor = CATEGORY_COLORS[exp.category] || CATEGORY_COLORS[catInfo.id] || '#6b7280';
+                  return (
+                    <tr key={exp.id}>
+                      <td style={{ whiteSpace: 'nowrap' }}>{formatDate(exp.date)}</td>
+                      <td>
+                        <span className={`fin-budget-type-badge fin-badge-${budgetType}`}>
+                          {budgetType === 'coaching' ? '🎯' : '🔧'} {BUDGET_TYPES[budgetType]?.label || budgetType}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="fin-cat-badge" style={{ background: catColor + '18', color: catColor, borderColor: catColor + '30' }}>
+                          {catInfo.icon} {catInfo.label}
+                        </span>
+                      </td>
+                      <td>{exp.description || '—'}</td>
+                      <td>
+                        {exp.invoice_url ? (
+                          <a href={exp.invoice_url} target="_blank" rel="noopener noreferrer" className="fin-invoice-link">
+                            📎 {exp.invoice_name || 'Rechnung'}
+                          </a>
+                        ) : (
+                          <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>—</span>
+                        )}
+                      </td>
+                      <td style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{formatEuro(exp.amount)}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        <div className="fin-row-actions">
+                          <button className="fin-action-btn" onClick={() => handleEditExpense(exp)} title="Bearbeiten">✏️</button>
+                          <button className="fin-action-btn fin-action-delete" onClick={() => handleDeleteExpense(exp.id)} title="Löschen">🗑</button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan="4" style={{ fontWeight: 600 }}>Summe</td>
+                  <td colSpan="5" style={{ fontWeight: 600 }}>Summe</td>
                   <td style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
                     {formatEuro(filteredExpenses.reduce((s, e) => s + (e.amount || 0), 0))}
                   </td>
@@ -549,7 +794,7 @@ export default function FinancePage() {
             <p>
               Höchstgrenzen für Übernachtungskosten: <strong>max. 90 €/Nacht</strong> (Orte unter 300.000 EW)
               bzw. <strong>max. 120 €/Nacht</strong> (Orte ab 300.000 EW).
-              Tagegeld bei ganztägiger Abwesenheit: <strong>28 €/Tag</strong>.
+              Tagegeld: <strong>28 €</strong> (ganzer Tag) / <strong>14 €</strong> (≥ 8h Abwesenheit) / <strong>0 €</strong> (&lt; 8h).
               Die tatsächlichen Kosten können niedriger liegen.
             </p>
           </div>
@@ -581,7 +826,9 @@ export default function FinancePage() {
                 <div className="fin-travel-details">
                   <div className="fin-travel-detail">
                     <span className="fin-detail-label">Zeitraum</span>
-                    <span>{formatDate(plan.start_date)} – {formatDate(plan.end_date)}</span>
+                    <span>
+                      {formatDate(plan.start_date)}{plan.departure_time ? ` ${plan.departure_time}` : ''} – {formatDate(plan.end_date)}{plan.return_time ? ` ${plan.return_time}` : ''}
+                    </span>
                   </div>
                   <div className="fin-travel-detail">
                     <span className="fin-detail-label">Nächte</span>
@@ -611,7 +858,22 @@ export default function FinancePage() {
                   </div>
                   <div className="fin-travel-detail">
                     <span className="fin-detail-label">Tagegeld</span>
-                    <span>{formatEuro(plan.daily_allowance_total)}</span>
+                    <span>
+                      {formatEuro(plan.daily_allowance_total)}
+                      {(() => {
+                        const tg = calcTagegeld(plan.start_date, plan.end_date, plan.departure_time, plan.return_time);
+                        if (tg.days.length === 0) return null;
+                        return (
+                          <span className="fin-tagegeld-breakdown">
+                            ({tg.days.map((d, i) => (
+                              <span key={i} className="fin-tagegeld-day" title={d.label}>
+                                {d.rate === 28 ? '●' : d.rate === 14 ? '◐' : '○'}
+                              </span>
+                            ))})
+                          </span>
+                        );
+                      })()}
+                    </span>
                   </div>
                   {plan.transport_cost > 0 && (
                     <div className="fin-travel-detail">
@@ -646,22 +908,35 @@ export default function FinancePage() {
         )}
       </section>
 
-      {/* Expense Modal */}
+      {/* ─── Expense Modal ─── */}
       {showExpenseModal && (
         <div className="cal-modal-overlay" onClick={() => setShowExpenseModal(false)}>
-          <div className="cal-modal" onClick={e => e.stopPropagation()} id="expense-modal">
+          <div className="cal-modal" onClick={e => e.stopPropagation()} id="expense-modal" style={{ width: '520px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '20px' }}>
               {editingExpense ? 'Ausgabe bearbeiten' : 'Neue Ausgabe'}
             </h3>
             <form className="cal-form" onSubmit={handleAddExpense}>
+              {/* Budget type + Category selection */}
               <div className="cal-field">
-                <label className="cal-label">Kategorie</label>
+                <label className="cal-label">Kategorie (EXIST)</label>
                 <select className="field-input" value={expCategory} onChange={e => setExpCategory(e.target.value)}>
-                  {CATEGORIES.map(c => (
-                    <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
-                  ))}
+                  <optgroup label="🎯 Coaching">
+                    {CATEGORIES.filter(c => c.budget === 'coaching').map(c => (
+                      <option key={c.id} value={c.id}>{c.icon} {c.label}</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="🔧 Sachmittel">
+                    {CATEGORIES.filter(c => c.budget === 'sachmittel').map(c => (
+                      <option key={c.id} value={c.id}>{c.icon} {c.label}</option>
+                    ))}
+                  </optgroup>
                 </select>
+                {/* Eligibility hint */}
+                <div className="fin-cat-hint">
+                  💡 {currentCatInfo.hint}
+                </div>
               </div>
+
               <div className="cal-field">
                 <label className="cal-label">Beschreibung</label>
                 <input
@@ -669,11 +944,11 @@ export default function FinancePage() {
                   type="text"
                   value={expDescription}
                   onChange={e => setExpDescription(e.target.value)}
-                  placeholder="z.B. Zugfahrt München–Berlin"
+                  placeholder="z.B. Beratung Geschäftsmodell, Softwarelizenz, Zugticket"
                 />
               </div>
               <div className="cal-field">
-                <label className="cal-label">Betrag (€)</label>
+                <label className="cal-label">Betrag (€ netto)</label>
                 <input
                   className="field-input"
                   type="number"
@@ -684,6 +959,13 @@ export default function FinancePage() {
                   placeholder="0.00"
                   required
                 />
+                {/* Coaching daily rate warning */}
+                {coachingRateWarning && (
+                  <div className="fin-limit-check fin-limit-check-over">
+                    ⚠️ Coaching Tageshonorarsatz max. {formatEuro(COACHING_MAX_DAILY_RATE)} netto einschl. Reisekosten.
+                    Falls dies mehrere Tage umfasst, bitte in der Beschreibung vermerken.
+                  </div>
+                )}
               </div>
               <div className="cal-field">
                 <label className="cal-label">Datum</label>
@@ -695,6 +977,37 @@ export default function FinancePage() {
                   required
                 />
               </div>
+
+              {/* Vorhabensbezug (project relevance) */}
+              <div className="cal-field">
+                <label className="cal-label">Vorhabensbezug</label>
+                <input
+                  className="field-input"
+                  type="text"
+                  value={expProjectRelevance}
+                  onChange={e => setExpProjectRelevance(e.target.value)}
+                  placeholder="Bezug zum EXIST-Vorhaben beschreiben"
+                />
+                <div className="fin-cat-hint" style={{ fontSize: '11px' }}>
+                  📋 Für alle Ausgaben muss der Vorhabensbezug erkennbar sein.
+                </div>
+              </div>
+
+              {/* Invoice addressed to */}
+              <div className="cal-field">
+                <label className="cal-label">Rechnung ausgestellt auf</label>
+                <select className="field-input" value={expInvoiceTo} onChange={e => setExpInvoiceTo(e.target.value)}>
+                  <option value="hochschule">Hochschule / Forschungseinrichtung</option>
+                  <option value="privat">Privatanschrift (begründeter Ausnahmefall)</option>
+                </select>
+                {expInvoiceTo === 'privat' && (
+                  <div className="fin-limit-check fin-limit-check-over" style={{ marginTop: '4px' }}>
+                    ⚠️ Nur in begründeten Ausnahmefällen. Ausgaben auf Personen-/Kapitalgesellschaft sind nicht zuwendungsfähig.
+                  </div>
+                )}
+              </div>
+
+              {/* File upload */}
               <div className="cal-field">
                 <label className="cal-label">Rechnung / Beleg</label>
                 <div
@@ -743,7 +1056,7 @@ export default function FinancePage() {
         </div>
       )}
 
-      {/* Travel Plan Modal */}
+      {/* ─── Travel Plan Modal ─── */}
       {showTravelModal && (
         <div className="cal-modal-overlay" onClick={() => setShowTravelModal(false)}>
           <div className="cal-modal" onClick={e => e.stopPropagation()} id="travel-modal" style={{ width: '500px' }}>
@@ -769,29 +1082,45 @@ export default function FinancePage() {
                   type="text"
                   value={trvPurpose}
                   onChange={e => setTrvPurpose(e.target.value)}
-                  placeholder="z.B. Konferenz, Meeting, Workshop"
+                  placeholder="z.B. Konferenz, Meeting, Pilotkunde"
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div className="cal-field">
                   <label className="cal-label">Anreise</label>
-                  <input
-                    className="field-input"
-                    type="date"
-                    value={trvStartDate}
-                    onChange={e => setTrvStartDate(e.target.value)}
-                    required
-                  />
+                  <div className="fin-datetime-row">
+                    <input
+                      className="field-input"
+                      type="date"
+                      value={trvStartDate}
+                      onChange={e => setTrvStartDate(e.target.value)}
+                      required
+                    />
+                    <input
+                      className="field-input fin-time-input"
+                      type="time"
+                      value={trvDepartureTime}
+                      onChange={e => setTrvDepartureTime(e.target.value)}
+                    />
+                  </div>
                 </div>
                 <div className="cal-field">
                   <label className="cal-label">Abreise</label>
-                  <input
-                    className="field-input"
-                    type="date"
-                    value={trvEndDate}
-                    onChange={e => setTrvEndDate(e.target.value)}
-                    required
-                  />
+                  <div className="fin-datetime-row">
+                    <input
+                      className="field-input"
+                      type="date"
+                      value={trvEndDate}
+                      onChange={e => setTrvEndDate(e.target.value)}
+                      required
+                    />
+                    <input
+                      className="field-input fin-time-input"
+                      type="time"
+                      value={trvReturnTime}
+                      onChange={e => setTrvReturnTime(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -869,8 +1198,18 @@ export default function FinancePage() {
                   </div>
                   <div className="fin-preview-row">
                     <span>Tagegeld ({trvDays} Tage)</span>
-                    <span>{trvDays} × {formatEuro(DAILY_ALLOWANCE)} = {formatEuro(trvDailyAllowanceTotal)}</span>
+                    <span>{formatEuro(trvDailyAllowanceTotal)}</span>
                   </div>
+                  {trvTagegeld.days.length > 0 && (
+                    <div className="fin-tagegeld-detail">
+                      {trvTagegeld.days.map((d, i) => (
+                        <div key={i} className="fin-tagegeld-row">
+                          <span className="fin-tagegeld-dot">{d.rate === 28 ? '●' : d.rate === 14 ? '◐' : '○'}</span>
+                          <span className="fin-tagegeld-info">{d.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   {trvTransport > 0 && (
                     <div className="fin-preview-row">
                       <span>Transport</span>

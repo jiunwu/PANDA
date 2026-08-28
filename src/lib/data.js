@@ -106,6 +106,8 @@ export async function ensureTables(db) {
       date TEXT NOT NULL,
       invoice_url TEXT,
       invoice_name TEXT,
+      invoice_to TEXT DEFAULT 'hochschule',
+      project_relevance TEXT,
       author TEXT,
       created_at TEXT
     )`,
@@ -115,6 +117,8 @@ export async function ensureTables(db) {
       purpose TEXT,
       start_date TEXT NOT NULL,
       end_date TEXT NOT NULL,
+      departure_time TEXT,
+      return_time TEXT,
       city_size TEXT NOT NULL,
       nights INTEGER NOT NULL,
       nightly_rate REAL NOT NULL,
@@ -154,6 +158,30 @@ export async function ensureTables(db) {
   }
   try {
     await db.execute('ALTER TABLE sprint_tasks ADD COLUMN note TEXT');
+  } catch (err) {
+    // Column might already exist, ignore error
+  }
+
+  // Migrations for travel_plans — departure/return times
+  try {
+    await db.execute('ALTER TABLE travel_plans ADD COLUMN departure_time TEXT');
+  } catch (err) {
+    // Column might already exist, ignore error
+  }
+  try {
+    await db.execute('ALTER TABLE travel_plans ADD COLUMN return_time TEXT');
+  } catch (err) {
+    // Column might already exist, ignore error
+  }
+
+  // Migrations for expenses — EXIST fields
+  try {
+    await db.execute("ALTER TABLE expenses ADD COLUMN invoice_to TEXT DEFAULT 'hochschule'");
+  } catch (err) {
+    // Column might already exist, ignore error
+  }
+  try {
+    await db.execute('ALTER TABLE expenses ADD COLUMN project_relevance TEXT');
   } catch (err) {
     // Column might already exist, ignore error
   }
@@ -253,10 +281,10 @@ export async function getFinanceData() {
     await ensureTables(db);
 
     const expensesRes = await db.execute(
-      'SELECT id, category, description, amount, date, invoice_url, invoice_name, author, created_at FROM expenses ORDER BY date DESC'
+      'SELECT id, category, description, amount, date, invoice_url, invoice_name, invoice_to, project_relevance, author, created_at FROM expenses ORDER BY date DESC'
     );
     const travelRes = await db.execute(
-      'SELECT id, destination, purpose, start_date, end_date, city_size, nights, nightly_rate, accommodation_total, transport_cost, daily_allowance_total, total_estimated, status, author, created_at FROM travel_plans ORDER BY start_date DESC'
+      'SELECT id, destination, purpose, start_date, end_date, departure_time, return_time, city_size, nights, nightly_rate, accommodation_total, transport_cost, daily_allowance_total, total_estimated, status, author, created_at FROM travel_plans ORDER BY start_date DESC'
     );
 
     const expenses = expensesRes.rows;
