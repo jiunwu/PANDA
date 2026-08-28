@@ -97,6 +97,34 @@ export async function ensureTables(db) {
       status TEXT,
       last_updated TEXT NOT NULL,
       folder TEXT DEFAULT "Other"
+    )`,
+    `CREATE TABLE IF NOT EXISTS expenses (
+      id TEXT PRIMARY KEY,
+      category TEXT NOT NULL,
+      description TEXT,
+      amount REAL NOT NULL,
+      date TEXT NOT NULL,
+      invoice_url TEXT,
+      invoice_name TEXT,
+      author TEXT,
+      created_at TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS travel_plans (
+      id TEXT PRIMARY KEY,
+      destination TEXT NOT NULL,
+      purpose TEXT,
+      start_date TEXT NOT NULL,
+      end_date TEXT NOT NULL,
+      city_size TEXT NOT NULL,
+      nights INTEGER NOT NULL,
+      nightly_rate REAL NOT NULL,
+      accommodation_total REAL NOT NULL,
+      transport_cost REAL DEFAULT 0,
+      daily_allowance_total REAL DEFAULT 0,
+      total_estimated REAL NOT NULL,
+      status TEXT DEFAULT 'planned',
+      author TEXT,
+      created_at TEXT
     )`
   ]);
   
@@ -215,5 +243,33 @@ export async function getSchedules() {
   } catch (error) {
     console.error('Error fetching schedules from Turso:', error);
     return [];
+  }
+}
+
+export async function getFinanceData() {
+  try {
+    const db = getClient();
+    if (!db) return { expenses: [], travelPlans: [], totalSpent: 0, totalPlanned: 0 };
+    await ensureTables(db);
+
+    const expensesRes = await db.execute(
+      'SELECT id, category, description, amount, date, invoice_url, invoice_name, author, created_at FROM expenses ORDER BY date DESC'
+    );
+    const travelRes = await db.execute(
+      'SELECT id, destination, purpose, start_date, end_date, city_size, nights, nightly_rate, accommodation_total, transport_cost, daily_allowance_total, total_estimated, status, author, created_at FROM travel_plans ORDER BY start_date DESC'
+    );
+
+    const expenses = expensesRes.rows;
+    const travelPlans = travelRes.rows;
+
+    const totalSpent = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+    const totalPlanned = travelPlans
+      .filter(t => t.status === 'planned' || t.status === 'approved')
+      .reduce((sum, t) => sum + (t.total_estimated || 0), 0);
+
+    return { expenses, travelPlans, totalSpent, totalPlanned };
+  } catch (error) {
+    console.error('Error fetching finance data from Turso:', error);
+    return { expenses: [], travelPlans: [], totalSpent: 0, totalPlanned: 0 };
   }
 }
