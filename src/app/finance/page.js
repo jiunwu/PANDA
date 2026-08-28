@@ -79,6 +79,7 @@ export default function FinancePage() {
   const [trvStartDate, setTrvStartDate] = useState('');
   const [trvEndDate, setTrvEndDate] = useState('');
   const [trvCitySize, setTrvCitySize] = useState('small');
+  const [trvAccommodationCost, setTrvAccommodationCost] = useState('');
   const [trvTransportCost, setTrvTransportCost] = useState('');
 
   const fetchData = useCallback(async () => {
@@ -115,8 +116,11 @@ export default function FinancePage() {
   // Travel plan computed values
   const trvNights = calcNights(trvStartDate, trvEndDate);
   const trvDays = calcDays(trvStartDate, trvEndDate);
-  const trvNightlyRate = BAYRKG_RATES[trvCitySize].rate;
-  const trvAccommodationTotal = trvNights * trvNightlyRate;
+  const trvNightlyRate = BAYRKG_RATES[trvCitySize].rate; // max allowed per BayRKG
+  const trvActualPerNight = parseFloat(trvAccommodationCost) || 0;
+  const trvAccommodationTotal = trvNights * trvActualPerNight;
+  const trvMaxAccommodation = trvNights * trvNightlyRate;
+  const trvAccommodationOverLimit = trvActualPerNight > trvNightlyRate;
   const trvDailyAllowanceTotal = trvDays * DAILY_ALLOWANCE;
   const trvTransport = parseFloat(trvTransportCost) || 0;
   const trvTotalEstimated = trvAccommodationTotal + trvTransport + trvDailyAllowanceTotal;
@@ -158,6 +162,7 @@ export default function FinancePage() {
     setTrvStartDate('');
     setTrvEndDate('');
     setTrvCitySize('small');
+    setTrvAccommodationCost('');
     setTrvTransportCost('');
   }
 
@@ -542,9 +547,10 @@ export default function FinancePage() {
           <div className="fin-info-content">
             <strong>Bayerisches Reisekostengesetz (BayRKG)</strong>
             <p>
-              Höchstgrenzen für Übernachtungskosten: <strong>90 €/Nacht</strong> (Orte unter 300.000 EW)
-              bzw. <strong>120 €/Nacht</strong> (Orte ab 300.000 EW).
+              Höchstgrenzen für Übernachtungskosten: <strong>max. 90 €/Nacht</strong> (Orte unter 300.000 EW)
+              bzw. <strong>max. 120 €/Nacht</strong> (Orte ab 300.000 EW).
               Tagegeld bei ganztägiger Abwesenheit: <strong>28 €/Tag</strong>.
+              Die tatsächlichen Kosten können niedriger liegen.
             </p>
           </div>
         </div>
@@ -583,7 +589,25 @@ export default function FinancePage() {
                   </div>
                   <div className="fin-travel-detail">
                     <span className="fin-detail-label">Übernachtung</span>
-                    <span>{formatEuro(plan.nightly_rate)}/Nacht × {plan.nights} = {formatEuro(plan.accommodation_total)}</span>
+                    <span>
+                      {formatEuro(plan.accommodation_total)} ({plan.nights} Nächte)
+                      {(() => {
+                        const actualPerNight = plan.nights > 0 ? plan.accommodation_total / plan.nights : 0;
+                        const maxRate = plan.nightly_rate || BAYRKG_RATES[plan.city_size || 'small'].rate;
+                        const isOver = actualPerNight > maxRate;
+                        return (
+                          <span
+                            className={`fin-limit-badge ${isOver ? 'fin-limit-over' : 'fin-limit-ok'}`}
+                            title={isOver
+                              ? `Über Höchstgrenze: ${formatEuro(actualPerNight)}/Nacht > max. ${formatEuro(maxRate)}/Nacht`
+                              : `Innerhalb Höchstgrenze: ${formatEuro(actualPerNight)}/Nacht ≤ max. ${formatEuro(maxRate)}/Nacht`
+                            }
+                          >
+                            {isOver ? `⚠️ über max. ${formatEuro(maxRate)}/N` : `✅ ≤ max. ${formatEuro(maxRate)}/N`}
+                          </span>
+                        );
+                      })()}
+                    </span>
                   </div>
                   <div className="fin-travel-detail">
                     <span className="fin-detail-label">Tagegeld</span>
@@ -773,14 +797,14 @@ export default function FinancePage() {
 
               {/* City size toggle */}
               <div className="cal-field">
-                <label className="cal-label">Ortsgröße (BayRKG)</label>
+                <label className="cal-label">Ortsgröße (BayRKG Höchstgrenze)</label>
                 <div className="fin-city-toggle">
                   <button
                     type="button"
                     className={`fin-city-option ${trvCitySize === 'small' ? 'fin-city-option-active' : ''}`}
                     onClick={() => setTrvCitySize('small')}
                   >
-                    <span className="fin-city-rate">{formatEuro(90)}/Nacht</span>
+                    <span className="fin-city-rate">max. {formatEuro(90)}/Nacht</span>
                     <span className="fin-city-desc">&lt; 300.000 EW</span>
                   </button>
                   <button
@@ -788,10 +812,31 @@ export default function FinancePage() {
                     className={`fin-city-option ${trvCitySize === 'large' ? 'fin-city-option-active' : ''}`}
                     onClick={() => setTrvCitySize('large')}
                   >
-                    <span className="fin-city-rate">{formatEuro(120)}/Nacht</span>
+                    <span className="fin-city-rate">max. {formatEuro(120)}/Nacht</span>
                     <span className="fin-city-desc">≥ 300.000 EW</span>
                   </button>
                 </div>
+              </div>
+
+              <div className="cal-field">
+                <label className="cal-label">Tatsächliche Übernachtungskosten (€/Nacht)</label>
+                <input
+                  className="field-input"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={trvAccommodationCost}
+                  onChange={e => setTrvAccommodationCost(e.target.value)}
+                  placeholder={`z.B. 75 (max. ${trvNightlyRate} €/Nacht)`}
+                />
+                {trvActualPerNight > 0 && (
+                  <div className={`fin-limit-check ${trvAccommodationOverLimit ? 'fin-limit-check-over' : 'fin-limit-check-ok'}`}>
+                    {trvAccommodationOverLimit
+                      ? `⚠️ ${formatEuro(trvActualPerNight)}/Nacht überschreitet Höchstgrenze von ${formatEuro(trvNightlyRate)}/Nacht`
+                      : `✅ ${formatEuro(trvActualPerNight)}/Nacht liegt innerhalb der Höchstgrenze von ${formatEuro(trvNightlyRate)}/Nacht`
+                    }
+                  </div>
+                )}
               </div>
 
               <div className="cal-field">
@@ -813,7 +858,14 @@ export default function FinancePage() {
                   <div className="fin-preview-title">Kostenvorschau</div>
                   <div className="fin-preview-row">
                     <span>Übernachtung</span>
-                    <span>{trvNights} × {formatEuro(trvNightlyRate)} = {formatEuro(trvAccommodationTotal)}</span>
+                    <span>
+                      {trvNights} × {formatEuro(trvActualPerNight)} = {formatEuro(trvAccommodationTotal)}
+                      {trvActualPerNight > 0 && (
+                        <span className={`fin-preview-limit ${trvAccommodationOverLimit ? 'fin-preview-limit-over' : 'fin-preview-limit-ok'}`}>
+                          {trvAccommodationOverLimit ? '⚠️' : '✅'} max. {formatEuro(trvMaxAccommodation)}
+                        </span>
+                      )}
+                    </span>
                   </div>
                   <div className="fin-preview-row">
                     <span>Tagegeld ({trvDays} Tage)</span>

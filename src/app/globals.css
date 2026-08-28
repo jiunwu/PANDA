@@ -3197,6 +3197,57 @@ a { color: inherit; }
   font-size: 14px;
 }
 
+/* BayRKG limit check badges (travel cards) */
+.fin-limit-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+.fin-limit-ok {
+  background: #05966918;
+  color: #059669;
+}
+.fin-limit-over {
+  background: #ef444418;
+  color: #ef4444;
+}
+
+/* Limit check feedback in travel form */
+.fin-limit-check {
+  font-size: 12px;
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+.fin-limit-check-ok {
+  background: #05966910;
+  color: #059669;
+}
+.fin-limit-check-over {
+  background: #ef444410;
+  color: #ef4444;
+}
+
+/* Inline limit indicator in cost preview */
+.fin-preview-limit {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  margin-left: 8px;
+  opacity: 0.85;
+}
+.fin-preview-limit-ok {
+  color: #059669;
+}
+.fin-preview-limit-over {
+  color: #ef4444;
+}
+
 /* Travel cards */
 .fin-travel-grid {
   display: grid;
