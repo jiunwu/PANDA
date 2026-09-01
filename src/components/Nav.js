@@ -15,6 +15,7 @@ const moreLinks = [
   { href: '/milestones', label: 'Milestones' },
   { href: '/work-packages', label: 'Work Packages' },
   { href: '/finance', label: 'Finance' },
+  { href: '/network', label: 'Network' },
   { href: '/data-room', label: 'Data Room' },
   { href: '/notes', label: 'Notes' },
   { href: '/integrations', label: 'Integrations' },
