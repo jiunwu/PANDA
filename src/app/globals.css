@@ -2616,7 +2616,7 @@ a { color: inherit; }
   background: var(--white);
   border-radius: 10px;
   padding: 28px;
-  width: 420px;
+  width: 600px;
   max-width: 90vw;
   max-height: 90vh;
   overflow-y: auto;

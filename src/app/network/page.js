@@ -7,11 +7,11 @@ export default function NetworkPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [form, setForm] = useState({ name: '', type: 'Contact', relevance: '', email: '', phone: '', linkedin: '', last_contact_date: '', notes: '' });
+  const [form, setForm] = useState({ name: '', type: 'Contact', relevance: '', email: '', phone: '', linkedin: '', first_contact_date: '', last_contact_date: '', notes: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function openNewContact() {
-    setForm({ name: '', type: 'Contact', relevance: '', email: '', phone: '', linkedin: '', last_contact_date: '', notes: '' });
+    setForm({ name: '', type: 'Contact', relevance: '', email: '', phone: '', linkedin: '', first_contact_date: '', last_contact_date: '', notes: '' });
     setEditingId(null);
     setShowModal(true);
   }
@@ -80,9 +80,15 @@ export default function NetworkPage() {
     try {
       const res = await fetch('/api/network_contacts');
       const data = await res.json();
-      setContacts(data || []);
+      if (Array.isArray(data)) {
+        setContacts(data);
+      } else {
+        setContacts([]);
+        console.error('Failed to fetch contacts, expected array but got:', data);
+      }
     } catch (err) {
       console.error('Failed to fetch contacts', err);
+      setContacts([]);
     }
     setLoading(false);
   }
@@ -126,8 +132,9 @@ export default function NetworkPage() {
                 {contact.linkedin && <div><a href={contact.linkedin} target="_blank" rel="noreferrer" style={{ color: 'var(--text-primary)' }}>LinkedIn Profile</a></div>}
               </div>
 
-              {(contact.notes || contact.last_contact_date) && (
+              {(contact.notes || contact.last_contact_date || contact.first_contact_date) && (
                 <div style={{ background: 'var(--bg-secondary)', padding: '8px', borderRadius: '6px', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+                  {contact.first_contact_date && <div style={{ marginBottom: '4px' }}><strong>First Contact:</strong> {new Date(contact.first_contact_date + 'T00:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</div>}
                   {contact.last_contact_date && <div style={{ marginBottom: '4px' }}><strong>Last Contact:</strong> {new Date(contact.last_contact_date + 'T00:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</div>}
                   {contact.notes && <div>{contact.notes}</div>}
                 </div>
@@ -152,19 +159,21 @@ export default function NetworkPage() {
           <div className="cal-modal" onClick={e => e.stopPropagation()}>
             <h3 style={{ marginBottom: '20px', fontSize: '18px' }}>{editingId ? 'Edit Contact' : 'New Contact'}</h3>
             <form onSubmit={handleSaveContact} className="cal-form">
-              <label className="cal-field">
-                <span className="cal-label">Name</span>
-                <input type="text" className="field-input" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required />
-              </label>
-              <label className="cal-field">
-                <span className="cal-label">Type</span>
-                <select className="field-input" value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))}>
-                  <option value="Mentor">Mentor</option>
-                  <option value="Company">Company</option>
-                  <option value="Investor">Investor</option>
-                  <option value="Contact">Contact</option>
-                </select>
-              </label>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <label className="cal-field" style={{ flex: 2 }}>
+                  <span className="cal-label">Name</span>
+                  <input type="text" className="field-input" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required />
+                </label>
+                <label className="cal-field" style={{ flex: 1 }}>
+                  <span className="cal-label">Type</span>
+                  <select className="field-input" value={form.type} onChange={e => setForm(p => ({ ...p, type: e.target.value }))}>
+                    <option value="Mentor">Mentor</option>
+                    <option value="Company">Company</option>
+                    <option value="Investor">Investor</option>
+                    <option value="Contact">Contact</option>
+                  </select>
+                </label>
+              </div>
               <label className="cal-field">
                 <span className="cal-label">Relevance (Why are they relevant?)</span>
                 <input type="text" className="field-input" value={form.relevance} onChange={e => setForm(p => ({ ...p, relevance: e.target.value }))} />
@@ -183,10 +192,16 @@ export default function NetworkPage() {
                 <span className="cal-label">LinkedIn</span>
                 <input type="url" className="field-input" value={form.linkedin} onChange={e => setForm(p => ({ ...p, linkedin: e.target.value }))} placeholder="https://linkedin.com/in/..." />
               </label>
-              <label className="cal-field">
-                <span className="cal-label">Last Contact Date</span>
-                <input type="date" className="field-input" value={form.last_contact_date} onChange={e => setForm(p => ({ ...p, last_contact_date: e.target.value }))} />
-              </label>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <label className="cal-field" style={{ flex: 1 }}>
+                  <span className="cal-label">First Contact</span>
+                  <input type="date" className="field-input" value={form.first_contact_date} onChange={e => setForm(p => ({ ...p, first_contact_date: e.target.value }))} />
+                </label>
+                <label className="cal-field" style={{ flex: 1 }}>
+                  <span className="cal-label">Last Contact</span>
+                  <input type="date" className="field-input" value={form.last_contact_date} onChange={e => setForm(p => ({ ...p, last_contact_date: e.target.value }))} />
+                </label>
+              </div>
               <label className="cal-field">
                 <span className="cal-label">Notes</span>
                 <textarea className="field-input" style={{ minHeight: '60px', resize: 'vertical' }} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} placeholder="Met at..." />
