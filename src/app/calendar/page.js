@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 const EVENT_COLORS = [
-  { value: '#111111', label: 'Black' },
-  { value: '#1a8c5b', label: 'Green' },
-  { value: '#2563eb', label: 'Blue' },
-  { value: '#9333ea', label: 'Purple' },
-  { value: '#dc2626', label: 'Red' },
-  { value: '#ea580c', label: 'Orange' },
-  { value: '#ca8a04', label: 'Gold' },
+  { value: '#111111', label: 'Fokuszeit / Blockiert' },
+  { value: '#1a8c5b', label: 'Netzwerk / Extern' },
+  { value: '#2563eb', label: 'Meeting / Besprechung' },
+  { value: '#9333ea', label: 'Event / Seminar' },
+  { value: '#dc2626', label: 'Deadline / Wichtig' },
+  { value: '#ea580c', label: 'Urlaub / Abwesenheit' },
+  { value: '#ca8a04', label: 'Sonstiges' },
 ];
 
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -80,7 +80,7 @@ export default function CalendarPage() {
     date: '',
     time_start: '',
     time_end: '',
-    color: '#111111',
+    color: '#2563eb',
     author: 'Together',
   });
 
@@ -140,7 +140,7 @@ export default function CalendarPage() {
       date_end: '',
       time_start: '',
       time_end: '',
-      color: '#111111',
+      color: '#2563eb',
       author: 'Together'
     });
     setShowForm(true);
@@ -156,7 +156,7 @@ export default function CalendarPage() {
       date_end: ev.date_end || '',
       time_start: ev.time_start || '',
       time_end: ev.time_end || '',
-      color: ev.color || '#111111',
+      color: ev.color || '#2563eb',
       author: ev.author || 'Together'
     });
     setShowForm(true);
@@ -474,7 +474,7 @@ export default function CalendarPage() {
                 <textarea className="field-input" style={{ minHeight: '60px', resize: 'vertical' }} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Optional details..." />
               </label>
               <label className="cal-field">
-                <span className="cal-label">Color</span>
+                <span className="cal-label">Kategorie / Farbe</span>
                 <div className="cal-color-picker">
                   {EVENT_COLORS.map(c => (
                     <button
