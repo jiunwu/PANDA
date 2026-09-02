@@ -78,7 +78,8 @@ export default function NetworkPage() {
   async function fetchContacts() {
     setLoading(true);
     try {
-      const res = await fetch('/api/network_contacts');
+      const cacheBuster = Date.now();
+      const res = await fetch(`/api/network_contacts?t=${cacheBuster}`, { cache: 'no-store' });
       const data = await res.json();
       if (Array.isArray(data)) {
         setContacts(data);

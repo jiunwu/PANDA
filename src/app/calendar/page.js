@@ -92,7 +92,7 @@ export default function CalendarPage() {
       const cacheBuster = Date.now();
       const [res, netRes] = await Promise.all([
           fetch(`/api/schedules?t=${cacheBuster}`, { cache: 'no-store' }),
-          fetch(`/api/network_contacts`)
+          fetch(`/api/network_contacts?t=${cacheBuster}`, { cache: 'no-store' })
       ]);
       if (res.ok) setEvents(await res.json());
       if (netRes.ok) setNetworkContacts(await netRes.json());
