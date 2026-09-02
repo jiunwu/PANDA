@@ -348,7 +348,7 @@ export default function CalendarPage() {
                         <div className="cal-event-footer">
                           <span className="source-tag" style={{ fontSize: '11px' }}>{ev.author || 'Unknown'}</span>
                           <button className="cal-event-edit" onClick={() => openEditEvent(ev)} style={{marginRight: '8px', border: 'none', background: 'none', color: '#666', cursor: 'pointer', fontSize: '12px'}}>Edit</button>
-                          <button className="cal-event-delete" onClick={() => handleDeleteEvent(ev.id)}>Delete</button>
+                          <button className="cal-event-delete" onClick={() => handleDeleteEvent(ev.id)} title="Delete">🗑</button>
                         </div>
                       </div>
                     </div>

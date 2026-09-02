@@ -142,7 +142,7 @@ export default function NetworkPage() {
 
               <div style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
                 <button className="btn btn-secondary" style={{ flex: 1, padding: '4px', fontSize: '12px' }} onClick={() => openEditContact(contact)}>Edit</button>
-                <button className="btn btn-secondary" style={{ flex: 1, padding: '4px', fontSize: '12px', color: 'var(--text-error)' }} onClick={() => handleDeleteContact(contact.id)}>Delete</button>
+                <button className="btn btn-secondary" style={{ flex: 1, padding: '4px', fontSize: '12px', color: 'var(--text-error)' }} onClick={() => handleDeleteContact(contact.id)} title="Delete">🗑</button>
               </div>
             </div>
           ))}

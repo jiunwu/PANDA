@@ -236,8 +236,9 @@ export default function DataRoomPage() {
                                   className="btn btn-secondary"
                                   style={{ padding: '4px 8px', fontSize: '12px', color: 'var(--red)', borderColor: 'var(--red)' }}
                                   onClick={() => handleDelete(doc.id)}
+                                  title="Delete"
                                 >
-                                  Delete
+                                  🗑
                                 </button>
                               </div>
                             )

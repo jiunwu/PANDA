@@ -463,7 +463,7 @@ export default function SprintsPage() {
                 disabled={isSubmitting}
                 title="Delete Sprint"
               >
-                Delete Sprint
+                🗑
               </button>
             </div>
           )}
