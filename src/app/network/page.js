@@ -97,6 +97,13 @@ export default function NetworkPage() {
     fetchContacts();
   }, []);
 
+  function safeFormatDate(dateStr) {
+    if (!dateStr || dateStr.trim() === '') return null;
+    const date = new Date(dateStr + 'T00:00:00');
+    if (isNaN(date)) return null;
+    return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
   return (
     <div className="page-container">
       <header className="page-header">
@@ -134,8 +141,8 @@ export default function NetworkPage() {
 
               {(contact.notes || contact.last_contact_date || contact.first_contact_date) && (
                 <div style={{ background: 'var(--bg-secondary)', padding: '8px', borderRadius: '6px', fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-                  {contact.first_contact_date && <div style={{ marginBottom: '4px' }}><strong>First Contact:</strong> {new Date(contact.first_contact_date + 'T00:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</div>}
-                  {contact.last_contact_date && <div style={{ marginBottom: '4px' }}><strong>Last Contact:</strong> {new Date(contact.last_contact_date + 'T00:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</div>}
+                  {safeFormatDate(contact.first_contact_date) && <div style={{ marginBottom: '4px' }}><strong>First Contact:</strong> {safeFormatDate(contact.first_contact_date)}</div>}
+                  {safeFormatDate(contact.last_contact_date) && <div style={{ marginBottom: '4px' }}><strong>Last Contact:</strong> {safeFormatDate(contact.last_contact_date)}</div>}
                   {contact.notes && <div>{contact.notes}</div>}
                 </div>
               )}
