@@ -12,7 +12,7 @@ const PROTECTED_PATHS = [
   '/api/',
 ];
 const PUBLIC_API_PATHS = ['/api/auth', '/api/logout'];
-const VALID_SESSIONS = ['authenticated', 'nina', 'jiun'];
+const VALID_SESSIONS = ['authenticated', 'nina', 'jiun', 'sebastian', 'roja'];
 
 export function middleware(request) {
   const { pathname } = request.nextUrl;

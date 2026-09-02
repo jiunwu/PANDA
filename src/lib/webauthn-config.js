@@ -9,8 +9,8 @@ const rpID = process.env.WEBAUTHN_RP_ID || 'localhost';
 // Origin must include protocol and port
 const origin = process.env.WEBAUTHN_ORIGIN || 'http://localhost:3000';
 
-// Valid user IDs (hardcoded for this 2-person team)
-const VALID_USERS = ['nina', 'jiun'];
+// Valid user IDs (hardcoded for this 4-person team)
+const VALID_USERS = ['nina', 'jiun', 'sebastian', 'roja'];
 
 export function getWebAuthnConfig() {
   return { rpName, rpID, origin };
