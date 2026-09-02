@@ -231,8 +231,8 @@ export async function POST(request) {
     } else if (type === 'schedule') {
       if (action === 'add') {
         await db.execute({
-          sql: 'INSERT INTO schedules (id, title, description, date, date_end, time_start, time_end, color, author, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          args: [data.id || crypto.randomUUID(), data.title, data.description || '', data.date, data.date_end || '', data.time_start || '', data.time_end || '', data.color || '#111111', author || agent || 'Unknown', new Date().toISOString()]
+          sql: 'INSERT INTO schedules (id, title, description, date, date_end, time_start, time_end, color, author, created_at, network_contact_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          args: [data.id || crypto.randomUUID(), data.title, data.description || '', data.date, data.date_end || '', data.time_start || '', data.time_end || '', data.color || '#111111', author || agent || 'Unknown', new Date().toISOString(), data.network_contact_id || null]
         });
         await db.execute({
           sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
@@ -240,8 +240,8 @@ export async function POST(request) {
         });
       } else if (action === 'update') {
         await db.execute({
-          sql: 'UPDATE schedules SET title = COALESCE(?, title), description = COALESCE(?, description), date = COALESCE(?, date), date_end = COALESCE(?, date_end), time_start = COALESCE(?, time_start), time_end = COALESCE(?, time_end), color = COALESCE(?, color), author = COALESCE(?, author) WHERE id = ?',
-          args: [data.title || null, data.description || null, data.date || null, data.date_end || null, data.time_start || null, data.time_end || null, data.color || null, author || null, data.id]
+          sql: 'UPDATE schedules SET title = COALESCE(?, title), description = COALESCE(?, description), date = COALESCE(?, date), date_end = COALESCE(?, date_end), time_start = COALESCE(?, time_start), time_end = COALESCE(?, time_end), color = COALESCE(?, color), author = COALESCE(?, author), network_contact_id = ? WHERE id = ?',
+          args: [data.title || null, data.description || null, data.date || null, data.date_end || null, data.time_start || null, data.time_end || null, data.color || null, author || null, data.network_contact_id || null, data.id]
         });
         await db.execute({
           sql: 'INSERT INTO activity_log (timestamp, source, action, type) VALUES (?, ?, ?, ?)',
