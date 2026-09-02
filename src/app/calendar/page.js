@@ -7,6 +7,7 @@ const EVENT_COLORS = [
   { value: '#111111', label: 'Fokuszeit / Blockiert' },
   { value: '#1a8c5b', label: 'Netzwerk / Extern' },
   { value: '#2563eb', label: 'Meeting / Besprechung' },
+  { value: '#0891b2', label: 'Remote / Homeoffice' },
   { value: '#9333ea', label: 'Event / Seminar' },
   { value: '#dc2626', label: 'Deadline / Wichtig' },
   { value: '#ea580c', label: 'Urlaub / Abwesenheit' },
