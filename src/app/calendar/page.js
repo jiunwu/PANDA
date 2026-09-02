@@ -473,21 +473,28 @@ export default function CalendarPage() {
                 <span className="cal-label">Description</span>
                 <textarea className="field-input" style={{ minHeight: '60px', resize: 'vertical' }} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Optional details..." />
               </label>
-              <label className="cal-field">
+              <div className="cal-field">
                 <span className="cal-label">Kategorie / Farbe</span>
                 <div className="cal-color-picker">
                   {EVENT_COLORS.map(c => (
-                    <button
+                    <div
                       key={c.value}
-                      type="button"
-                      className={`cal-color-swatch ${form.color === c.value ? 'cal-color-active' : ''}`}
-                      style={{ background: c.value }}
+                      className="cal-color-option"
                       onClick={() => setForm(p => ({ ...p, color: c.value }))}
-                      title={c.label}
-                    />
+                    >
+                      <button
+                        type="button"
+                        className={`cal-color-swatch ${form.color === c.value ? 'cal-color-active' : ''}`}
+                        style={{ background: c.value }}
+                        title={c.label}
+                      />
+                      <span className="cal-color-label" style={{ fontWeight: form.color === c.value ? '600' : 'normal' }}>
+                        {c.label}
+                      </span>
+                    </div>
                   ))}
                 </div>
-              </label>
+              </div>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '8px' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
