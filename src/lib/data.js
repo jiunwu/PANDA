@@ -111,6 +111,18 @@ export async function ensureTables(db) {
       author TEXT,
       created_at TEXT
     )`,
+    `CREATE TABLE IF NOT EXISTS network_contacts (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      type TEXT,
+      relevance TEXT,
+      email TEXT,
+      phone TEXT,
+      linkedin TEXT,
+      last_contact_date TEXT,
+      first_contact_date TEXT,
+      notes TEXT
+    )`,
     `CREATE TABLE IF NOT EXISTS travel_plans (
       id TEXT PRIMARY KEY,
       destination TEXT NOT NULL,

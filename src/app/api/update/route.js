@@ -23,7 +23,7 @@ export async function POST(request) {
     );
   }
 
-  const validTypes = ['milestone', 'progress', 'note', 'budget', 'sprint', 'topic', 'schedule'];
+  const validTypes = ['milestone', 'progress', 'note', 'budget', 'sprint', 'topic', 'schedule', 'network_contact'];
   const validActions = ['update', 'add', 'delete'];
 
   if (!validTypes.includes(type)) return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
@@ -170,6 +170,34 @@ export async function POST(request) {
       }
       if (stmts.length > 0) {
         await db.batch(stmts);
+      }
+    } else if (type === 'network_contact') {
+      if (action === 'add') {
+        await db.execute({
+          sql: 'INSERT INTO network_contacts (id, name, type, relevance, email, phone, linkedin, last_contact_date, first_contact_date, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          args: [
+            data.id || crypto.randomUUID(),
+            data.name,
+            data.type || 'Contact',
+            data.relevance || '',
+            data.email || '',
+            data.phone || '',
+            data.linkedin || '',
+            data.last_contact_date || '',
+            data.first_contact_date || '',
+            data.notes || ''
+          ]
+        });
+      } else if (action === 'update') {
+        await db.execute({
+          sql: 'UPDATE network_contacts SET name = COALESCE(?, name), type = COALESCE(?, type), relevance = COALESCE(?, relevance), email = COALESCE(?, email), phone = COALESCE(?, phone), linkedin = COALESCE(?, linkedin), last_contact_date = COALESCE(?, last_contact_date), first_contact_date = COALESCE(?, first_contact_date), notes = COALESCE(?, notes) WHERE id = ?',
+          args: [data.name, data.type, data.relevance, data.email, data.phone, data.linkedin, data.last_contact_date, data.first_contact_date, data.notes, data.id]
+        });
+      } else if (action === 'delete') {
+        await db.execute({
+          sql: 'DELETE FROM network_contacts WHERE id = ?',
+          args: [data.id]
+        });
       }
     } else if (type === 'topic') {
       if (action === 'add') {

@@ -67,6 +67,7 @@ export default function CalendarPage() {
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [events, setEvents] = useState([]);
+  const [networkContacts, setNetworkContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -89,10 +90,14 @@ export default function CalendarPage() {
     setLoading(true);
     try {
       const cacheBuster = Date.now();
-      const res = await fetch(`/api/schedules?t=${cacheBuster}`, { cache: 'no-store' });
+      const [res, netRes] = await Promise.all([
+          fetch(`/api/schedules?t=${cacheBuster}`, { cache: 'no-store' }),
+          fetch(`/api/network_contacts`)
+      ]);
       if (res.ok) setEvents(await res.json());
+      if (netRes.ok) setNetworkContacts(await netRes.json());
     } catch (err) {
-      console.error('Failed to fetch schedules', err);
+      console.error('Failed to fetch data', err);
     } finally {
       setLoading(false);
     }
@@ -335,6 +340,11 @@ export default function CalendarPage() {
                           </div>
                         )}
                         {ev.description && <div className="cal-event-desc">{ev.description}</div>}
+                        {ev.network_contact_id && networkContacts.find(c => c.id === ev.network_contact_id) && (
+                          <div className="cal-event-desc" style={{ marginTop: '4px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                            <strong>Contact:</strong> {networkContacts.find(c => c.id === ev.network_contact_id).name}
+                          </div>
+                        )}
                         <div className="cal-event-footer">
                           <span className="source-tag" style={{ fontSize: '11px' }}>{ev.author || 'Unknown'}</span>
                           <button className="cal-event-edit" onClick={() => openEditEvent(ev)} style={{marginRight: '8px', border: 'none', background: 'none', color: '#666', cursor: 'pointer', fontSize: '12px'}}>Edit</button>
@@ -440,14 +450,25 @@ export default function CalendarPage() {
                   <input type="time" className="field-input" value={form.time_end} onChange={e => setForm(p => ({ ...p, time_end: e.target.value }))} />
                 </label>
               </div>
-                            <label className="cal-field">
-                <span className="cal-label">Assignee</span>
-                <select className="field-input" value={form.author} onChange={e => setForm(p => ({ ...p, author: e.target.value }))}>
-                  <option value="Together">Together</option>
-                  <option value="Nina">Nina</option>
-                  <option value="Jiun">Jiun</option>
-                </select>
-              </label>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                <label className="cal-field" style={{ flex: 1 }}>
+                  <span className="cal-label">Assignee</span>
+                  <select className="field-input" value={form.author} onChange={e => setForm(p => ({ ...p, author: e.target.value }))}>
+                    <option value="Together">Together</option>
+                    <option value="Nina">Nina</option>
+                    <option value="Jiun">Jiun</option>
+                  </select>
+                </label>
+                <label className="cal-field" style={{ flex: 1 }}>
+                  <span className="cal-label">Network Contact (Optional)</span>
+                  <select className="field-input" value={form.network_contact_id || ''} onChange={e => setForm(p => ({ ...p, network_contact_id: e.target.value }))}>
+                    <option value="">-- None --</option>
+                    {networkContacts.map(nc => (
+                      <option key={nc.id} value={nc.id}>{nc.name}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
               <label className="cal-field">
                 <span className="cal-label">Description</span>
                 <textarea className="field-input" style={{ minHeight: '60px', resize: 'vertical' }} value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Optional details..." />
