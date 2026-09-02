@@ -88,7 +88,8 @@ export async function ensureTables(db) {
       time_end TEXT,
       color TEXT,
       author TEXT,
-      created_at TEXT
+      created_at TEXT,
+      network_contact_id TEXT
     )`,
     `CREATE TABLE IF NOT EXISTS data_room_files (
       id TEXT PRIMARY KEY,
@@ -146,6 +147,11 @@ export async function ensureTables(db) {
   
   try {
     await db.execute('ALTER TABLE data_room_files ADD COLUMN folder TEXT DEFAULT "Other"');
+  } catch (err) {
+    // Column might already exist, ignore error
+  }
+  try {
+    await db.execute('ALTER TABLE schedules ADD COLUMN network_contact_id TEXT');
   } catch (err) {
     // Column might already exist, ignore error
   }
@@ -278,7 +284,7 @@ export async function getSchedules() {
     const db = getClient();
     if (!db) return [];
     await ensureTables(db);
-    const res = await db.execute('SELECT id, title, description, date, date_end, time_start, time_end, color, author, created_at FROM schedules ORDER BY date ASC, time_start ASC');
+    const res = await db.execute('SELECT id, title, description, date, date_end, time_start, time_end, color, author, created_at, network_contact_id FROM schedules ORDER BY date ASC, time_start ASC');
     return res.rows;
   } catch (error) {
     console.error('Error fetching schedules from Turso:', error);
