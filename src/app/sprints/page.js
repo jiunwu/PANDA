@@ -457,8 +457,8 @@ export default function SprintsPage() {
                 </span>
               )}
               <button
-                className="btn btn-secondary"
-                style={{ padding: '4px 8px', fontSize: '12px', marginLeft: '12px', color: 'var(--error, #e53e3e)' }}
+                className="btn btn-secondary btn-delete"
+                style={{ padding: '4px 8px', fontSize: '12px', marginLeft: '12px' }}
                 onClick={() => handleDeleteSprint(currentSprint.id)}
                 disabled={isSubmitting}
                 title="Delete Sprint"

@@ -987,6 +987,12 @@ a { color: inherit; }
   background: var(--accent-light);
 }
 
+.btn-delete:hover:not(:disabled) {
+  background: var(--red-bg) !important;
+  color: var(--red) !important;
+  border-color: var(--red) !important;
+}
+
 .btn-ghost {
   background: transparent;
   color: var(--text-tertiary);
@@ -2590,7 +2596,7 @@ a { color: inherit; }
   background: none;
   border: none;
   font-size: 11px;
-  color: var(--red);
+  color: inherit;
   cursor: pointer;
   font-family: inherit;
   padding: 2px 4px;
@@ -2598,6 +2604,7 @@ a { color: inherit; }
 }
 .cal-event-delete:hover {
   background: var(--red-bg);
+  color: var(--red);
 }
 
 /* Modal */
