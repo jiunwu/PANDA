@@ -1,0 +1,12 @@
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.notebook { margin: 24px 0 60px; min-width: 0; }
+.cell { padding: 24px; margin-bottom: 16px; background: var(--white, white); border: 1px solid var(--border, #ddd); border-radius: 8px; overflow-wrap: anywhere; }
+.cell h1, .cell h2, .cell h3, .cell p, .cell ul, .cell ol { margin: 12px 0; }
+.cell ul, .cell ol { padding-left: 24px; }
+.cell a { text-decoration: underline; }
+.cell pre { overflow: auto; white-space: pre; font-size: 13px; line-height: 1.6; padding: 12px; background: #f6f7f8; border-radius: 4px; }
+.label { color: var(--text-tertiary, #666); font: 12px monospace; margin-bottom: 8px; }
+.outputs { margin-top: 16px; border-top: 1px solid var(--border, #ddd); padding-top: 12px; }
+.image, .cell img { max-width: 100%; height: auto; }
+.richOutput { width: 100%; height: 360px; border: 1px solid var(--border, #ddd); background: white; }
+@media (max-width: 600px) { .cell { padding: 12px; } }

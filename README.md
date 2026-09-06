@@ -143,7 +143,19 @@ Allows agents to mutate the project state. The body must be a JSON object contai
 }
 ```
 
-## Structure
+## Colab Notebook Viewer
+
+Open **More → Notebook** to read the connected Colab notebook inside PANDA.
+The viewer loads saved cells and outputs from Google Drive; use **Refresh notebook**
+after saving changes in Colab. Editing, execution, and interactive widgets remain
+available through **Open in Colab**. HTML outputs are isolated with scripts disabled.
+
+The notebook must remain downloadable through its Google Drive sharing settings.
+The fixed notebook source is configured in `src/app/api/notebook/route.js`, and its
+Colab link is in `src/app/notebook/page.js`. No Google credentials are stored by PANDA.
+The page and API use PANDA's existing authentication middleware.
+
+## Source Structure
 
 ```
 src/app/

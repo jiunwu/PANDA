@@ -12,6 +12,7 @@ const primaryLinks = [
 ];
 
 const moreLinks = [
+  { href: '/notebook', label: 'Notebook' },
   { href: '/milestones', label: 'Milestones' },
   { href: '/work-packages', label: 'Work Packages' },
   { href: '/finance', label: 'Finance' },
