@@ -11,6 +11,7 @@ export default function TopicsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     fetchTopics();
@@ -42,7 +43,7 @@ export default function TopicsPage() {
   }
 
   async function handleSaveTopic() {
-    if (!selectedTopic) return;
+    if (!selectedTopic || isUploading) return;
     setIsSubmitting(true);
     
     try {
@@ -187,18 +188,19 @@ export default function TopicsPage() {
                 <button 
                   onClick={handleSaveTopic} 
                   className="btn btn-primary"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isUploading}
                   style={{ flexShrink: 0 }}
                 >
-                  {isSubmitting ? 'Saving...' : 'Save'}
+                  {isUploading ? 'Uploading...' : isSubmitting ? 'Saving...' : 'Save'}
                 </button>
               </div>
               
               <TopicEditor 
                 key={selectedTopic.id}
                 initialContent={selectedTopic.content}
+                onUploadingChange={setIsUploading}
                 onChange={(content) => {
-                  setSelectedTopic(prev => ({ ...prev, content }));
+                  setSelectedTopic(prev => prev?.id === selectedTopic.id ? { ...prev, content } : prev);
                 }}
               />
             </div>

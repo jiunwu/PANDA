@@ -27,6 +27,15 @@ Or via CLI:
 npx vercel
 ```
 
+## Topic images
+
+In `/topics`, drop images into the editor or type `/image` and choose **Upload**.
+JPEG, PNG, GIF, WebP, and AVIF images up to 4 MB are supported. Save the topic
+after uploads finish to persist the image blocks in the document.
+
+Images use the existing `BLOB_READ_WRITE_TOKEN` and private Vercel Blob store,
+with authenticated image delivery through `/api/topics/images/[id]`.
+
 ## API Documentation for External AI Agents
 
 PANDA exposes a set of APIs to allow external AI agents to query the project state and push updates autonomously. All API endpoints require authentication using a Bearer token.
