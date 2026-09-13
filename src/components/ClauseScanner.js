@@ -260,6 +260,7 @@ export default function ClauseScanner() {
           {sourceId === PASTE_ID && !scanned ? (
             <textarea
               className="scanner-input"
+              aria-label="Contract text to analyse"
               value={pasted}
               onChange={(event) => setPasted(event.target.value)}
               placeholder={'Paste the terms of service you want to check…\n\nAny length works. The text never leaves your browser.'}

@@ -1,32 +1,16 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-
 const SECTIONS = [
-  { id: 'demo', label: 'Live demo' },
-  { id: 'performance', label: 'Results' },
-  { id: 'how', label: 'How it works' },
-  { id: 'law', label: 'Why these eight' },
-  { id: 'compare', label: 'Where it sits' },
-  { id: 'business', label: 'Business' },
-  { id: 'team', label: 'Team' },
+  { id: "how", label: "Technology" },
+  { id: "performance", label: "Research" },
+  { id: "team", label: "About" },
 ];
 
 export default function LandingNav() {
-  const [lifted, setLifted] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setLifted(window.scrollY > 24);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
   return (
-    <header className={`lp-nav ${lifted ? 'is-lifted' : ''}`}>
+    <header className="lp-nav">
       <div className="lp-nav-inner">
         <a href="#top" className="lp-wordmark" aria-label="PANDA, back to top">
           PANDA
+          <span className="lp-brand-square" aria-hidden="true" />
         </a>
         <nav className="lp-nav-links" aria-label="Sections">
           {SECTIONS.map((section) => (
@@ -36,7 +20,7 @@ export default function LandingNav() {
           ))}
         </nav>
         <a href="#demo" className="lp-nav-cta">
-          Try it
+          Try PANDA <span aria-hidden="true">↗</span>
         </a>
       </div>
     </header>

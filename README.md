@@ -54,17 +54,14 @@ pip install onnxruntime pyarrow
 python scripts/eval-unfair-tos.py
 ```
 
-Current result: **macro-F1 0.792**, micro-F1 0.766, threshold 0.5.
+The landing page shows only the previously reported LegalBench headline metrics,
+not per-category evaluation tables. Full methodology and detailed results will
+be provided in the preprint. Set `NEXT_PUBLIC_PANDA_PREPRINT_URL` to the paper URL
+(or an uploaded PDF path) when it is published; until then the page displays
+“Preprint forthcoming” without a dead link.
 
-Those figures are quoted on the landing page from `EVALUATION` in
-`src/lib/legalsan.js` — re-run the script and update that constant whenever the
-model changes, so the page never drifts from what the model actually does.
-
-Two caveats the landing page states and that should not be dropped: macro-F1
-here is the mean over the eight labels with **no "fair" class scored**, so it is
-not interchangeable with published figures that score one; and the support for
-several labels is small (arbitration has 7 positives), so per-class numbers are
-indicative.
+The evaluation script above uses the LexGLUE split. It is a separate protocol
+from the LegalBench headline results and should not be used to relabel them.
 
 ### The runtime
 

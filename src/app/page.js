@@ -1,695 +1,396 @@
-import Link from 'next/link';
-import './landing.css';
-import projectData from '@/data/project.json';
-import ClauseScanner from '@/components/ClauseScanner';
-import LandingNav from '@/components/LandingNav';
-import Reveal from '@/components/Reveal';
-import { CATEGORIES, CATEGORY_BY_INDEX, EVALUATION, MODEL_INFO } from '@/lib/legalsan';
+import Link from "next/link";
+import "./landing.css";
+import projectData from "@/data/project.json";
+import ClauseScanner from "@/components/ClauseScanner";
+import LandingNav from "@/components/LandingNav";
+import { CATEGORIES, MODEL_INFO } from "@/lib/legalsan";
 
 export const metadata = {
-  title: 'PANDA — read the fine print before you agree',
+  title: "PANDA — Clarity before you agree.",
   description:
-    'PANDA flags the clauses in a terms-of-service document that EU consumer law treats as unfair. A 23.5 M-parameter model that runs entirely in your browser — nothing you paste ever leaves your device.',
+    "Private, on-device AI for the fine print. PANDA flags potentially unfair contract clauses with LegalSAN, a compact model running directly in your browser.",
 };
 
-const HERO_STATS = [
-  { value: `${MODEL_INFO.sizeMB} MB`, label: 'Model on your device' },
-  { value: MODEL_INFO.categories, label: 'Unfair clause categories' },
-  { value: '0', label: 'Bytes of your text uploaded' },
-  { value: '<1 s', label: 'To read a full contract' },
-];
+// Headline metrics from the prior LegalBench evaluation; details belong in the preprint.
+// Set this to the published paper URL (or an uploaded /papers/... PDF) when available.
+const PREPRINT_URL = process.env.NEXT_PUBLIC_PANDA_PREPRINT_URL || null;
 
-// Parameter counts are public architecture facts and are exact. Accuracy is
-// deliberately absent here: published figures come from each author's own
-// evaluation protocol, and putting them in one column would imply a head-to-head
-// run we have not done. Ours is measured and shown in full further down.
-const SIZE_COMPARISON = [
-  { name: 'LegalSAN', parameters: '23.5 M', download: '23 MB int8', browser: true, featured: true },
-  { name: 'DistilBERT', parameters: '66 M', download: '~250 MB fp32', browser: false },
-  { name: 'Legal-BERT', parameters: '110 M', download: '~420 MB fp32', browser: false },
-  { name: 'RoBERTa-large', parameters: '355 M', download: '~1.4 GB fp32', browser: false },
-];
+function Arrow() {
+  return <span aria-hidden="true">↗</span>;
+}
 
-const ALTERNATIVES = [
-  {
-    name: 'ToS;DR',
-    what: 'Volunteers read and grade the terms of named services.',
-    limit: 'Depth and trust come from human review — but only for services someone has already covered, and reviews lag behind updates.',
-  },
-  {
-    name: 'Polisis',
-    what: 'Academic deep-learning analysis of privacy policies.',
-    limit: 'Targets privacy policies rather than contractual terms, and runs as a hosted service.',
-  },
-  {
-    name: 'General-purpose LLMs',
-    what: 'Paste a contract into a chat assistant and ask.',
-    limit: 'The document goes to someone else\u2019s server, answers vary between runs, and there is no per-category score to audit.',
-  },
-  {
-    name: 'PANDA',
-    what: 'A fixed classifier scores every clause against eight categories, on your device.',
-    limit: 'Narrow by design: eight categories, English, one probability per clause. It does not summarise or advise.',
-    featured: true,
-  },
-];
-
-const PILLARS = [
-  {
-    kicker: 'Local',
-    title: 'It never phones home.',
-    body: 'The whole model — all eight classifiers, all 24 megabytes of it — is downloaded once and runs inside your browser tab. The contract you paste is processed on your own CPU. There is no API call to intercept, no upload to leak, no account to create.',
-    proof: 'No server sees your text',
-  },
-  {
-    kicker: 'Specialised',
-    title: 'It was trained for one job.',
-    body: 'A transformer encoder fine-tuned on clauses that consumer-law researchers annotated as unfair. It generalises from wording it has seen to wording it has not, which is why "we may end this at any time for any reason" is caught when freshly phrased — a keyword blocklist only ever catches last year’s drafting. It is a classifier, not a reasoner: it returns eight probabilities per clause, and everything you see after that is ordinary software.',
-    proof: 'Eight probabilities, no prose',
-  },
-  {
-    kicker: 'Instant',
-    title: 'It keeps up with you.',
-    body: 'Each clause is classified in milliseconds, so an entire terms-of-service document resolves before you have finished scrolling it. That speed is what makes the browser extension possible: PANDA can read the fine print at the moment you are asked to accept it.',
-    proof: 'Milliseconds per clause',
-  },
-];
-
-const STEPS = [
-  {
-    n: '01',
-    title: 'Split',
-    body: 'The document is segmented into clauses. Headings and numbering are set aside so each obligation is judged on its own.',
-  },
-  {
-    n: '02',
-    title: 'Read',
-    body: 'Every clause passes through the encoder, which scores it against eight categories at once — a clause can be several kinds of unfair.',
-  },
-  {
-    n: '03',
-    title: 'Show',
-    body: 'Anything above the confidence threshold is highlighted in place, labelled with the category and its probability, and explained in plain language.',
-  },
-];
+function SectionHeading({ number, label, title, children }) {
+  return (
+    <div className="lp-section-head">
+      <p className="lp-kicker">
+        <span>{number}</span>
+        {label}
+      </p>
+      <div>
+        <h2>{title}</h2>
+        {children && <p className="lp-lead">{children}</p>}
+      </div>
+    </div>
+  );
+}
 
 export default function LandingPage() {
-  const { project, team, mentors, funding } = projectData;
-
+  const { team, mentors, funding } = projectData;
   return (
     <div className="lp" id="top">
+      <a className="lp-skip" href="#main">
+        Skip to content
+      </a>
       <LandingNav />
-
-      <main>
-        {/* ── Hero ── */}
-        <section className="lp-hero">
-          <div className="lp-hero-glow" aria-hidden="true" />
-          <div className="lp-hero-orbit lp-hero-orbit-one" aria-hidden="true" />
-          <div className="lp-hero-orbit lp-hero-orbit-two" aria-hidden="true" />
-          <div className="lp-hero-inner">
-            <p className="lp-eyebrow"><span />Introducing LegalSAN · private intelligence, on device</p>
-            <h1 className="lp-hero-title">
-              Nobody reads
-              <br />
-              the fine print.
-              <span className="lp-hero-accent">Now something does.</span>
-            </h1>
-            <p className="lp-hero-sub">
-              PANDA reads a contract clause by clause — the way a legal researcher annotates
-              one — and highlights the terms EU consumer law treats as unfair. The model is{' '}
-              {MODEL_INFO.sizeMB} MB and runs inside your browser. Nothing you paste ever leaves
-              your device.
-            </p>
-            <div className="lp-hero-actions">
-              <a href="#demo" className="lp-btn lp-btn-primary">
-                Try it in your browser
-              </a>
-              <a href="#how" className="lp-btn lp-btn-ghost">
-                See how it works
-              </a>
-            </div>
-
-            <div className="lp-hero-demo" aria-hidden="true">
-              <div className="lp-demo-halo" />
-              <div className="lp-fake-doc">
-                <div className="lp-fake-toolbar"><i /><i /><i /><b>Scanning locally</b></div>
-                <span className="lp-fake-line lp-fake-heading" />
-                <span className="lp-fake-line" />
-                <span className="lp-fake-line lp-fake-short" />
-                <span className="lp-fake-clause lp-fake-flag-1">
-                  We may terminate your account at any time, for any reason, without notice.
-                  <em>Unilateral termination · 99%</em>
-                </span>
-                <span className="lp-fake-line" />
-                <span className="lp-fake-clause lp-fake-flag-2">
-                  You waive any right to a trial by jury or to join a class action.
-                  <em>Arbitration · 91%</em>
-                </span>
-                <span className="lp-fake-line lp-fake-short" />
-                <span className="lp-fake-clause lp-fake-flag-3">
-                  Continued use after we change these terms means you accept them.
-                  <em>Unilateral change · 97%</em>
-                </span>
-                <span className="lp-fake-line" />
-                <span className="lp-fake-line lp-fake-short" />
+      <main id="main">
+        <section className="lp-hero lp-shell" aria-labelledby="hero-title">
+          <div className="lp-hero-meta">
+            <span>Private AI for consumer protection</span>
+            <span>Bamberg, Germany · Research in practice</span>
+          </div>
+          <h1 id="hero-title">
+            Clarity before
+            <br />
+            you{" "}
+            <span className="lp-agree">
+              agree<span className="lp-period">.</span>
+            </span>
+          </h1>
+          <div className="lp-hero-bottom">
+            <p className="lp-index">PANDA / LegalSAN</p>
+            <div className="lp-hero-copy">
+              <p>
+                The fine print shapes your rights. PANDA flags potentially
+                unfair clauses before you accept them—with a small AI model
+                running on your own device.
+              </p>
+              <div className="lp-actions">
+                <a className="lp-btn" href="#demo">
+                  Try the live model <Arrow />
+                </a>
+                <a className="lp-text-link" href="#how">
+                  Explore the technology <Arrow />
+                </a>
               </div>
             </div>
           </div>
+          <figure className="lp-specimen">
+            <figcaption>
+              <span className="lp-kicker">01 / Reading between the lines</span>
+              <span>Illustrative clause · not a live result</span>
+            </figcaption>
+            <div className="lp-specimen-body">
+              <blockquote>
+                “We may terminate your account{" "}
+                <mark>at any time, for any reason, without notice.</mark>”
+              </blockquote>
+              <div className="lp-annotation">
+                <span className="lp-annotation-label">
+                  Potential concern / 01
+                </span>
+                <h2>Unilateral termination</h2>
+                <p>
+                  The provider reserves the right to end your access without
+                  explaining why or warning you first.
+                </p>
+                <a className="lp-text-link" href="#demo">
+                  See what PANDA finds <Arrow />
+                </a>
+              </div>
+            </div>
+          </figure>
         </section>
 
-        {/* ── Stats ── */}
-        <section className="lp-stats" aria-label="Key figures">
-          <div className="lp-shell">
-            <div className="lp-stat-row">
-              {HERO_STATS.map((stat, index) => (
-                <Reveal className="lp-stat" key={stat.label} delay={index * 70}>
-                  <span className="lp-stat-value">{stat.value}</span>
-                  <span className="lp-stat-label">{stat.label}</span>
-                </Reveal>
-              ))}
-            </div>
+        <section className="lp-facts lp-shell" aria-label="Model facts">
+          <div>
+            <strong>
+              {MODEL_INFO.sizeMB}
+              <small> MB</small>
+            </strong>
+            <span>On-device model</span>
+          </div>
+          <div>
+            <strong>08</strong>
+            <span>Clause categories</span>
+          </div>
+          <div>
+            <strong>
+              0<small> uploads</small>
+            </strong>
+            <span>Your contract stays with you</span>
+          </div>
+          <div className="lp-facts-backing">
+            <span className="lp-kicker">Supported by</span>
+            <strong>EXIST</strong>
+            <span>University of Bamberg</span>
           </div>
         </section>
 
-        {/* ── Performance ── */}
-        <section className="lp-section lp-performance" id="performance">
-          <div className="lp-shell">
-            <Reveal className="lp-performance-intro">
-              <p className="lp-kicker">Measured, not asserted</p>
-              <h2 className="lp-h2 lp-h2-wide">
-                23.5 million parameters.
-                <span>Here is exactly what they buy you.</span>
-              </h2>
-              <p className="lp-lead">
-                LegalSAN is about a third the size of DistilBERT and roughly a fifth of
-                Legal-BERT. That is the whole trade: a model this small fits in a browser tab,
-                which is the only reason the demo above can run without uploading your contract.
-                Legal-BERT reports the strongest published results on this task — it is also five
-                times our size and ships to nobody&apos;s phone.
-              </p>
-            </Reveal>
+        <section className="lp-section lp-shell" id="demo">
+          <SectionHeading
+            number="01"
+            label="Live demonstration"
+            title="Read it. Then decide."
+          >
+            Choose a sample contract or paste your own text. The model downloads
+            on your first scan and processes the clauses inside this browser.
+          </SectionHeading>
+          <div className="lp-demo-frame">
+            <ClauseScanner />
+          </div>
+          <p className="lp-footnote">
+            Research prototype. Flags are signals for closer reading, not legal
+            conclusions.
+          </p>
+        </section>
 
-            <Reveal className="lp-eval-card" delay={80}>
-              <div className="lp-eval-head">
+        <section className="lp-technology" id="how">
+          <div className="lp-section lp-shell">
+            <SectionHeading
+              number="02"
+              label="The technology"
+              title="Small enough to stay yours."
+            >
+              LegalSAN brings a focused language model to the browser. Local
+              processing makes privacy a property of the product.
+            </SectionHeading>
+            <div className="lp-tech-grid">
+              <div className="lp-tech-statement">
+                <span className="lp-kicker">The local advantage</span>
+                <p>
+                  Your text.
+                  <br />
+                  Your device.
+                  <br />
+                  <span>Your decision.</span>
+                </p>
+                <a className="lp-text-link" href="#performance">
+                  Explore the research <Arrow />
+                </a>
+              </div>
+              <div className="lp-process">
                 <div>
-                  <span>Our result</span>
-                  <h3>{EVALUATION.split}</h3>
+                  <span>01</span>
+                  <h3>Separate the clauses</h3>
+                  <p>
+                    The document is divided into individual clauses for
+                    analysis.
+                  </p>
                 </div>
-                <div className="lp-eval-headline">
-                  <div>
-                    <strong>{EVALUATION.macroF1.toFixed(3)}</strong>
-                    <span>macro-F1</span>
-                  </div>
-                  <div>
-                    <strong>{EVALUATION.microF1.toFixed(3)}</strong>
-                    <span>micro-F1</span>
-                  </div>
-                  <div>
-                    <strong>{EVALUATION.clauses.toLocaleString('en')}</strong>
-                    <span>test clauses</span>
-                  </div>
+                <div>
+                  <span>02</span>
+                  <h3>Recognise the patterns</h3>
+                  <p>
+                    A transformer encoder scores each clause against eight
+                    categories of potentially unfair terms.
+                  </p>
+                </div>
+                <div>
+                  <span>03</span>
+                  <h3>Make the concern visible</h3>
+                  <p>
+                    Flagged passages are highlighted in context, with a category
+                    and an explanation.
+                  </p>
                 </div>
               </div>
-
-              <div className="lp-eval-table-wrap">
-                <table className="lp-eval-table">
-                  <caption className="lp-sr-only">
-                    Per-category precision, recall, F1 and support on the {EVALUATION.split}
-                  </caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Category</th>
-                      <th scope="col">Precision</th>
-                      <th scope="col">Recall</th>
-                      <th scope="col">F1</th>
-                      <th scope="col">Support</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {EVALUATION.perLabel.map((row, index) => (
-                      <tr key={row.id}>
-                        <th scope="row">{CATEGORY_BY_INDEX[index].name}</th>
-                        <td>{row.precision.toFixed(3)}</td>
-                        <td>{row.recall.toFixed(3)}</td>
-                        <td>{row.f1.toFixed(3)}</td>
-                        <td className={row.support < 20 ? 'lp-eval-thin' : undefined}>
-                          {row.support}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            </div>
+            <dl className="lp-specs">
+              <div>
+                <dt>Architecture</dt>
+                <dd>{MODEL_INFO.layers}-layer transformer</dd>
               </div>
-
-              <div className="lp-eval-notes">
-                <h4>How to check this</h4>
-                <ul>
-                  <li>
-                    The official LexGLUE UNFAIR-ToS <strong>test</strong> split, unmodified, all{' '}
-                    {EVALUATION.clauses.toLocaleString('en')} clauses.
-                  </li>
-                  <li>
-                    Scored against the same <strong>int8 file the browser downloads</strong>, not a
-                    larger unquantised checkpoint.
-                  </li>
-                  <li>
-                    One sigmoid per category at threshold {EVALUATION.threshold}; macro-F1 is the
-                    unweighted mean of the eight F1 scores above, with no &ldquo;fair&rdquo; class
-                    scored. Figures published elsewhere often do score one, so this number is not
-                    interchangeable with theirs.
-                  </li>
-                  <li>
-                    Support is small for several categories — arbitration has{' '}
-                    {EVALUATION.perLabel[7].support} positive examples in the whole split — so
-                    treat those per-class scores as indicative.
-                  </li>
-                  <li>
-                    <code>scripts/eval-unfair-tos.py</code> in our repository downloads the split
-                    and reprints this table from scratch.
-                  </li>
-                </ul>
+              <div>
+                <dt>Weights</dt>
+                <dd>
+                  {MODEL_INFO.quantization} · {MODEL_INFO.sizeMB} MB
+                </dd>
               </div>
-            </Reveal>
-
-            <Reveal className="lp-size-card" delay={140}>
-              <h3>What actually fits in a browser</h3>
-              <div className="lp-size-table-wrap">
-                <table className="lp-size-table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Model</th>
-                      <th scope="col">Parameters</th>
-                      <th scope="col">Download</th>
-                      <th scope="col">Runs on device</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {SIZE_COMPARISON.map((model) => (
-                      <tr key={model.name} className={model.featured ? 'is-featured' : undefined}>
-                        <th scope="row">{model.name}</th>
-                        <td>{model.parameters}</td>
-                        <td>{model.download}</td>
-                        <td>
-                          <span className={model.browser ? 'lp-yes' : 'lp-no'}>
-                            {model.browser ? 'Yes' : 'Not practically'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div>
+                <dt>Context</dt>
+                <dd>{MODEL_INFO.maxTokens} tokens per clause</dd>
               </div>
-              <p className="lp-size-note">
-                Parameter counts are architecture facts and are exact. We deliberately do not put
-                accuracy in this table: published figures for those models come from their own
-                authors&apos; evaluation protocols, and lining them up in one column would imply a
-                head-to-head run we have not done.
-              </p>
-            </Reveal>
+              <div>
+                <dt>Execution</dt>
+                <dd>WebAssembly · Web Worker</dd>
+              </div>
+            </dl>
           </div>
         </section>
 
-        {/* ── The demo ── */}
-        <section className="lp-section lp-demo" id="demo">
-          <div className="lp-shell">
-            <Reveal className="lp-section-head">
-              <p className="lp-kicker">The live demo</p>
-              <h2 className="lp-h2">
-                Don&apos;t take our word for it.
-                <span>Run the model yourself.</span>
-              </h2>
-              <p className="lp-lead">
-                Pick one of the sample contracts — or paste your own — and press scan. The{' '}
-                {MODEL_INFO.sizeMB} MB model downloads once, then reads every clause locally and
-                highlights what it finds. Watch your network tab while it runs: your text
-                never leaves the page.
-              </p>
-            </Reveal>
-            <Reveal className="lp-demo-frame" delay={80}>
-              <ClauseScanner />
-            </Reveal>
+        <section className="lp-section lp-shell" id="performance">
+          <SectionHeading
+            number="03"
+            label="Research & performance"
+            title="Focused intelligence. Measurable results."
+          >
+            A compact model trained for the fine print. LegalSAN brings
+            specialised contract analysis to the browser, with the research
+            behind it documented in our forthcoming preprint.
+          </SectionHeading>
+          <div className="lp-results" aria-label="LegalSAN research highlights">
+            <div className="lp-result">
+              <strong>
+                95.88<span>%</span>
+              </strong>
+              <h3>Overall accuracy</h3>
+              <p>Nine-category classification, including Other.</p>
+            </div>
+            <div className="lp-result">
+              <strong>
+                88.46<span>%</span>
+              </strong>
+              <h3>Binary macro-F1</h3>
+              <p>Fair versus potentially unfair clauses.</p>
+            </div>
+            <div className="lp-paper-link">
+              <span className="lp-kicker">The research behind PANDA</span>
+              <p>Full methodology and evaluation in the preprint.</p>
+              {PREPRINT_URL ? (
+                <a
+                  className="lp-text-link"
+                  href={PREPRINT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Read the preprint <Arrow />
+                </a>
+              ) : (
+                <span className="lp-preprint-status">Preprint forthcoming</span>
+              )}
+            </div>
           </div>
+          <p className="lp-footnote">
+            LegalBench unfair_tos · INT8 · threshold 0.40. Overall accuracy
+            includes the majority Other category; the two figures measure
+            different aspects of performance.
+          </p>
         </section>
 
-        {/* ── Pillars ── */}
-        <section className="lp-section lp-dark" id="privacy">
-          <div className="lp-shell">
-            {PILLARS.map((pillar, index) => (
-              <Reveal className="lp-pillar" key={pillar.title} delay={index * 60}>
-                <p className="lp-pillar-kicker">{pillar.kicker}</p>
-                <div className="lp-pillar-main">
-                  <h3 className="lp-pillar-title">{pillar.title}</h3>
-                  <p className="lp-pillar-body">{pillar.body}</p>
-                  <span className="lp-pillar-proof">{pillar.proof}</span>
+        <section className="lp-section lp-shell lp-categories" id="categories">
+          <SectionHeading
+            number="04"
+            label="What it recognises"
+            title="The details that deserve a second look."
+          />
+          <div className="lp-category-list">
+            {CATEGORIES.map((category, index) => (
+              <details key={category.id}>
+                <summary>
+                  <span className="lp-category-number">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <h3>{category.name}</h3>
+                  <span className="lp-expand" aria-hidden="true" />
+                </summary>
+                <div className="lp-category-detail">
+                  <p>{category.summary}</p>
+                  <p>
+                    <strong>Watch for</strong> {category.watchFor}
+                  </p>
                 </div>
-              </Reveal>
+              </details>
             ))}
           </div>
         </section>
 
-        {/* ── How it works ── */}
-        <section className="lp-section" id="how">
+        <section className="lp-vision" id="privacy">
           <div className="lp-shell">
-            <Reveal className="lp-section-head">
-              <p className="lp-kicker">How it works</p>
-              <h2 className="lp-h2">
-                Three steps.
-                <span>No cloud in any of them.</span>
-              </h2>
-            </Reveal>
-            <div className="lp-steps">
-              {STEPS.map((step, index) => (
-                <Reveal className="lp-step" key={step.n} delay={index * 80}>
-                  <span className="lp-step-n">{step.n}</span>
-                  <h3>{step.title}</h3>
-                  <p>{step.body}</p>
-                </Reveal>
-              ))}
-            </div>
-            <Reveal className="lp-spec" delay={140}>
-              <dl>
-                <div>
-                  <dt>Architecture</dt>
-                  <dd>
-                    {MODEL_INFO.layers}-layer transformer encoder, {MODEL_INFO.hiddenSize} hidden
-                    units, mean-pooled multi-label head
-                  </dd>
-                </div>
-                <div>
-                  <dt>Weights</dt>
-                  <dd>
-                    {MODEL_INFO.quantization} quantised, {MODEL_INFO.sizeMB} MB, served as a static
-                    file
-                  </dd>
-                </div>
-                <div>
-                  <dt>Context</dt>
-                  <dd>{MODEL_INFO.maxTokens} tokens per clause, WordPiece tokenizer in the browser</dd>
-                </div>
-                <div>
-                  <dt>Runtime</dt>
-                  <dd>WebAssembly in a Web Worker — the page stays responsive while it reads</dd>
-                </div>
-              </dl>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ── Categories ── */}
-        <section className="lp-section lp-tint" id="categories">
-          <div className="lp-shell">
-            <Reveal className="lp-section-head">
-              <p className="lp-kicker">What it finds</p>
-              <h2 className="lp-h2">
-                Eight ways a contract
-                <span>can be written against you.</span>
-              </h2>
-              <p className="lp-lead">
-                The categories come from consumer-law research on unfair terms in online
-                contracts. Each clause is scored against all eight at once, because one sentence
-                often does several of these things at the same time.
+            <p className="lp-kicker">The larger ambition</p>
+            <h2>
+              A fairer web.
+              <br />
+              Starting with the fine print.
+            </h2>
+            <div className="lp-vision-copy">
+              <p>
+                Contract analysis is our first step. We are developing PANDA
+                toward a browser assistant that helps people recognise
+                manipulative interfaces and make informed choices.
               </p>
-            </Reveal>
-            <div className="lp-cat-grid">
-              {CATEGORIES.map((category, index) => (
-                <Reveal className="lp-cat" key={category.id} delay={(index % 4) * 60}>
-                  <div className="lp-cat-top">
-                    <span className={`lp-cat-dot lp-sev-${category.severity}`} />
-                    <h3>{category.name}</h3>
-                  </div>
-                  <p>{category.summary}</p>
-                  <p className="lp-cat-watch">
-                    <strong>Watch for</strong> {category.watchFor}
-                  </p>
-                </Reveal>
-              ))}
+              <p>
+                Today: a working local clause scanner.
+                <br />
+                Next: protection in the browsing flow.
+              </p>
             </div>
           </div>
         </section>
 
-        {/* ── Regulatory context ── */}
-        <section className="lp-section lp-law" id="law">
-          <div className="lp-shell">
-            <Reveal className="lp-section-head">
-              <p className="lp-kicker">Why these eight</p>
-              <h2 className="lp-h2">
-                The categories are not ours.
-                <span>They come from EU law.</span>
-              </h2>
-              <p className="lp-lead">
-                Council Directive 93/13/EEC on unfair terms in consumer contracts is the reason a
-                clause can be unfair as a matter of law rather than as a matter of opinion. The
-                eight categories PANDA scores follow the annotation scheme consumer-law
-                researchers built on that directive — which is also why a scanner can be specific
-                about what it found instead of vaguely warning you.
-              </p>
-            </Reveal>
-            <div className="lp-law-grid">
-              <Reveal className="lp-law-card">
-                <h3>Directive 93/13/EEC</h3>
-                <p>
-                  Terms that create a significant imbalance to the consumer&apos;s detriment are
-                  not binding on them. The categories on this page — one-sided termination,
-                  liability caps, arbitration, imposed jurisdiction — are the recurring shapes
-                  that imbalance takes in online contracts.
-                </p>
-              </Reveal>
-              <Reveal className="lp-law-card" delay={70}>
-                <h3>The EU AI Act</h3>
-                <p>
-                  A risk-based regime that asks what a system does, how it is documented and what
-                  users are told. Ours is a narrow classifier with a published evaluation and a
-                  human reading every result — and it is a consumer-information tool, not a legal
-                  service. We treat that documentation burden as the baseline, not as a cost.
-                </p>
-              </Reveal>
-              <Reveal className="lp-law-card" delay={140}>
-                <h3>Data protection</h3>
-                <p>
-                  Running on the device is the strongest form of data minimisation there is: a
-                  contract that is never transmitted cannot be logged, retained, subpoenaed or
-                  breached. That is an architectural property you can verify in your own network
-                  tab, not a policy promise.
-                </p>
-              </Reveal>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Where it sits ── */}
-        <section className="lp-section lp-tint" id="compare">
-          <div className="lp-shell">
-            <Reveal className="lp-section-head">
-              <p className="lp-kicker">Where it sits</p>
-              <h2 className="lp-h2">
-                Other people have
-                <span>worked on this too.</span>
-              </h2>
-              <p className="lp-lead">
-                Reading contracts for consumers is not a new idea. What is new here is the
-                combination: automatic, per-clause, category-level scoring that runs without
-                sending the document anywhere.
-              </p>
-            </Reveal>
-            <div className="lp-alt-grid">
-              {ALTERNATIVES.map((item, index) => (
-                <Reveal
-                  className={`lp-alt ${item.featured ? 'is-featured' : ''}`}
-                  key={item.name}
-                  delay={(index % 4) * 60}
-                >
-                  <h3>{item.name}</h3>
-                  <p>{item.what}</p>
-                  <p className="lp-alt-limit">{item.limit}</p>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Roadmap ── */}
-        <section className="lp-section lp-dark lp-vision">
-          <div className="lp-shell">
-            <Reveal>
-              <p className="lp-kicker">What is next</p>
-              <h2 className="lp-h2 lp-h2-wide">
-                Contracts first. Interfaces after — and only with the same evidence.
-              </h2>
-              <p className="lp-lead">
-                Unfair terms and manipulative interface design are the same problem wearing
-                different clothes: the cost of a decision is moved somewhere you will not look.
-                Contracts are the tractable half — the text is fixed, the categories are settled
-                in law, and the results on this page can be checked line by line.
-              </p>
-              <p className="lp-lead lp-lead-dim">
-                Detecting dark patterns in live interfaces is the harder half and the reason this
-                is a research project rather than a finished product. It needs its own annotated
-                data, its own evaluation, and its own published numbers. We have not built it yet,
-                and we would rather say so here than imply otherwise.
-              </p>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ── Team & funding ── */}
-        <section className="lp-section" id="team">
-          <div className="lp-shell">
-            <Reveal className="lp-section-head">
-              <p className="lp-kicker">Who is building it</p>
-              <h2 className="lp-h2">
-                A small team
-                <span>with a specific obsession.</span>
-              </h2>
-              <p className="lp-lead">
-                We build the model and the product. The legal judgement is not ours and we do not
-                pretend otherwise: the eight categories, and the annotated clauses the model
-                learned from, come from published consumer-law research on unfair terms — work
-                done by legal scholars and released for exactly this kind of use. That is why the
-                page can point at a directive and a test split instead of asking you to trust us.
-              </p>
-            </Reveal>
-            <div className="lp-people">
-              {team.map((person, index) => (
-                <Reveal className="lp-person" key={person.name} delay={index * 70}>
-                  <span className="lp-person-initial">{person.name.charAt(0)}</span>
-                  <div>
-                    <strong>{person.name}</strong>
-                    <span>{person.role}</span>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-
-            <Reveal className="lp-funding" delay={120}>
-              <div>
-                <p className="lp-kicker">Backing &amp; research</p>
-                <p>
-                  PANDA is being developed as an {funding.program} project — the German Federal
-                  Ministry for Economic Affairs and Climate Action&apos;s programme for
-                  technology-based startups from universities.
-                </p>
-                {mentors?.length > 0 && (
-                  <p className="lp-mentors">
-                    Academic mentors:{' '}
-                    {mentors.map((mentor) => `${mentor.name} (${mentor.affiliation})`).join(' · ')}
-                  </p>
-                )}
+        <section className="lp-section lp-shell" id="team">
+          <SectionHeading
+            number="05"
+            label="People & backing"
+            title="From research to everyday use."
+          >
+            PANDA is being developed at the University of Bamberg with support
+            from the {funding.program}.
+          </SectionHeading>
+          <div className="lp-team-grid">
+            {team.map((person, index) => (
+              <div className="lp-person" key={person.name}>
+                <span className="lp-kicker">
+                  {String(index + 1).padStart(2, "0")} / Founding team
+                </span>
+                <h3>{person.name}</h3>
+                <p>{person.role}</p>
               </div>
+            ))}
+            <div className="lp-backing">
+              <span className="lp-kicker">Academic mentorship</span>
+              {mentors?.map((mentor) => (
+                <p key={mentor.name}>
+                  <strong>{mentor.name}</strong>
+                  <span>{mentor.affiliation}</span>
+                </p>
+              ))}
               <a
-                className="lp-btn lp-btn-ghost"
+                className="lp-text-link"
                 href="https://www.exist.de"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                About EXIST
+                About EXIST <Arrow />
               </a>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ── Business direction ── */}
-        <section className="lp-section lp-tint" id="business">
-          <div className="lp-shell">
-            <Reveal className="lp-section-head">
-              <p className="lp-kicker">Where this goes commercially</p>
-              <h2 className="lp-h2">
-                Free for the people
-                <span>who are outmatched.</span>
-              </h2>
-              <p className="lp-lead">
-                The consumer scanner is the part that should never have a price on it — a person
-                deciding whether to accept a contract is the one party in the transaction without
-                a legal department. The intended commercial side is the other direction: reading
-                terms at volume, for the people whose job that already is.
-              </p>
-            </Reveal>
-            <div className="lp-law-grid">
-              <Reveal className="lp-law-card">
-                <h3>Always free</h3>
-                <p>
-                  Scanning a contract you have been asked to accept. It costs us nothing per scan
-                  — the model runs on your machine, not our servers — so there is no usage meter
-                  to build a business on, and no reason to put one there.
-                </p>
-              </Reveal>
-              <Reveal className="lp-law-card" delay={70}>
-                <h3>Where revenue would come from</h3>
-                <p>
-                  Organisations that review terms at scale rather than one at a time: consumer
-                  bodies and researchers monitoring how contracts drift, and teams screening the
-                  terms they are about to sign or publish. Same model, different unit of work —
-                  a corpus instead of a clause.
-                </p>
-              </Reveal>
-              <Reveal className="lp-law-card" delay={140}>
-                <h3>Where we actually are</h3>
-                <p>
-                  Pre-revenue, pre-pricing, grant-funded. We have a working model and a public
-                  demo, not customers. Stating that plainly seems better than a pricing table we
-                  would have to invent.
-                </p>
-              </Reveal>
             </div>
           </div>
         </section>
 
-        {/* ── Closing CTA ── */}
-        <section className="lp-closing">
-          <div className="lp-shell">
-            <Reveal>
-              <h2 className="lp-closing-title">
-                Read the fine print
-                <span>before you agree to it.</span>
-              </h2>
-              <a href="#demo" className="lp-btn lp-btn-primary lp-btn-lg">
-                Scan a contract now
-              </a>
-              <p className="lp-closing-note">
-                Free, public, and running on your own machine. A research prototype that
-                classifies clauses — it does not give legal advice and is not a legal service.
-              </p>
-            </Reveal>
+        <section className="lp-closing lp-shell">
+          <p className="lp-kicker">Make an informed choice</p>
+          <div>
+            <h2>
+              Start with
+              <br />
+              the fine print.
+            </h2>
+            <a className="lp-btn" href="#demo">
+              Scan a contract <Arrow />
+            </a>
           </div>
         </section>
       </main>
-
-      {/* ── Footer, with team access at the very bottom ── */}
-      <footer className="lp-footer">
-        <div className="lp-shell">
-          <div className="lp-footer-main">
-            <div className="lp-footer-brand">
-              <span className="lp-wordmark">PANDA</span>
-              <p>{project.tagline}</p>
-            </div>
-            <nav className="lp-footer-links" aria-label="Footer">
-              <a href="#demo">Live demo</a>
-              <a href="#how">How it works</a>
-              <a href="#performance">Results</a>
-              <a href="#law">Why these eight</a>
-              <a href="https://www.exist.de" target="_blank" rel="noopener noreferrer">
-                EXIST
-              </a>
-            </nav>
-          </div>
-
-          <div className="lp-footer-bottom">
-            <span>
-              © {new Date().getFullYear()} PANDA · Clause classification, not legal advice
-            </span>
-            <Link href="/login" className="lp-team-login">
-              Team login
-              <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-                <path
-                  d="M2.5 6h6M6 3.5 8.5 6 6 8.5"
-                  stroke="currentColor"
-                  strokeWidth="1.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                />
-              </svg>
-            </Link>
-          </div>
+      <footer className="lp-footer lp-shell">
+        <div className="lp-footer-top">
+          <a className="lp-wordmark" href="#top">
+            PANDA
+            <span className="lp-brand-square" aria-hidden="true" />
+          </a>
+          <p>
+            Private intelligence.
+            <br />
+            In the consumer’s interest.
+          </p>
+          <a className="lp-text-link" href="#top">
+            Back to top ↑
+          </a>
+        </div>
+        <div className="lp-footer-bottom">
+          <span>
+            © {new Date().getFullYear()} PANDA · Research prototype, not legal
+            advice.
+          </span>
+          <Link href="/login">Team login ↗</Link>
         </div>
       </footer>
     </div>

@@ -5,7 +5,7 @@
     "oneLiner": "A browser tool that reads consumer contracts on your own device and flags the clauses EU consumer law treats as unfair — no upload, no account, no cloud.",
     "problem": "Dark patterns are deceptive UI designs that manipulate users into unintended actions — hidden fees, forced subscriptions, misleading opt-ins. They cost consumers billions annually and erode trust in digital products. Existing tools are limited to static blocklists that can't keep up with evolving tactics.",
     "solution": "PANDA runs a 23.5 M-parameter clause classifier entirely in the browser. It segments a terms-of-service document into clauses, scores each one against eight categories of unfair term drawn from consumer-law research, and highlights the matches in place with the category and the model's confidence. Because the model is a static file, the contract never leaves the reader's machine.",
-    "approach": "A compact transformer encoder fine-tuned on clauses annotated by consumer-law researchers, quantised to int8 so it fits in a browser tab. We publish our evaluation protocol and per-class results on the official LexGLUE UNFAIR-ToS test split rather than headline averages alone. Detecting manipulative interface patterns is the intended next step, and is not yet evaluated."
+    "approach": "A compact transformer encoder fine-tuned on clauses annotated by consumer-law researchers, quantised to int8 so it fits in a browser tab. The landing page presents headline results, with detailed methodology and evaluation reserved for the forthcoming preprint. Detecting manipulative interface patterns is the intended next step, and is not yet evaluated."
   },
   "team": [
     {
