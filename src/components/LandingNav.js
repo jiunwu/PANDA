@@ -1,31 +1,18 @@
-'use client';
-
-import { useEffect, useState } from 'react';
+import LandingArrow from "@/components/LandingArrow";
 
 const SECTIONS = [
-  { id: 'demo', label: 'Live demo' },
-  { id: 'performance', label: 'Performance' },
-  { id: 'how', label: 'How it works' },
-  { id: 'categories', label: 'What it finds' },
-  { id: 'privacy', label: 'Privacy' },
-  { id: 'team', label: 'Team' },
+  { id: "how", label: "Technology" },
+  { id: "performance", label: "Research" },
+  { id: "team", label: "About" },
 ];
 
 export default function LandingNav() {
-  const [lifted, setLifted] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setLifted(window.scrollY > 24);
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
   return (
-    <header className={`lp-nav ${lifted ? 'is-lifted' : ''}`}>
+    <header className="lp-nav">
       <div className="lp-nav-inner">
         <a href="#top" className="lp-wordmark" aria-label="PANDA, back to top">
           PANDA
+          <span className="lp-brand-square" aria-hidden="true" />
         </a>
         <nav className="lp-nav-links" aria-label="Sections">
           {SECTIONS.map((section) => (
@@ -35,7 +22,7 @@ export default function LandingNav() {
           ))}
         </nav>
         <a href="#demo" className="lp-nav-cta">
-          Try it
+          Try PANDA <LandingArrow />
         </a>
       </div>
     </header>

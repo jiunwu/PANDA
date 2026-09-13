@@ -43,6 +43,26 @@ the correct one to tokenize with. The browser tokenizer in
 `public/demo/legalsan-worker.js` is verified byte-for-byte against HuggingFace
 `BertTokenizerFast` on accents, punctuation, symbols, CJK and abbreviations.
 
+### Evaluation
+
+`scripts/eval-unfair-tos.py` downloads the **official LexGLUE UNFAIR-ToS test
+split** (1,607 clauses) and scores the exact int8 file the browser serves,
+printing per-class precision/recall/F1 with support counts:
+
+```bash
+pip install onnxruntime pyarrow
+python scripts/eval-unfair-tos.py
+```
+
+The landing page shows only the previously reported LegalBench headline metrics,
+not per-category evaluation tables. Full methodology and detailed results will
+be provided in the preprint. Set `NEXT_PUBLIC_PANDA_PREPRINT_URL` to the paper URL
+(or an uploaded PDF path) when it is published; until then the page displays
+“Preprint forthcoming” without a dead link.
+
+The evaluation script above uses the LexGLUE split. It is a separate protocol
+from the LegalBench headline results and should not be used to relabel them.
+
 ### The runtime
 
 `onnxruntime-web` is served from this origin rather than a CDN, so the demo

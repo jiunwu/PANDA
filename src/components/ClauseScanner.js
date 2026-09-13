@@ -260,6 +260,7 @@ export default function ClauseScanner() {
           {sourceId === PASTE_ID && !scanned ? (
             <textarea
               className="scanner-input"
+              aria-label="Contract text to analyse"
               value={pasted}
               onChange={(event) => setPasted(event.target.value)}
               placeholder={'Paste the terms of service you want to check…\n\nAny length works. The text never leaves your browser.'}
@@ -405,7 +406,8 @@ export default function ClauseScanner() {
           )}
 
           <p className="scanner-disclaimer">
-            A research prototype, not legal advice. The model reports patterns, not verdicts.
+            A research prototype. It classifies clauses; it does not give legal advice and is
+            not a legal service. A flagged clause is a prompt to look closer, not a ruling.
           </p>
         </aside>
       </div>
