@@ -1,5 +1,5 @@
 import './globals.css';
-import Nav from '@/components/Nav';
+import AppShell from '@/components/AppShell';
 
 export const metadata = {
   title: 'PANDA – EXIST Gründungsstipendium Planner',
@@ -9,12 +9,9 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="de">
+    <html lang="en">
       <body>
-        <div className="container">
-          <Nav />
-          {children}
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
