@@ -16,6 +16,46 @@ export const metadata = {
 // Set this to the published paper URL (or an uploaded /papers/... PDF) when available.
 const PREPRINT_URL = process.env.NEXT_PUBLIC_PANDA_PREPRINT_URL || null;
 
+const MODEL_COMPARISON = [
+  { name: "LegalSAN", parameters: 23.5, featured: true },
+  { name: "DistilBERT", parameters: 66 },
+  { name: "Legal-BERT", parameters: 110 },
+  { name: "RoBERTa-large", parameters: 355 },
+];
+
+function ModelComparison() {
+  return (
+    <figure className="lp-model-comparison" aria-labelledby="model-comparison-title">
+      <figcaption className="lp-model-caption">
+        <div>
+          <span className="lp-kicker">Model comparison</span>
+          <h3 id="model-comparison-title">Small by design.</h3>
+        </div>
+        <p>Model size · millions of parameters</p>
+      </figcaption>
+      <ol className="lp-model-bars">
+        {MODEL_COMPARISON.map((model) => (
+          <li className={model.featured ? "is-featured" : undefined} key={model.name}>
+            <div className="lp-model-name">
+              <strong>{model.name}</strong>
+              <span>{model.featured ? "Our model" : (model.parameters / 23.5).toFixed(1) + "× the parameters"}</span>
+            </div>
+            <div className="lp-model-track" aria-hidden="true">
+              <span style={{ width: (model.parameters / 355) * 100 + "%" }} />
+            </div>
+            <span className="lp-model-value">{model.parameters}<small> M</small></span>
+          </li>
+        ))}
+      </ol>
+      <div className="lp-model-summary">
+        <p><strong>{MODEL_INFO.sizeMB} MB</strong><span>LegalSAN download · INT8</span></p>
+        <p>Focused on the fine print. Compact enough to run on your device.</p>
+      </div>
+      <p className="lp-footnote">Bars use a shared linear scale and compare parameter counts, not accuracy or download size. Detailed performance comparisons belong in the preprint.</p>
+    </figure>
+  );
+}
+
 function SectionHeading({ number, label, title, children }) {
   return (
     <div className="lp-section-head">
@@ -262,6 +302,7 @@ export default function LandingPage() {
             includes the majority Other category; the two figures measure
             different aspects of performance.
           </p>
+          <ModelComparison />
         </section>
 
         <section className="lp-section lp-shell lp-categories" id="categories">
