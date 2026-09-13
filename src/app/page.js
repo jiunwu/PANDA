@@ -188,6 +188,28 @@ export default function LandingPage() {
                   <span>10 M</span><span>100 M</span><span>1 B</span><span>10 B</span><span>100 B</span><span>1 T</span>
                 </div>
               </div>
+              <div className="lp-mobile-benchmark" aria-label="Model benchmark comparison">
+                <div className="lp-mobile-benchmark-head">
+                  <span>Model / parameters</span>
+                  <span>Macro-F1</span>
+                </div>
+                {BENCHMARKS.map((model) => (
+                  <div
+                    className={`lp-mobile-model ${model.featured ? 'is-featured' : ''} ${model.outlier ? 'is-outlier' : ''}`}
+                    key={model.name}
+                  >
+                    <div className="lp-mobile-model-copy">
+                      <strong>{model.name}</strong>
+                      <span>{model.parameters} parameters</span>
+                    </div>
+                    <b>{model.score}</b>
+                    <div className="lp-mobile-score-track" aria-hidden="true">
+                      <i style={{ '--score': `${Number(model.score) * 100}%` }} />
+                    </div>
+                  </div>
+                ))}
+                <p className="lp-mobile-scale">Bar length represents Macro-F1 score</p>
+              </div>
               <div className="lp-chart-takeaway">
                 <strong>7,400×</strong>
                 <p><b>less model, more signal.</b> Domain learning beats scale alone when the task is precise.</p>
