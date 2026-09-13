@@ -34,3 +34,6 @@ yarn-error.log*
 
 # Database
 *.db
+
+# Vendored onnxruntime-web runtime (staged by scripts/copy-ort.js)
+/public/vendor/ort

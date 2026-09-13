@@ -1,14 +1,73 @@
-# PANDA – EXIST Gründungsstipendium Planner
+# PANDA
 
-Internal planning and management dashboard for the EXIST Gründungsstipendium Vorhaben.
+Public product site for PANDA plus the internal planning dashboard for the
+EXIST Gründungsstipendium Vorhaben.
 
 Team: Jiun & Nina
+
+- `/` — the public landing page, including the in-browser clause demo.
+- Everything else — the internal dashboard, behind the team login at the
+  bottom of the landing page.
 
 ## Tech Stack
 
 - Next.js 14 (App Router)
 - Vanilla CSS
+- onnxruntime-web (WASM) for the in-browser model
 - Vercel deployment ready
+
+## Public landing page & clause demo
+
+The landing page runs the LegalSan unfair-clause model entirely in the
+visitor's browser. Nothing a visitor pastes is ever uploaded: the weights and
+the vocabulary are static assets and inference happens locally in a Web Worker.
+
+### The model
+
+| | |
+|---|---|
+| File | `public/models/legalsan/legalsan-int8.onnx` (24 MB) |
+| Architecture | 6-layer transformer encoder, 768 hidden, mean-pooled head |
+| Inputs | `input_ids`, `attention_mask` (int64, max 128 tokens) |
+| Output | `probs`, 8 sigmoid units — multi-label, so a clause can match several |
+| Tokenizer | `bert-base-uncased` WordPiece (`public/models/legalsan/vocab.txt`) |
+
+The eight output units, **in this order**, are: limitation of liability,
+unilateral termination, unilateral change, content removal, contract by using,
+choice of law, jurisdiction, arbitration. `CATEGORIES` in `src/lib/legalsan.js`
+mirrors that order and must stay in sync with the model.
+
+The graph remaps the 30,522-token BERT vocabulary onto its own 12,000-token
+embedding table internally, so the standard `bert-base-uncased` vocabulary is
+the correct one to tokenize with. The browser tokenizer in
+`public/demo/legalsan-worker.js` is verified byte-for-byte against HuggingFace
+`BertTokenizerFast` on accents, punctuation, symbols, CJK and abbreviations.
+
+### The runtime
+
+`onnxruntime-web` is served from this origin rather than a CDN, so the demo
+keeps working on locked-down networks. `scripts/copy-ort.js` stages the three
+files it needs from `node_modules` into `public/vendor/ort/` (git-ignored) on
+`postinstall` and again on `prebuild`. If that directory is missing, the worker
+falls back to the public CDN on its own.
+
+Because the copy runs as `prebuild`, the Vercel build command is `npm run
+build` rather than `next build` directly.
+
+### Working on the demo
+
+```bash
+npm test          # clause segmentation and scoring
+npm run dev       # the landing page is at /
+```
+
+- Sample contracts: `src/data/demo-contracts.js` (original texts, fictional
+  companies).
+- Segmentation, categories, thresholds and scoring: `src/lib/legalsan.js`.
+- UI: `src/components/ClauseScanner.js`, styles in `src/app/landing.css`.
+
+To swap in a new model, replace the `.onnx` file, and update `MODEL_INFO` and
+`CATEGORIES` in `src/lib/legalsan.js` if the shape or label order changed.
 
 ## Getting Started
 
@@ -168,7 +227,13 @@ The page and API use PANDA's existing authentication middleware.
 
 ```
 src/app/
-  globals.css    Design system
+  globals.css    Design system for the internal dashboard
+  landing.css    Design system for the public landing page
   layout.js      Root layout
-  page.js        Dashboard
+  page.js        Public landing page
+  dashboard/     Internal dashboard
+public/
+  models/legalsan/   Model weights and vocabulary
+  demo/              Inference Web Worker
+  vendor/ort/        onnxruntime-web, staged at build time (git-ignored)
 ```
