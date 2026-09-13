@@ -8,6 +8,7 @@ const SECTIONS = [
   { id: 'how', label: 'How it works' },
   { id: 'law', label: 'Why these eight' },
   { id: 'compare', label: 'Where it sits' },
+  { id: 'business', label: 'Business' },
   { id: 'team', label: 'Team' },
 ];
 

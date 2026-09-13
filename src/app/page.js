@@ -540,6 +540,13 @@ export default function LandingPage() {
                 A small team
                 <span>with a specific obsession.</span>
               </h2>
+              <p className="lp-lead">
+                We build the model and the product. The legal judgement is not ours and we do not
+                pretend otherwise: the eight categories, and the annotated clauses the model
+                learned from, come from published consumer-law research on unfair terms — work
+                done by legal scholars and released for exactly this kind of use. That is why the
+                page can point at a directive and a test split instead of asking you to trust us.
+              </p>
             </Reveal>
             <div className="lp-people">
               {team.map((person, index) => (
@@ -577,6 +584,52 @@ export default function LandingPage() {
                 About EXIST
               </a>
             </Reveal>
+          </div>
+        </section>
+
+        {/* ── Business direction ── */}
+        <section className="lp-section lp-tint" id="business">
+          <div className="lp-shell">
+            <Reveal className="lp-section-head">
+              <p className="lp-kicker">Where this goes commercially</p>
+              <h2 className="lp-h2">
+                Free for the people
+                <span>who are outmatched.</span>
+              </h2>
+              <p className="lp-lead">
+                The consumer scanner is the part that should never have a price on it — a person
+                deciding whether to accept a contract is the one party in the transaction without
+                a legal department. The intended commercial side is the other direction: reading
+                terms at volume, for the people whose job that already is.
+              </p>
+            </Reveal>
+            <div className="lp-law-grid">
+              <Reveal className="lp-law-card">
+                <h3>Always free</h3>
+                <p>
+                  Scanning a contract you have been asked to accept. It costs us nothing per scan
+                  — the model runs on your machine, not our servers — so there is no usage meter
+                  to build a business on, and no reason to put one there.
+                </p>
+              </Reveal>
+              <Reveal className="lp-law-card" delay={70}>
+                <h3>Where revenue would come from</h3>
+                <p>
+                  Organisations that review terms at scale rather than one at a time: consumer
+                  bodies and researchers monitoring how contracts drift, and teams screening the
+                  terms they are about to sign or publish. Same model, different unit of work —
+                  a corpus instead of a clause.
+                </p>
+              </Reveal>
+              <Reveal className="lp-law-card" delay={140}>
+                <h3>Where we actually are</h3>
+                <p>
+                  Pre-revenue, pre-pricing, grant-funded. We have a working model and a public
+                  demo, not customers. Stating that plainly seems better than a pricing table we
+                  would have to invent.
+                </p>
+              </Reveal>
+            </div>
           </div>
         </section>
 
