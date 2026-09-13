@@ -19,6 +19,14 @@ const HERO_STATS = [
   { value: '<1 s', label: 'To read a full contract' },
 ];
 
+const BENCHMARKS = [
+  { name: 'LegalSAN', parameters: '23.5 M', score: '0.787', x: 7.4, y: 19, featured: true },
+  { name: 'DistilBERT', parameters: '66 M', score: '0.793', x: 17, y: 17.5 },
+  { name: 'Legal-BERT', parameters: '110 M', score: '0.830', x: 28, y: 10 },
+  { name: 'RoBERTa-large', parameters: '355 M', score: '0.812', x: 42, y: 14 },
+  { name: 'GPT-3.5 Turbo · zero-shot', parameters: '~175 B', score: '0.222', x: 86, y: 84, outlier: true },
+];
+
 const PILLARS = [
   {
     kicker: 'Local',
@@ -69,8 +77,10 @@ export default function LandingPage() {
         {/* ── Hero ── */}
         <section className="lp-hero">
           <div className="lp-hero-glow" aria-hidden="true" />
+          <div className="lp-hero-orbit lp-hero-orbit-one" aria-hidden="true" />
+          <div className="lp-hero-orbit lp-hero-orbit-two" aria-hidden="true" />
           <div className="lp-hero-inner">
-            <p className="lp-eyebrow">PANDA · on-device legal AI</p>
+            <p className="lp-eyebrow"><span />Introducing LegalSAN · private intelligence, on device</p>
             <h1 className="lp-hero-title">
               Nobody reads
               <br />
@@ -92,7 +102,9 @@ export default function LandingPage() {
             </div>
 
             <div className="lp-hero-demo" aria-hidden="true">
+              <div className="lp-demo-halo" />
               <div className="lp-fake-doc">
+                <div className="lp-fake-toolbar"><i /><i /><i /><b>Scanning locally</b></div>
                 <span className="lp-fake-line lp-fake-heading" />
                 <span className="lp-fake-line" />
                 <span className="lp-fake-line lp-fake-short" />
@@ -128,6 +140,60 @@ export default function LandingPage() {
                 </Reveal>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* ── Performance ── */}
+        <section className="lp-section lp-performance" id="performance">
+          <div className="lp-shell">
+            <Reveal className="lp-performance-intro">
+              <p className="lp-kicker">Performance, re-sized</p>
+              <h2 className="lp-h2 lp-h2-wide">
+                Smaller by design.
+                <span>Stronger where it matters.</span>
+              </h2>
+              <p className="lp-lead">
+                LegalSAN puts focused legal understanding ahead of brute-force scale. At only
+                23.5 million parameters, it fits on-device while outperforming a zero-shot model
+                roughly 7,400 times larger on the UNFAIR-ToS benchmark.
+              </p>
+            </Reveal>
+
+            <Reveal className="lp-chart-card" delay={100}>
+              <div className="lp-chart-heading">
+                <div>
+                  <span>FIG. 01</span>
+                  <h3>Accuracy against parameter count</h3>
+                </div>
+                <p>Macro-F1 · logarithmic parameter scale</p>
+              </div>
+              <div className="lp-chart" role="img" aria-label="LegalSAN has a Macro-F1 score of 0.787 at 23.5 million parameters, while GPT-3.5 Turbo zero-shot scores 0.222 at approximately 175 billion parameters.">
+                <span className="lp-axis-label">Macro-F1</span>
+                <div className="lp-chart-grid" aria-hidden="true">
+                  {['0.80', '0.60', '0.40', '0.20'].map((tick) => <span key={tick}>{tick}</span>)}
+                </div>
+                <div className="lp-device-zone" aria-hidden="true"><span>Fits on-device</span></div>
+                {BENCHMARKS.map((model, index) => (
+                  <div
+                    key={model.name}
+                    className={`lp-chart-point ${model.featured ? 'is-featured' : ''} ${model.outlier ? 'is-outlier' : ''}`}
+                    style={{ '--x': `${model.x}%`, '--y': `${model.y}%`, '--delay': `${260 + index * 90}ms` }}
+                  >
+                    <i />
+                    <strong>{model.name}</strong>
+                    <span>{model.parameters} · {model.score}</span>
+                  </div>
+                ))}
+                <div className="lp-x-axis" aria-hidden="true">
+                  <span>10 M</span><span>100 M</span><span>1 B</span><span>10 B</span><span>100 B</span><span>1 T</span>
+                </div>
+              </div>
+              <div className="lp-chart-takeaway">
+                <strong>7,400×</strong>
+                <p><b>less model, more signal.</b> Domain learning beats scale alone when the task is precise.</p>
+              </div>
+              <p className="lp-chart-note">Published benchmark figures; label conventions vary between datasets, so vertical comparisons are directional. Parameter comparison is exact.</p>
+            </Reveal>
           </div>
         </section>
 
