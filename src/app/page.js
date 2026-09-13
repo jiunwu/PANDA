@@ -3,6 +3,7 @@ import "./landing.css";
 import projectData from "@/data/project.json";
 import ClauseScanner from "@/components/ClauseScanner";
 import LandingNav from "@/components/LandingNav";
+import Arrow from "@/components/LandingArrow";
 import { CATEGORIES, MODEL_INFO } from "@/lib/legalsan";
 
 export const metadata = {
@@ -14,10 +15,6 @@ export const metadata = {
 // Headline metrics from the prior LegalBench evaluation; details belong in the preprint.
 // Set this to the published paper URL (or an uploaded /papers/... PDF) when available.
 const PREPRINT_URL = process.env.NEXT_PUBLIC_PANDA_PREPRINT_URL || null;
-
-function Arrow() {
-  return <span aria-hidden="true">↗</span>;
-}
 
 function SectionHeading({ number, label, title, children }) {
   return (
@@ -253,7 +250,7 @@ export default function LandingPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Read the preprint <Arrow />
+                  Read the preprint <Arrow direction="external" />
                 </a>
               ) : (
                 <span className="lp-preprint-status">Preprint forthcoming</span>
@@ -350,7 +347,7 @@ export default function LandingPage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                About EXIST <Arrow />
+                About EXIST <Arrow direction="external" />
               </a>
             </div>
           </div>
@@ -382,7 +379,7 @@ export default function LandingPage() {
             In the consumer’s interest.
           </p>
           <a className="lp-text-link" href="#top">
-            Back to top ↑
+            Back to top <Arrow direction="up" />
           </a>
         </div>
         <div className="lp-footer-bottom">
@@ -390,7 +387,9 @@ export default function LandingPage() {
             © {new Date().getFullYear()} PANDA · Research prototype, not legal
             advice.
           </span>
-          <Link href="/login">Team login ↗</Link>
+          <Link className="lp-text-link" href="/login">
+            Team login <Arrow />
+          </Link>
         </div>
       </footer>
     </div>

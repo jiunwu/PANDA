@@ -1,3 +1,5 @@
+import LandingArrow from "@/components/LandingArrow";
+
 const SECTIONS = [
   { id: "how", label: "Technology" },
   { id: "performance", label: "Research" },
@@ -20,7 +22,7 @@ export default function LandingNav() {
           ))}
         </nav>
         <a href="#demo" className="lp-nav-cta">
-          Try PANDA <span aria-hidden="true">↗</span>
+          Try PANDA <LandingArrow />
         </a>
       </div>
     </header>
