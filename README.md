@@ -43,6 +43,29 @@ the correct one to tokenize with. The browser tokenizer in
 `public/demo/legalsan-worker.js` is verified byte-for-byte against HuggingFace
 `BertTokenizerFast` on accents, punctuation, symbols, CJK and abbreviations.
 
+### Evaluation
+
+`scripts/eval-unfair-tos.py` downloads the **official LexGLUE UNFAIR-ToS test
+split** (1,607 clauses) and scores the exact int8 file the browser serves,
+printing per-class precision/recall/F1 with support counts:
+
+```bash
+pip install onnxruntime pyarrow
+python scripts/eval-unfair-tos.py
+```
+
+Current result: **macro-F1 0.792**, micro-F1 0.766, threshold 0.5.
+
+Those figures are quoted on the landing page from `EVALUATION` in
+`src/lib/legalsan.js` — re-run the script and update that constant whenever the
+model changes, so the page never drifts from what the model actually does.
+
+Two caveats the landing page states and that should not be dropped: macro-F1
+here is the mean over the eight labels with **no "fair" class scored**, so it is
+not interchangeable with published figures that score one; and the support for
+several labels is small (arbitration has 7 positives), so per-class numbers are
+indicative.
+
 ### The runtime
 
 `onnxruntime-web` is served from this origin rather than a CDN, so the demo

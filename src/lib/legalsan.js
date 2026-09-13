@@ -16,6 +16,33 @@ export const MODEL_INFO = {
   categories: 8,
 };
 
+/**
+ * Results of `scripts/eval-unfair-tos.py`, run against the exact int8 file the
+ * browser downloads. Re-run that script after changing the model and update
+ * these numbers; they are quoted verbatim on the landing page.
+ */
+export const EVALUATION = {
+  split: 'LexGLUE UNFAIR-ToS test split',
+  clauses: 1607,
+  threshold: 0.5,
+  macroF1: 0.792,
+  microF1: 0.766,
+  parameters: 23516168,
+  // Per label, in model output order. `support` is the number of positive
+  // examples in the test split — small for several labels, which is why the
+  // counts are published next to the scores.
+  perLabel: [
+    { id: 'ltd', precision: 0.758, recall: 0.658, f1: 0.704, support: 38 },
+    { id: 'ter', precision: 0.806, recall: 0.763, f1: 0.784, support: 38 },
+    { id: 'ch', precision: 0.8, recall: 0.632, f1: 0.706, support: 38 },
+    { id: 'cr', precision: 0.625, recall: 0.769, f1: 0.69, support: 13 },
+    { id: 'use', precision: 0.938, recall: 0.652, f1: 0.769, support: 23 },
+    { id: 'law', precision: 1, recall: 0.923, f1: 0.96, support: 13 },
+    { id: 'j', precision: 0.929, recall: 0.812, f1: 0.867, support: 16 },
+    { id: 'a', precision: 0.857, recall: 0.857, f1: 0.857, support: 7 },
+  ],
+};
+
 export const CATEGORIES = [
   {
     id: 'ltd',

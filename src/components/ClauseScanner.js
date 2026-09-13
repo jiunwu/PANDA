@@ -405,7 +405,8 @@ export default function ClauseScanner() {
           )}
 
           <p className="scanner-disclaimer">
-            A research prototype, not legal advice. The model reports patterns, not verdicts.
+            A research prototype. It classifies clauses; it does not give legal advice and is
+            not a legal service. A flagged clause is a prompt to look closer, not a ruling.
           </p>
         </aside>
       </div>

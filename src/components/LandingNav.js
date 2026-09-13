@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 
 const SECTIONS = [
   { id: 'demo', label: 'Live demo' },
-  { id: 'performance', label: 'Performance' },
+  { id: 'performance', label: 'Results' },
   { id: 'how', label: 'How it works' },
-  { id: 'categories', label: 'What it finds' },
-  { id: 'privacy', label: 'Privacy' },
+  { id: 'law', label: 'Why these eight' },
+  { id: 'compare', label: 'Where it sits' },
   { id: 'team', label: 'Team' },
 ];
 

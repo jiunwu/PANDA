@@ -2,10 +2,10 @@
   "project": {
     "name": "PANDA",
     "tagline": "Protecting consumers from dark patterns with local AI",
-    "oneLiner": "A browser extension AI agent that detects and neutralizes dark patterns in real time, powered by a local neurosymbolic model — no cloud, no tracking, full privacy.",
+    "oneLiner": "A browser tool that reads consumer contracts on your own device and flags the clauses EU consumer law treats as unfair — no upload, no account, no cloud.",
     "problem": "Dark patterns are deceptive UI designs that manipulate users into unintended actions — hidden fees, forced subscriptions, misleading opt-ins. They cost consumers billions annually and erode trust in digital products. Existing tools are limited to static blocklists that can't keep up with evolving tactics.",
-    "solution": "PANDA is a browser extension that uses a local neurosymbolic AI model to detect dark patterns in real time as users browse. It highlights manipulative elements, explains the tactic being used, and offers a clean alternative — empowering informed decisions without sending any data to the cloud.",
-    "approach": "Our neurosymbolic architecture combines neural pattern recognition with symbolic reasoning over UI semantics. The model runs entirely on-device, ensuring privacy and low latency. We validate against a curated taxonomy of dark pattern categories from established HCI research."
+    "solution": "PANDA runs a 23.5 M-parameter clause classifier entirely in the browser. It segments a terms-of-service document into clauses, scores each one against eight categories of unfair term drawn from consumer-law research, and highlights the matches in place with the category and the model's confidence. Because the model is a static file, the contract never leaves the reader's machine.",
+    "approach": "A compact transformer encoder fine-tuned on clauses annotated by consumer-law researchers, quantised to int8 so it fits in a browser tab. We publish our evaluation protocol and per-class results on the official LexGLUE UNFAIR-ToS test split rather than headline averages alone. Detecting manipulative interface patterns is the intended next step, and is not yet evaluated."
   },
   "team": [
     {

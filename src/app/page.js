@@ -4,12 +4,12 @@ import projectData from '@/data/project.json';
 import ClauseScanner from '@/components/ClauseScanner';
 import LandingNav from '@/components/LandingNav';
 import Reveal from '@/components/Reveal';
-import { CATEGORIES, MODEL_INFO } from '@/lib/legalsan';
+import { CATEGORIES, CATEGORY_BY_INDEX, EVALUATION, MODEL_INFO } from '@/lib/legalsan';
 
 export const metadata = {
   title: 'PANDA — read the fine print before you agree',
   description:
-    'PANDA reads terms of service the way a lawyer would and flags the clauses written against you. A 24 MB model that runs entirely in your browser — nothing you paste ever leaves your device.',
+    'PANDA flags the clauses in a terms-of-service document that EU consumer law treats as unfair. A 23.5 M-parameter model that runs entirely in your browser — nothing you paste ever leaves your device.',
 };
 
 const HERO_STATS = [
@@ -19,12 +19,39 @@ const HERO_STATS = [
   { value: '<1 s', label: 'To read a full contract' },
 ];
 
-const BENCHMARKS = [
-  { name: 'LegalSAN', parameters: '23.5 M', score: '0.787', x: 7.4, y: 19, featured: true },
-  { name: 'DistilBERT', parameters: '66 M', score: '0.793', x: 17, y: 17.5 },
-  { name: 'Legal-BERT', parameters: '110 M', score: '0.830', x: 28, y: 10 },
-  { name: 'RoBERTa-large', parameters: '355 M', score: '0.812', x: 42, y: 14 },
-  { name: 'GPT-3.5 Turbo · zero-shot', parameters: '~175 B', score: '0.222', x: 86, y: 84, outlier: true },
+// Parameter counts are public architecture facts and are exact. Accuracy is
+// deliberately absent here: published figures come from each author's own
+// evaluation protocol, and putting them in one column would imply a head-to-head
+// run we have not done. Ours is measured and shown in full further down.
+const SIZE_COMPARISON = [
+  { name: 'LegalSAN', parameters: '23.5 M', download: '23 MB int8', browser: true, featured: true },
+  { name: 'DistilBERT', parameters: '66 M', download: '~250 MB fp32', browser: false },
+  { name: 'Legal-BERT', parameters: '110 M', download: '~420 MB fp32', browser: false },
+  { name: 'RoBERTa-large', parameters: '355 M', download: '~1.4 GB fp32', browser: false },
+];
+
+const ALTERNATIVES = [
+  {
+    name: 'ToS;DR',
+    what: 'Volunteers read and grade the terms of named services.',
+    limit: 'Depth and trust come from human review — but only for services someone has already covered, and reviews lag behind updates.',
+  },
+  {
+    name: 'Polisis',
+    what: 'Academic deep-learning analysis of privacy policies.',
+    limit: 'Targets privacy policies rather than contractual terms, and runs as a hosted service.',
+  },
+  {
+    name: 'General-purpose LLMs',
+    what: 'Paste a contract into a chat assistant and ask.',
+    limit: 'The document goes to someone else\u2019s server, answers vary between runs, and there is no per-category score to audit.',
+  },
+  {
+    name: 'PANDA',
+    what: 'A fixed classifier scores every clause against eight categories, on your device.',
+    limit: 'Narrow by design: eight categories, English, one probability per clause. It does not summarise or advise.',
+    featured: true,
+  },
 ];
 
 const PILLARS = [
@@ -35,10 +62,10 @@ const PILLARS = [
     proof: 'No server sees your text',
   },
   {
-    kicker: 'Neurosymbolic',
-    title: 'It reasons, not just matches.',
-    body: 'A transformer encoder reads each clause in context, and a symbolic layer maps what it finds onto a taxonomy grounded in consumer-law research. That is why "we may end this at any time for any reason" is caught even when the wording is new — keyword blocklists only ever catch yesterday’s tricks.',
-    proof: 'Patterns, not blocklists',
+    kicker: 'Specialised',
+    title: 'It was trained for one job.',
+    body: 'A transformer encoder fine-tuned on clauses that consumer-law researchers annotated as unfair. It generalises from wording it has seen to wording it has not, which is why "we may end this at any time for any reason" is caught when freshly phrased — a keyword blocklist only ever catches last year’s drafting. It is a classifier, not a reasoner: it returns eight probabilities per clause, and everything you see after that is ordinary software.',
+    proof: 'Eight probabilities, no prose',
   },
   {
     kicker: 'Instant',
@@ -88,9 +115,10 @@ export default function LandingPage() {
               <span className="lp-hero-accent">Now something does.</span>
             </h1>
             <p className="lp-hero-sub">
-              PANDA reads terms of service the way a lawyer would — clause by clause — and
-              highlights the ones written against you. The model is {MODEL_INFO.sizeMB} MB and runs
-              inside your browser. Nothing you paste ever leaves your device.
+              PANDA reads a contract clause by clause — the way a legal researcher annotates
+              one — and highlights the terms EU consumer law treats as unfair. The model is{' '}
+              {MODEL_INFO.sizeMB} MB and runs inside your browser. Nothing you paste ever leaves
+              your device.
             </p>
             <div className="lp-hero-actions">
               <a href="#demo" className="lp-btn lp-btn-primary">
@@ -147,74 +175,136 @@ export default function LandingPage() {
         <section className="lp-section lp-performance" id="performance">
           <div className="lp-shell">
             <Reveal className="lp-performance-intro">
-              <p className="lp-kicker">Performance, re-sized</p>
+              <p className="lp-kicker">Measured, not asserted</p>
               <h2 className="lp-h2 lp-h2-wide">
-                Smaller by design.
-                <span>Stronger where it matters.</span>
+                23.5 million parameters.
+                <span>Here is exactly what they buy you.</span>
               </h2>
               <p className="lp-lead">
-                LegalSAN puts focused legal understanding ahead of brute-force scale. At only
-                23.5 million parameters, it fits on-device while outperforming a zero-shot model
-                roughly 7,400 times larger on the UNFAIR-ToS benchmark.
+                LegalSAN is about a third the size of DistilBERT and roughly a fifth of
+                Legal-BERT. That is the whole trade: a model this small fits in a browser tab,
+                which is the only reason the demo above can run without uploading your contract.
+                Legal-BERT reports the strongest published results on this task — it is also five
+                times our size and ships to nobody&apos;s phone.
               </p>
             </Reveal>
 
-            <Reveal className="lp-chart-card" delay={100}>
-              <div className="lp-chart-heading">
+            <Reveal className="lp-eval-card" delay={80}>
+              <div className="lp-eval-head">
                 <div>
-                  <span>FIG. 01</span>
-                  <h3>Accuracy against parameter count</h3>
+                  <span>Our result</span>
+                  <h3>{EVALUATION.split}</h3>
                 </div>
-                <p>Macro-F1 · logarithmic parameter scale</p>
-              </div>
-              <div className="lp-chart" role="img" aria-label="LegalSAN has a Macro-F1 score of 0.787 at 23.5 million parameters, while GPT-3.5 Turbo zero-shot scores 0.222 at approximately 175 billion parameters.">
-                <span className="lp-axis-label">Macro-F1</span>
-                <div className="lp-chart-grid" aria-hidden="true">
-                  {['0.80', '0.60', '0.40', '0.20'].map((tick) => <span key={tick}>{tick}</span>)}
-                </div>
-                <div className="lp-device-zone" aria-hidden="true"><span>Fits on-device</span></div>
-                {BENCHMARKS.map((model, index) => (
-                  <div
-                    key={model.name}
-                    className={`lp-chart-point ${model.featured ? 'is-featured' : ''} ${model.outlier ? 'is-outlier' : ''}`}
-                    style={{ '--x': `${model.x}%`, '--y': `${model.y}%`, '--delay': `${260 + index * 90}ms` }}
-                  >
-                    <i />
-                    <strong>{model.name}</strong>
-                    <span>{model.parameters} · {model.score}</span>
+                <div className="lp-eval-headline">
+                  <div>
+                    <strong>{EVALUATION.macroF1.toFixed(3)}</strong>
+                    <span>macro-F1</span>
                   </div>
-                ))}
-                <div className="lp-x-axis" aria-hidden="true">
-                  <span>10 M</span><span>100 M</span><span>1 B</span><span>10 B</span><span>100 B</span><span>1 T</span>
-                </div>
-              </div>
-              <div className="lp-mobile-benchmark" aria-label="Model benchmark comparison">
-                <div className="lp-mobile-benchmark-head">
-                  <span>Model / parameters</span>
-                  <span>Macro-F1</span>
-                </div>
-                {BENCHMARKS.map((model) => (
-                  <div
-                    className={`lp-mobile-model ${model.featured ? 'is-featured' : ''} ${model.outlier ? 'is-outlier' : ''}`}
-                    key={model.name}
-                  >
-                    <div className="lp-mobile-model-copy">
-                      <strong>{model.name}</strong>
-                      <span>{model.parameters} parameters</span>
-                    </div>
-                    <b>{model.score}</b>
-                    <div className="lp-mobile-score-track" aria-hidden="true">
-                      <i style={{ '--score': `${Number(model.score) * 100}%` }} />
-                    </div>
+                  <div>
+                    <strong>{EVALUATION.microF1.toFixed(3)}</strong>
+                    <span>micro-F1</span>
                   </div>
-                ))}
-                <p className="lp-mobile-scale">Bar length represents Macro-F1 score</p>
+                  <div>
+                    <strong>{EVALUATION.clauses.toLocaleString('en')}</strong>
+                    <span>test clauses</span>
+                  </div>
+                </div>
               </div>
-              <div className="lp-chart-takeaway">
-                <strong>7,400×</strong>
-                <p><b>less model, more signal.</b> Domain learning beats scale alone when the task is precise.</p>
+
+              <div className="lp-eval-table-wrap">
+                <table className="lp-eval-table">
+                  <caption className="lp-sr-only">
+                    Per-category precision, recall, F1 and support on the {EVALUATION.split}
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Category</th>
+                      <th scope="col">Precision</th>
+                      <th scope="col">Recall</th>
+                      <th scope="col">F1</th>
+                      <th scope="col">Support</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {EVALUATION.perLabel.map((row, index) => (
+                      <tr key={row.id}>
+                        <th scope="row">{CATEGORY_BY_INDEX[index].name}</th>
+                        <td>{row.precision.toFixed(3)}</td>
+                        <td>{row.recall.toFixed(3)}</td>
+                        <td>{row.f1.toFixed(3)}</td>
+                        <td className={row.support < 20 ? 'lp-eval-thin' : undefined}>
+                          {row.support}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <p className="lp-chart-note">Published benchmark figures; label conventions vary between datasets, so vertical comparisons are directional. Parameter comparison is exact.</p>
+
+              <div className="lp-eval-notes">
+                <h4>How to check this</h4>
+                <ul>
+                  <li>
+                    The official LexGLUE UNFAIR-ToS <strong>test</strong> split, unmodified, all{' '}
+                    {EVALUATION.clauses.toLocaleString('en')} clauses.
+                  </li>
+                  <li>
+                    Scored against the same <strong>int8 file the browser downloads</strong>, not a
+                    larger unquantised checkpoint.
+                  </li>
+                  <li>
+                    One sigmoid per category at threshold {EVALUATION.threshold}; macro-F1 is the
+                    unweighted mean of the eight F1 scores above, with no &ldquo;fair&rdquo; class
+                    scored. Figures published elsewhere often do score one, so this number is not
+                    interchangeable with theirs.
+                  </li>
+                  <li>
+                    Support is small for several categories — arbitration has{' '}
+                    {EVALUATION.perLabel[7].support} positive examples in the whole split — so
+                    treat those per-class scores as indicative.
+                  </li>
+                  <li>
+                    <code>scripts/eval-unfair-tos.py</code> in our repository downloads the split
+                    and reprints this table from scratch.
+                  </li>
+                </ul>
+              </div>
+            </Reveal>
+
+            <Reveal className="lp-size-card" delay={140}>
+              <h3>What actually fits in a browser</h3>
+              <div className="lp-size-table-wrap">
+                <table className="lp-size-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Model</th>
+                      <th scope="col">Parameters</th>
+                      <th scope="col">Download</th>
+                      <th scope="col">Runs on device</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {SIZE_COMPARISON.map((model) => (
+                      <tr key={model.name} className={model.featured ? 'is-featured' : undefined}>
+                        <th scope="row">{model.name}</th>
+                        <td>{model.parameters}</td>
+                        <td>{model.download}</td>
+                        <td>
+                          <span className={model.browser ? 'lp-yes' : 'lp-no'}>
+                            {model.browser ? 'Yes' : 'Not practically'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="lp-size-note">
+                Parameter counts are architecture facts and are exact. We deliberately do not put
+                accuracy in this table: published figures for those models come from their own
+                authors&apos; evaluation protocols, and lining them up in one column would imply a
+                head-to-head run we have not done.
+              </p>
             </Reveal>
           </div>
         </section>
@@ -337,16 +427,106 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── Vision / extension ── */}
+        {/* ── Regulatory context ── */}
+        <section className="lp-section lp-law" id="law">
+          <div className="lp-shell">
+            <Reveal className="lp-section-head">
+              <p className="lp-kicker">Why these eight</p>
+              <h2 className="lp-h2">
+                The categories are not ours.
+                <span>They come from EU law.</span>
+              </h2>
+              <p className="lp-lead">
+                Council Directive 93/13/EEC on unfair terms in consumer contracts is the reason a
+                clause can be unfair as a matter of law rather than as a matter of opinion. The
+                eight categories PANDA scores follow the annotation scheme consumer-law
+                researchers built on that directive — which is also why a scanner can be specific
+                about what it found instead of vaguely warning you.
+              </p>
+            </Reveal>
+            <div className="lp-law-grid">
+              <Reveal className="lp-law-card">
+                <h3>Directive 93/13/EEC</h3>
+                <p>
+                  Terms that create a significant imbalance to the consumer&apos;s detriment are
+                  not binding on them. The categories on this page — one-sided termination,
+                  liability caps, arbitration, imposed jurisdiction — are the recurring shapes
+                  that imbalance takes in online contracts.
+                </p>
+              </Reveal>
+              <Reveal className="lp-law-card" delay={70}>
+                <h3>The EU AI Act</h3>
+                <p>
+                  A risk-based regime that asks what a system does, how it is documented and what
+                  users are told. Ours is a narrow classifier with a published evaluation and a
+                  human reading every result — and it is a consumer-information tool, not a legal
+                  service. We treat that documentation burden as the baseline, not as a cost.
+                </p>
+              </Reveal>
+              <Reveal className="lp-law-card" delay={140}>
+                <h3>Data protection</h3>
+                <p>
+                  Running on the device is the strongest form of data minimisation there is: a
+                  contract that is never transmitted cannot be logged, retained, subpoenaed or
+                  breached. That is an architectural property you can verify in your own network
+                  tab, not a policy promise.
+                </p>
+              </Reveal>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Where it sits ── */}
+        <section className="lp-section lp-tint" id="compare">
+          <div className="lp-shell">
+            <Reveal className="lp-section-head">
+              <p className="lp-kicker">Where it sits</p>
+              <h2 className="lp-h2">
+                Other people have
+                <span>worked on this too.</span>
+              </h2>
+              <p className="lp-lead">
+                Reading contracts for consumers is not a new idea. What is new here is the
+                combination: automatic, per-clause, category-level scoring that runs without
+                sending the document anywhere.
+              </p>
+            </Reveal>
+            <div className="lp-alt-grid">
+              {ALTERNATIVES.map((item, index) => (
+                <Reveal
+                  className={`lp-alt ${item.featured ? 'is-featured' : ''}`}
+                  key={item.name}
+                  delay={(index % 4) * 60}
+                >
+                  <h3>{item.name}</h3>
+                  <p>{item.what}</p>
+                  <p className="lp-alt-limit">{item.limit}</p>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Roadmap ── */}
         <section className="lp-section lp-dark lp-vision">
           <div className="lp-shell">
             <Reveal>
-              <p className="lp-kicker">Where this goes</p>
+              <p className="lp-kicker">What is next</p>
               <h2 className="lp-h2 lp-h2-wide">
-                The contract is only the beginning.
+                Contracts first. Interfaces after — and only with the same evidence.
               </h2>
-              <p className="lp-lead">{project.oneLiner}</p>
-              <p className="lp-lead lp-lead-dim">{project.problem}</p>
+              <p className="lp-lead">
+                Unfair terms and manipulative interface design are the same problem wearing
+                different clothes: the cost of a decision is moved somewhere you will not look.
+                Contracts are the tractable half — the text is fixed, the categories are settled
+                in law, and the results on this page can be checked line by line.
+              </p>
+              <p className="lp-lead lp-lead-dim">
+                Detecting dark patterns in live interfaces is the harder half and the reason this
+                is a research project rather than a finished product. It needs its own annotated
+                data, its own evaluation, and its own published numbers. We have not built it yet,
+                and we would rather say so here than imply otherwise.
+              </p>
             </Reveal>
           </div>
         </section>
@@ -412,8 +592,8 @@ export default function LandingPage() {
                 Scan a contract now
               </a>
               <p className="lp-closing-note">
-                Free, public, and running on your own machine. A research prototype — not legal
-                advice.
+                Free, public, and running on your own machine. A research prototype that
+                classifies clauses — it does not give legal advice and is not a legal service.
               </p>
             </Reveal>
           </div>
@@ -431,7 +611,8 @@ export default function LandingPage() {
             <nav className="lp-footer-links" aria-label="Footer">
               <a href="#demo">Live demo</a>
               <a href="#how">How it works</a>
-              <a href="#categories">What it finds</a>
+              <a href="#performance">Results</a>
+              <a href="#law">Why these eight</a>
               <a href="https://www.exist.de" target="_blank" rel="noopener noreferrer">
                 EXIST
               </a>
@@ -440,7 +621,7 @@ export default function LandingPage() {
 
           <div className="lp-footer-bottom">
             <span>
-              © {new Date().getFullYear()} PANDA · A research prototype, not legal advice
+              © {new Date().getFullYear()} PANDA · Clause classification, not legal advice
             </span>
             <Link href="/login" className="lp-team-login">
               Team login

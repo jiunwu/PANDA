@@ -37,3 +37,6 @@ yarn-error.log*
 
 # Vendored onnxruntime-web runtime (staged by scripts/copy-ort.js)
 /public/vendor/ort
+
+# Cached evaluation data
+/scripts/unfair_tos_test.parquet
