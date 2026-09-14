@@ -3,6 +3,7 @@ import LandingArrow from "@/components/LandingArrow";
 const SECTIONS = [
   { id: "how", label: "Technology" },
   { id: "performance", label: "Research" },
+  { id: "roadmap", label: "Roadmap" },
   { id: "team", label: "About" },
 ];
 
