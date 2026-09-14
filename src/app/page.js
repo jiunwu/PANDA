@@ -13,9 +13,8 @@ export const metadata = {
     "PANDA is building AI for consumer protection: private contract analysis with LegalSAN today, with dark pattern detection and agentic help for cancellations and legal issues on the roadmap.",
 };
 
-// Headline metrics from the prior LegalBench evaluation; details belong in the preprint.
-// Set this to the published paper URL (or an uploaded /papers/... PDF) when available.
-const PREPRINT_URL = process.env.NEXT_PUBLIC_PANDA_PREPRINT_URL || null;
+// The revised preprint distinguishes reported LegalBench figures from its UNFAIR-ToS evaluation.
+const PREPRINT_URL = "/papers/LegalSAN_Working_Paper_v1_Jiun-Yi_Wu.pdf";
 
 const MODEL_COMPARISON = [
   { name: "LegalSAN", parameters: 23.5, featured: true },
@@ -270,7 +269,7 @@ export default function LandingPage() {
           >
             A compact model trained for the fine print. LegalSAN brings
             specialised contract analysis to the browser, with the research
-            behind it documented in our forthcoming preprint.
+            behind it documented in our working paper.
           </SectionHeading>
           <div className="lp-results" aria-label="LegalSAN research highlights">
             <div className="lp-result">
@@ -278,36 +277,35 @@ export default function LandingPage() {
                 95.88<span>%</span>
               </strong>
               <h3>Overall accuracy</h3>
-              <p>Nine-category classification, including Other.</p>
+              <p>Reported prior LegalBench evaluation.</p>
             </div>
             <div className="lp-result">
               <strong>
                 88.46<span>%</span>
               </strong>
               <h3>Binary macro-F1</h3>
-              <p>Fair versus potentially unfair clauses.</p>
+              <p>Fair versus potentially unfair · prior LegalBench run.</p>
             </div>
             <div className="lp-paper-link">
               <span className="lp-kicker">The research behind PANDA</span>
-              <p>Full methodology and evaluation in the preprint.</p>
-              {PREPRINT_URL ? (
-                <a
-                  className="lp-text-link"
-                  href={PREPRINT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Read the preprint <Arrow direction="external" />
-                </a>
-              ) : (
-                <span className="lp-preprint-status">Preprint forthcoming</span>
-              )}
+              <p>Export evaluation, limitations, and an explanation of the headline metrics.</p>
+              <a
+                className="lp-text-link"
+                href={PREPRINT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Read the preprint (PDF) <Arrow direction="external" />
+              </a>
+              <p className="lp-footnote">Jiun-Yi Wu · Revised 14 September 2026 · Not peer reviewed</p>
             </div>
           </div>
           <p className="lp-footnote">
-            LegalBench unfair_tos · INT8 · threshold 0.40. Overall accuracy
-            includes the majority Other category; the two figures measure
-            different aspects of performance.
+            These reported LegalBench figures come from a different evaluation than
+            the paper’s 1,607-clause UNFAIR-ToS study. Binary macro-F1 averages both
+            classes; the paper’s binary F1 measures the unfair class. Section 5.3
+            explains the distinction and the missing records needed to verify the
+            prior run.
           </p>
           <ModelComparison />
           <ModelPerformanceChart />
