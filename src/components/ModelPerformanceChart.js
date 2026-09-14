@@ -69,7 +69,7 @@ export default function ModelPerformanceChart() {
           </g>
         </svg>
       </div>
-      <p className="lp-footnote">Historical figures from the earlier comparison; evaluation protocols differ, so this is not a controlled head-to-head benchmark. These macro-F1 scores are distinct from the LegalBench headline metrics above. GPT-3.5 Turbo is shown separately because its parameter count is not disclosed. Full methodology will accompany the preprint.</p>
+      <p className="lp-footnote">Historical figures from the earlier comparison; evaluation protocols differ, so this is not a controlled head-to-head benchmark. These macro-F1 scores are distinct from the LegalBench headline metrics above. GPT-3.5 Turbo is shown separately because its parameter count is not disclosed. The preprint documents LegalSAN’s 0.787 eight-label macro-F1 on UNFAIR-ToS; it does not validate the other historical comparison scores.</p>
     </figure>
   );
 }
