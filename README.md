@@ -79,10 +79,24 @@ model selection. Accuracy on the never-selected-on portion is *higher* (95.98%
 vs 95.82%), so the headline figure is not inflated by that overlap — but it is
 not a clean held-out estimate either, and should not be described as one.
 
+### The paper
+
 Full methodology is in the working paper, *LegalSAN: Compact Local Inference for
-Unfair-Clause Classification*, built from `paper/` and served at
-`public/papers/legalsan-working-paper.pdf`. Set `NEXT_PUBLIC_PANDA_PREPRINT_URL`
-to override that link once the paper is published elsewhere.
+Unfair-Clause Classification*. Prose lives in `paper/legalsan-working-paper.md`;
+`paper/build.py` typesets it, including the figures, and writes the PDF the
+landing page links:
+
+```bash
+pip install reportlab
+python paper/build.py            # → public/papers/legalsan-working-paper.pdf
+```
+
+The PDF is generated but committed, because the Next.js build does not run this
+step — re-run it and commit the result after editing the source. Revision 1, as
+originally circulated, is kept verbatim in `paper/archive/`. Revision 2 adds the
+independent rerun and the nine-class evaluation described above; every figure in
+it comes from the two scripts in `scripts/`. Set `NEXT_PUBLIC_PANDA_PREPRINT_URL`
+to override the link once the paper is published elsewhere.
 
 ### The runtime
 
