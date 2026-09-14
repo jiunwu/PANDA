@@ -4,6 +4,7 @@ import projectData from "@/data/project.json";
 import ClauseScanner from "@/components/ClauseScanner";
 import LandingNav from "@/components/LandingNav";
 import Arrow from "@/components/LandingArrow";
+import ModelPerformanceChart from "@/components/ModelPerformanceChart";
 import { CATEGORIES, MODEL_INFO } from "@/lib/legalsan";
 
 export const metadata = {
@@ -303,6 +304,7 @@ export default function LandingPage() {
             different aspects of performance.
           </p>
           <ModelComparison />
+          <ModelPerformanceChart />
         </section>
 
         <section className="lp-section lp-shell lp-categories" id="categories">
