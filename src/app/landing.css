@@ -1632,13 +1632,6 @@
 .lp-paper-link p {
   margin-block: 22px 12px;
 }
-.lp-preprint-status {
-  display: inline-block;
-  font-size: 12px;
-  color: var(--lp-muted);
-  border-bottom: 1px solid var(--lp-line);
-  padding-bottom: 5px;
-}
 @media (max-width: 700px) {
   .lp-results {
     grid-template-columns: 1fr 1fr;
@@ -1745,9 +1738,6 @@
 }
 .lp .lp-paper-link {
   border-left-color: var(--lp-line);
-}
-.lp .lp-preprint-status {
-  color: var(--lp-ink);
 }
 .lp .lp-category-list summary:hover {
   background: var(--lp-mist);

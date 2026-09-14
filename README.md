@@ -55,10 +55,17 @@ python scripts/eval-unfair-tos.py
 ```
 
 The landing page shows only the previously reported LegalBench headline metrics,
-not per-category evaluation tables. Full methodology and detailed results will
-be provided in the preprint. Set `NEXT_PUBLIC_PANDA_PREPRINT_URL` to the paper URL
-(or an uploaded PDF path) when it is published; until then the page displays
-“Preprint forthcoming” without a dead link.
+not per-category evaluation tables. Full methodology and detailed results are in
+the working paper, *LegalSAN: Compact Local Inference for Unfair-Clause
+Classification* (14 September 2026), served from
+`public/papers/legalsan-working-paper.pdf` and linked from the research section.
+Set `NEXT_PUBLIC_PANDA_PREPRINT_URL` to override that default once the paper is
+published elsewhere (for example an arXiv or journal URL).
+
+Note that the working paper evaluates the int8 artifact on the 1,607-clause
+UNFAIR-ToS split (eight-label macro-F1 0.7870, binary F1 0.8168); those figures
+come from a different protocol than the LegalBench headline numbers on the
+landing page and are not interchangeable with them.
 
 The evaluation script above uses the LexGLUE split. It is a separate protocol
 from the LegalBench headline results and should not be used to relabel them.

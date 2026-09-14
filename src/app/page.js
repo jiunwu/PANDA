@@ -13,9 +13,11 @@ export const metadata = {
     "PANDA is building AI for consumer protection: private contract analysis with LegalSAN today, with dark pattern detection and agentic help for cancellations and legal issues on the roadmap.",
 };
 
-// Headline metrics from the prior LegalBench evaluation; details belong in the preprint.
-// Set this to the published paper URL (or an uploaded /papers/... PDF) when available.
-const PREPRINT_URL = process.env.NEXT_PUBLIC_PANDA_PREPRINT_URL || null;
+// Headline metrics below come from the prior LegalBench evaluation, a different
+// protocol from the UNFAIR-ToS results reported in the working paper.
+// Defaults to the working paper served from /public; override with the published paper URL.
+const PREPRINT_URL =
+  process.env.NEXT_PUBLIC_PANDA_PREPRINT_URL || "/papers/legalsan-working-paper.pdf";
 
 const MODEL_COMPARISON = [
   { name: "LegalSAN", parameters: 23.5, featured: true },
@@ -52,7 +54,7 @@ function ModelComparison() {
         <p><strong>{MODEL_INFO.sizeMB} MB</strong><span>LegalSAN download · INT8</span></p>
         <p>Focused on the fine print. Compact enough to run on your device.</p>
       </div>
-      <p className="lp-footnote">Bars use a shared linear scale and compare parameter counts, not accuracy or download size. Detailed performance comparisons belong in the preprint.</p>
+      <p className="lp-footnote">Bars use a shared linear scale and compare parameter counts, not accuracy or download size. Detailed performance comparisons belong in the working paper.</p>
     </figure>
   );
 }
@@ -270,7 +272,7 @@ export default function LandingPage() {
           >
             A compact model trained for the fine print. LegalSAN brings
             specialised contract analysis to the browser, with the research
-            behind it documented in our forthcoming preprint.
+            behind it documented in our working paper.
           </SectionHeading>
           <div className="lp-results" aria-label="LegalSAN research highlights">
             <div className="lp-result">
@@ -289,19 +291,19 @@ export default function LandingPage() {
             </div>
             <div className="lp-paper-link">
               <span className="lp-kicker">The research behind PANDA</span>
-              <p>Full methodology and evaluation in the preprint.</p>
-              {PREPRINT_URL ? (
-                <a
-                  className="lp-text-link"
-                  href={PREPRINT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Read the preprint <Arrow direction="external" />
-                </a>
-              ) : (
-                <span className="lp-preprint-status">Preprint forthcoming</span>
-              )}
+              <p>
+                Full methodology and evaluation in “LegalSAN: Compact Local
+                Inference for Unfair-Clause Classification” (working paper,
+                September 2026).
+              </p>
+              <a
+                className="lp-text-link"
+                href={PREPRINT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Read the working paper <Arrow direction="external" />
+              </a>
             </div>
           </div>
           <p className="lp-footnote">
