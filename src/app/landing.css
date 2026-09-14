@@ -168,6 +168,13 @@
   line-height: 1.45;
   letter-spacing: -0.025em;
 }
+.lp-hero-copy > .lp-hero-foundation {
+  margin-top: 20px;
+  font-size: 16px;
+  line-height: 1.65;
+  letter-spacing: normal;
+  color: var(--lp-muted);
+}
 .lp-actions {
   display: flex;
   align-items: center;
@@ -536,26 +543,6 @@
 }
 .lp-category-detail strong {
   color: var(--lp-ink);
-}
-.lp-vision {
-  padding: 76px 0 82px;
-  background: var(--lp-blue);
-  color: var(--lp-ink);
-}
-.lp-vision h2 {
-  font-size: clamp(40px, 6.5vw, 88px);
-  font-weight: 400;
-  line-height: 1.04;
-  letter-spacing: -0.055em;
-  margin-top: 40px;
-}
-.lp-vision-copy {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 50px;
-  margin: 40px 0 0 auto;
-  max-width: 780px;
-  font-size: 15px;
 }
 .lp-team-grid {
   display: grid;
@@ -1512,19 +1499,6 @@
     padding-left: 34px;
     font-size: 13px;
   }
-  .lp-vision {
-    padding-block: 48px;
-  }
-  .lp-vision h2 {
-    margin-top: 28px;
-    font-size: 42px;
-  }
-  .lp-vision-copy {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    font-size: 14px;
-    margin-top: 30px;
-  }
   .lp-team-grid {
     grid-template-columns: 1fr 1fr;
     gap: 30px 20px;
@@ -1787,16 +1761,6 @@
 .lp .lp-category-detail {
   padding-left: 56px;
 }
-.lp .lp-vision {
-  background: var(--lp-blue);
-  color: var(--lp-ink);
-}
-.lp .lp-vision .lp-kicker {
-  color: var(--lp-accent);
-}
-.lp .lp-vision-copy {
-  color: #3d5662;
-}
 .lp .lp-person,
 .lp .lp-backing {
   border-top-color: var(--lp-line);
@@ -1901,6 +1865,102 @@
   .lp-model-name strong { font-size: 15px; }
   .lp-model-summary { align-items: flex-start; flex-direction: column; gap: 20px; }
   .lp-model-summary > p:last-child { font-size: 14px; }
+}
+
+/* Roadmap: the live research foundation and the planned product stages. */
+.lp-roadmap {
+  background: var(--lp-blue);
+}
+.lp-roadmap-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.lp-roadmap-step {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 26px;
+  border-top: 3px solid var(--lp-accent);
+  background: var(--lp-paper);
+}
+.lp-roadmap-step.is-current {
+  background: var(--lp-accent-soft);
+}
+.lp-roadmap-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  justify-content: space-between;
+}
+.lp-roadmap-status {
+  padding: 4px 8px;
+  border: 1px solid var(--lp-line);
+  font-size: 11px;
+  color: var(--lp-muted);
+}
+.is-current .lp-roadmap-status {
+  background: var(--lp-accent);
+  border-color: var(--lp-accent);
+  color: var(--lp-paper);
+}
+.lp-roadmap-step h3 {
+  margin-block: 30px 18px;
+  font-size: clamp(25px, 2.5vw, 34px);
+  line-height: 1.15;
+  font-weight: 400;
+  text-wrap: balance;
+}
+.lp-roadmap-step > p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--lp-muted);
+  text-wrap: pretty;
+}
+.lp-roadmap-step > .lp-roadmap-example {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--lp-line);
+  font-size: 13px;
+  width: 100%;
+}
+.lp-roadmap-example strong {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--lp-ink);
+}
+.lp-roadmap-step > a {
+  margin-top: 16px;
+}
+.lp .lp-roadmap-note {
+  margin-top: 24px;
+  max-width: 85ch;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--lp-ink);
+}
+@media (max-width: 1000px) {
+  .lp-roadmap-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .lp-roadmap-step h3 {
+    margin-top: 24px;
+  }
+}
+@media (max-width: 700px) {
+  .lp-roadmap-step {
+    padding: 22px;
+  }
+  .lp-hero-copy > .lp-hero-foundation {
+    font-size: 15px;
+  }
 }
 
 /* Historical performance scatter, below the model-size comparison. */

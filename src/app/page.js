@@ -10,7 +10,7 @@ import { CATEGORIES, MODEL_INFO } from "@/lib/legalsan";
 export const metadata = {
   title: "PANDA — Clarity before you agree.",
   description:
-    "Private, on-device AI for the fine print. PANDA flags potentially unfair contract clauses with LegalSAN, a compact model running directly in your browser.",
+    "PANDA is building AI for consumer protection: private contract analysis with LegalSAN today, with dark pattern detection and agentic help for cancellations and legal issues on the roadmap.",
 };
 
 // Headline metrics from the prior LegalBench evaluation; details belong in the preprint.
@@ -98,16 +98,22 @@ export default function LandingPage() {
             <p className="lp-index">PANDA / LegalSAN</p>
             <div className="lp-hero-copy">
               <p>
-                The fine print shapes your rights. PANDA flags potentially
-                unfair clauses before you accept them—with a small AI model
-                running on your own device.
+                Understand your rights. Spot manipulation. Take action.
+                PANDA is building an AI assistant for consumer protection,
+                from the terms you accept to the problems you need to resolve.
+              </p>
+              <p className="lp-hero-foundation">
+                It starts with LegalSAN: our compact, private AI model that
+                flags potentially unfair contract clauses on your own device.
+                Next on our roadmap: dark pattern detection and agentic help
+                with cancellations and everyday legal issues.
               </p>
               <div className="lp-actions">
                 <a className="lp-btn" href="#demo">
-                  Try the live model <Arrow />
+                  Try LegalSAN live <Arrow />
                 </a>
-                <a className="lp-text-link" href="#how">
-                  Explore the technology <Arrow />
+                <a className="lp-text-link" href="#roadmap">
+                  Explore the roadmap <Arrow />
                 </a>
               </div>
             </div>
@@ -155,7 +161,7 @@ export default function LandingPage() {
             <strong>
               0<small> uploads</small>
             </strong>
-            <span>Your contract stays with you</span>
+            <span>LegalSAN scans stay on your device</span>
           </div>
           <div className="lp-facts-backing">
             <span className="lp-kicker">Supported by</span>
@@ -334,32 +340,84 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="lp-vision" id="privacy">
-          <div className="lp-shell">
-            <p className="lp-kicker">The larger ambition</p>
-            <h2>
-              A fairer web.
-              <br />
-              Starting with the fine print.
-            </h2>
-            <div className="lp-vision-copy">
-              <p>
-                Contract analysis is our first step. We are developing PANDA
-                toward a browser assistant that helps people recognise
-                manipulative interfaces and make informed choices.
-              </p>
-              <p>
-                Today: a working local clause scanner.
-                <br />
-                Next: protection in the browsing flow.
-              </p>
+        <section className="lp-roadmap" id="roadmap" aria-labelledby="roadmap-title">
+          <div className="lp-section lp-shell">
+            <div className="lp-section-head">
+              <p className="lp-kicker"><span>05</span> The PANDA roadmap</p>
+              <div>
+                <h2 id="roadmap-title">From understanding to action.</h2>
+                <p className="lp-lead">
+                  Consumer protection reaches beyond the fine print. LegalSAN
+                  is our foundation for an assistant that helps you recognise
+                  unfair terms, detect manipulative design and act on your rights.
+                </p>
+              </div>
             </div>
+            <ol className="lp-roadmap-grid" aria-label="Product development phases">
+              <li className="lp-roadmap-step is-current">
+                <div className="lp-roadmap-meta">
+                  <span className="lp-kicker">01 / Understand</span>
+                  <span className="lp-roadmap-status">Live prototype</span>
+                </div>
+                <h3>Clarity in the contract.</h3>
+                <p>
+                  LegalSAN highlights potentially unfair clauses across eight
+                  categories. A compact model, running locally in your browser,
+                  puts the fine print in context.
+                </p>
+                <p className="lp-roadmap-example">
+                  <strong>Today</strong> Scan terms before signing up for a service.
+                </p>
+                <a className="lp-text-link" href="#demo">
+                  Try the working model <Arrow />
+                </a>
+              </li>
+              <li className="lp-roadmap-step">
+                <div className="lp-roadmap-meta">
+                  <span className="lp-kicker">02 / Detect</span>
+                  <span className="lp-roadmap-status">Next · Planned</span>
+                </div>
+                <h3>See through dark patterns.</h3>
+                <p>
+                  Bring protection into the browsing flow. We plan to detect
+                  interfaces that pressure, mislead or obstruct you, and explain
+                  how their design shapes your choices.
+                </p>
+                <p className="lp-roadmap-example">
+                  <strong>What we’re working toward</strong> Flag misleading
+                  consent prompts, hidden subscription terms and cancellation
+                  obstacles.
+                </p>
+              </li>
+              <li className="lp-roadmap-step">
+                <div className="lp-roadmap-meta">
+                  <span className="lp-kicker">03 / Act</span>
+                  <span className="lp-roadmap-status">Future · Planned</span>
+                </div>
+                <h3>Help that follows through.</h3>
+                <p>
+                  An agentic service to help handle contract cancellations and
+                  everyday legal issues: prepare requests, submit them with your
+                  approval and track the follow-up.
+                </p>
+                <p className="lp-roadmap-example">
+                  <strong>What we’re working toward</strong> Cancel an unwanted
+                  subscription, dispute a charge or organise evidence for a
+                  complaint, with a path to qualified legal support when needed.
+                </p>
+              </li>
+            </ol>
+            <p className="lp-roadmap-note">
+              Available today: the LegalSAN clause scanner. Dark pattern
+              detection and agentic services are planned capabilities; launch
+              dates are not yet announced.
+            </p>
           </div>
         </section>
 
         <section className="lp-section lp-shell" id="team">
           <SectionHeading
-            number="05"
+            number="06"
             label="People & backing"
             title="From research to everyday use."
           >
