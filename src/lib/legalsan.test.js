@@ -1,10 +1,34 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import {
   CATEGORIES,
+  FLAG_THRESHOLD,
+  WATCH_THRESHOLD,
   splitClauses,
   findingsFor,
   verdictFor,
   summarize,
 } from './legalsan';
+
+describe('FLAG_THRESHOLD', () => {
+  // The demo once flagged at 0.5 while every published figure was measured at
+  // 0.40, so the landing page advertised numbers the demo could not produce.
+  // Pin the browser constant to the one the evaluation scripts use.
+  it('matches the threshold the evaluation scripts score at', () => {
+    const shared = readFileSync(
+      join(process.cwd(), 'scripts', 'legalsan_eval.py'),
+      'utf8',
+    );
+    const match = shared.match(/^DEFAULT_THRESHOLD = ([\d.]+)$/m);
+    expect(match).not.toBeNull();
+    expect(FLAG_THRESHOLD).toBeCloseTo(Number(match[1]), 10);
+  });
+
+  it('leaves a watch band below it', () => {
+    expect(WATCH_THRESHOLD).toBeLessThan(FLAG_THRESHOLD);
+  });
+});
 
 describe('CATEGORIES', () => {
   it('describes the eight model outputs in output order', () => {

@@ -104,8 +104,15 @@ export const CATEGORY_BY_INDEX = CATEGORIES.reduce((acc, category) => {
   return acc;
 }, {});
 
-/** A clause counts as flagged at or above this sigmoid probability. */
-export const FLAG_THRESHOLD = 0.5;
+/**
+ * A clause counts as flagged at or above this sigmoid probability.
+ *
+ * 0.40 is the threshold shipped with the checkpoint, and the one every
+ * published LegalSan figure is measured at. Changing it here without re-running
+ * scripts/eval-legalbench-unfair-tos.py would make the landing page advertise
+ * numbers the demo no longer produces; a test pins the two together.
+ */
+export const FLAG_THRESHOLD = 0.4;
 
 /** Clauses between this and FLAG_THRESHOLD are surfaced as "worth a look". */
 export const WATCH_THRESHOLD = 0.25;

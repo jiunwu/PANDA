@@ -45,30 +45,44 @@ the correct one to tokenize with. The browser tokenizer in
 
 ### Evaluation
 
-`scripts/eval-unfair-tos.py` downloads the **official LexGLUE UNFAIR-ToS test
-split** (1,607 clauses) and scores the exact int8 file the browser serves,
-printing per-class precision/recall/F1 with support counts:
+Two scripts score the **exact int8 file the browser serves**, through the same
+tokenizer the browser worker implements. Both default to threshold **0.40**, the
+value shipped with the checkpoint; `src/lib/legalsan.js` uses the same number and
+a unit test pins the two together, so the demo cannot drift away from the
+published figures.
 
 ```bash
 pip install onnxruntime pyarrow
-python scripts/eval-unfair-tos.py
+python scripts/eval-legalbench-unfair-tos.py   # the landing page's headline figures
+python scripts/eval-unfair-tos.py              # the working paper's Table 1 and Table 3
 ```
 
-The landing page shows only the previously reported LegalBench headline metrics,
-not per-category evaluation tables. Full methodology and detailed results are in
-the working paper, *LegalSAN: Compact Local Inference for Unfair-Clause
-Classification* (14 September 2026), served from
-`public/papers/legalsan-working-paper.pdf` and linked from the research section.
-Set `NEXT_PUBLIC_PANDA_PREPRINT_URL` to override that default once the paper is
-published elsewhere (for example an arXiv or journal URL).
+They use **different splits and different metrics**, and the numbers are not
+interchangeable:
 
-Note that the working paper evaluates the int8 artifact on the 1,607-clause
-UNFAIR-ToS split (eight-label macro-F1 0.7870, binary F1 0.8168); those figures
-come from a different protocol than the LegalBench headline numbers on the
-landing page and are not interchangeable with them.
+| Script | Split | Task | Reproduces |
+| --- | --- | --- | --- |
+| `eval-legalbench-unfair-tos.py` | LegalBench `unfair_tos` test, 3,813 clauses | single-label, 9 classes incl. `Other` | 95.88% accuracy, 88.46% binary macro-F1 |
+| `eval-unfair-tos.py` | LexGLUE `unfair_tos` test, 1,607 clauses | multi-label, 8 labels, no fair class | macro-F1 0.7883, micro-F1 0.7619, binary F1 0.8193, exact match 0.9527 |
 
-The evaluation script above uses the LexGLUE split. It is a separate protocol
-from the LegalBench headline results and should not be used to relabel them.
+Read the landing page's accuracy figure against the baseline the LegalBench
+script prints: `Other` is 90.58% of that split, so predicting "fair" everywhere
+already scores 90.58%, and the 95.88% is 5.3 points above it. The figure that
+describes actually finding unfair clauses is the unfair-class F1, **79.02%**
+(precision 0.822, recall 0.760) — which is why the landing page shows it beside
+the other two.
+
+The LegalBench script also reports where each of its clauses appears in LexGLUE.
+The LegalBench test split is drawn from LexGLUE's validation and test splits
+(58.4% and 40.4%), so most of it is data a standard recipe would have used for
+model selection. Accuracy on the never-selected-on portion is *higher* (95.98%
+vs 95.82%), so the headline figure is not inflated by that overlap — but it is
+not a clean held-out estimate either, and should not be described as one.
+
+Full methodology is in the working paper, *LegalSAN: Compact Local Inference for
+Unfair-Clause Classification*, built from `paper/` and served at
+`public/papers/legalsan-working-paper.pdf`. Set `NEXT_PUBLIC_PANDA_PREPRINT_URL`
+to override that link once the paper is published elsewhere.
 
 ### The runtime
 

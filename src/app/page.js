@@ -280,14 +280,27 @@ export default function LandingPage() {
                 95.88<span>%</span>
               </strong>
               <h3>Overall accuracy</h3>
-              <p>Nine-category classification, including Other.</p>
+              <p>
+                Nine classes including Other — 5.3 points above the 90.58%
+                scored by calling every clause fair.
+              </p>
             </div>
             <div className="lp-result">
               <strong>
                 88.46<span>%</span>
               </strong>
               <h3>Binary macro-F1</h3>
-              <p>Fair versus potentially unfair clauses.</p>
+              <p>Fair versus potentially unfair clauses, averaged over both.</p>
+            </div>
+            <div className="lp-result">
+              <strong>
+                79.0<span>%</span>
+              </strong>
+              <h3>Unfair-clause F1</h3>
+              <p>
+                The unfair half on its own: precision 0.82, recall 0.76. This is
+                the figure that describes finding unfair terms.
+              </p>
             </div>
             <div className="lp-paper-link">
               <span className="lp-kicker">The research behind PANDA</span>
@@ -307,9 +320,12 @@ export default function LandingPage() {
             </div>
           </div>
           <p className="lp-footnote">
-            LegalBench unfair_tos · INT8 · threshold 0.40. Overall accuracy
-            includes the majority Other category; the two figures measure
-            different aspects of performance.
+            LegalBench unfair_tos test split · 3,813 clauses · INT8 · threshold
+            0.40. Reproduce with{" "}
+            <code>scripts/eval-legalbench-unfair-tos.py</code>. Other is 90.58%
+            of that split, so accuracy and binary macro-F1 are both lifted by
+            the fair majority; the three figures measure different things and
+            the unfair-clause F1 is the strictest of them.
           </p>
           <ModelComparison />
           <ModelPerformanceChart />

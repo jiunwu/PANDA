@@ -39,4 +39,5 @@ yarn-error.log*
 /public/vendor/ort
 
 # Cached evaluation data
-/scripts/unfair_tos_test.parquet
+/scripts/*.parquet
+/scripts/__pycache__/
