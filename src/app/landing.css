@@ -611,6 +611,56 @@
   font-size: 13px;
   color: var(--lp-muted);
 }
+/* Funding acknowledgement. The marks stay in their official colours on a plain
+   white backing — the paper tone would tint the EU emblem — and one scale
+   factor drives the whole row so the lockup keeps its approved proportions. */
+.lp-funding {
+  --lp-funding-scale: 1.6px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 28px 56px;
+  margin-top: 48px;
+  padding: 30px 32px;
+  background: #ffffff;
+  border: 1px solid var(--lp-line);
+}
+.lp-funding .lp-kicker {
+  display: block;
+  color: var(--lp-muted);
+}
+.lp-funding-logos {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px 42px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.lp-funding-logos img {
+  display: block;
+  width: calc(var(--logo-units) * var(--lp-funding-scale));
+  max-width: 100%;
+  height: auto;
+}
+.lp-funding-note {
+  justify-self: end;
+  max-width: 46ch;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--lp-muted);
+}
+@media (max-width: 1000px) {
+  .lp-funding {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+  }
+  .lp-funding-note {
+    justify-self: start;
+    max-width: 62ch;
+  }
+}
 .lp-footer-bottom {
   display: flex;
   justify-content: space-between;
@@ -1529,6 +1579,14 @@
   }
   .lp-footer-top > a:last-child {
     grid-column: 1 / -1;
+  }
+  .lp-funding {
+    --lp-funding-scale: 1.2px;
+    margin-top: 34px;
+    padding: 22px 20px 20px;
+  }
+  .lp-funding-logos {
+    gap: 22px 30px;
   }
   .lp-footer-bottom {
     flex-direction: column;

@@ -17,6 +17,27 @@ export const metadata = {
 // The revised preprint distinguishes reported LegalBench figures from its UNFAIR-ToS evaluation.
 const PREPRINT_URL = "/papers/LegalSAN_Working_Paper_v1_Jiun-Yi_Wu.pdf";
 
+// Publizitätspflicht, EXIST-Handbuch 5.2: the marks run BMWE -> EU -> EXIST.
+// `units` is each mark's width in the source logo bar, so one scale factor in
+// landing.css keeps the row in the proportions of the approved lockup.
+const FUNDING_LOGOS = [
+  {
+    src: "/funding/bmwe.svg",
+    alt: "Bundesministerium für Wirtschaft und Energie",
+    units: 101,
+  },
+  {
+    src: "/funding/eu-cofunded.svg",
+    alt: "Kofinanziert von der Europäischen Union",
+    units: 58,
+  },
+  {
+    src: "/funding/exist.svg",
+    alt: "EXIST – from science to business",
+    units: 147,
+  },
+];
+
 const MODEL_COMPARISON = [
   { name: "LegalSAN", parameters: 23.5, featured: true },
   { name: "DistilBERT", parameters: 66 },
@@ -483,6 +504,31 @@ export default function LandingPage() {
             Back to top <Arrow direction="up" />
           </a>
         </div>
+        <section className="lp-funding" aria-labelledby="funding-title">
+          <div className="lp-funding-marks">
+            <span className="lp-kicker" id="funding-title">
+              Gefördert durch
+            </span>
+            <ul className="lp-funding-logos">
+              {FUNDING_LOGOS.map((logo) => (
+                <li key={logo.src}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={logo.src}
+                    alt={logo.alt}
+                    style={{ "--logo-units": logo.units }}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+          <p className="lp-funding-note">
+            Das Vorhaben PANDA wird im Rahmen des EXIST-Programms durch das
+            Bundesministerium für Wirtschaft und Energie und den Europäischen
+            Sozialfonds Plus (ESF Plus) gefördert — aufgrund eines Beschlusses
+            des Deutschen Bundestages.
+          </p>
+        </section>
         <div className="lp-footer-bottom">
           <span>
             © {new Date().getFullYear()} PANDA · Research prototype, not legal
