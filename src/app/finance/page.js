@@ -198,6 +198,7 @@ export default function FinancePage() {
   const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [showTravelModal, setShowTravelModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [editingExpense, setEditingExpense] = useState(null);
   const [guidelineOpen, setGuidelineOpen] = useState(false);
 
@@ -353,6 +354,7 @@ export default function FinancePage() {
     setExpDate(new Date().toISOString().split('T')[0]);
     setExpInvoices([]);
     setUploadError('');
+    setSaveError('');
     setExpInvoiceTo('hochschule');
     setExpProjectRelevance('');
     setEditingExpense(null);
@@ -372,7 +374,11 @@ export default function FinancePage() {
 
   async function handleAddExpense(e) {
     e.preventDefault();
-    if (!expAmount || isNaN(parseFloat(expAmount))) return;
+    if (!expAmount || isNaN(parseFloat(expAmount))) {
+      setSaveError('Bitte einen gültigen Betrag eingeben.');
+      return;
+    }
+    setSaveError('');
     setIsSubmitting(true);
     try {
       const payload = {
@@ -390,16 +396,23 @@ export default function FinancePage() {
         },
         author: 'User',
       };
-      await fetch('/api/finance', {
+      const res = await fetch('/api/finance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      // A failed save used to close the modal as if it had worked, which read
+      // as "editing does nothing".
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.details || d.error || `Speichern fehlgeschlagen (HTTP ${res.status}).`);
+      }
       resetExpenseForm();
       setShowExpenseModal(false);
       await fetchData();
     } catch (err) {
       console.error('Failed to save expense:', err);
+      setSaveError(err.message || 'Speichern fehlgeschlagen. Bitte erneut versuchen.');
     } finally {
       setIsSubmitting(false);
     }
@@ -408,14 +421,19 @@ export default function FinancePage() {
   async function handleDeleteExpense(id) {
     if (!confirm('Ausgabe wirklich löschen?')) return;
     try {
-      await fetch('/api/finance', {
+      const res = await fetch('/api/finance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'expense', action: 'delete', data: { id }, author: 'User' }),
       });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.details || d.error || `Löschen fehlgeschlagen (HTTP ${res.status}).`);
+      }
       await fetchData();
     } catch (err) {
       console.error('Failed to delete expense:', err);
+      alert(err.message || 'Löschen fehlgeschlagen. Bitte erneut versuchen.');
     }
   }
 
@@ -427,6 +445,7 @@ export default function FinancePage() {
     setExpDate(exp.date);
     setExpInvoices(parseInvoices(exp));
     setUploadError('');
+    setSaveError('');
     setExpInvoiceTo(exp.invoice_to || 'hochschule');
     setExpProjectRelevance(exp.project_relevance || '');
     setShowExpenseModal(true);
@@ -1117,6 +1136,11 @@ export default function FinancePage() {
                   </div>
                 )}
               </div>
+              {saveError && (
+                <div role="alert" style={{ marginTop: '8px', fontSize: '13px', color: '#dc2626' }}>
+                  ⚠️ {saveError}
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                 <button type="submit" className="btn btn-primary" disabled={isSubmitting || uploading} style={{ flex: 1 }}>
                   {isSubmitting ? 'Speichern…' : editingExpense ? 'Aktualisieren' : 'Hinzufügen'}
