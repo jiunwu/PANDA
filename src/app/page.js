@@ -5,6 +5,7 @@ import ClauseScanner from "@/components/ClauseScanner";
 import LandingNav from "@/components/LandingNav";
 import Arrow from "@/components/LandingArrow";
 import ModelPerformanceChart from "@/components/ModelPerformanceChart";
+import ModelCardComparison from "@/components/ModelCardComparison";
 import { CATEGORIES, MODEL_INFO } from "@/lib/legalsan";
 
 export const metadata = {
@@ -309,6 +310,7 @@ export default function LandingPage() {
           </p>
           <ModelComparison />
           <ModelPerformanceChart />
+          <ModelCardComparison />
         </section>
 
         <section className="lp-section lp-shell lp-categories" id="categories">
