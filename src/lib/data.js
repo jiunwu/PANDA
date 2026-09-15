@@ -107,6 +107,7 @@ export async function ensureTables(db) {
       date TEXT NOT NULL,
       invoice_url TEXT,
       invoice_name TEXT,
+      invoices TEXT,
       invoice_to TEXT DEFAULT 'hochschule',
       project_relevance TEXT,
       author TEXT,
@@ -200,6 +201,11 @@ export async function ensureTables(db) {
   }
   try {
     await db.execute('ALTER TABLE expenses ADD COLUMN project_relevance TEXT');
+  } catch (err) {
+    // Column might already exist, ignore error
+  }
+  try {
+    await db.execute('ALTER TABLE expenses ADD COLUMN invoices TEXT');
   } catch (err) {
     // Column might already exist, ignore error
   }
@@ -299,7 +305,7 @@ export async function getFinanceData() {
     await ensureTables(db);
 
     const expensesRes = await db.execute(
-      'SELECT id, category, description, amount, date, invoice_url, invoice_name, invoice_to, project_relevance, author, created_at FROM expenses ORDER BY date DESC'
+      'SELECT id, category, description, amount, date, invoice_url, invoice_name, invoices, invoice_to, project_relevance, author, created_at FROM expenses ORDER BY date DESC'
     );
     const travelRes = await db.execute(
       'SELECT id, destination, purpose, start_date, end_date, departure_time, return_time, city_size, nights, nightly_rate, accommodation_total, transport_cost, daily_allowance_total, total_estimated, status, author, created_at FROM travel_plans ORDER BY start_date DESC'
