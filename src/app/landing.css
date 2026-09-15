@@ -1964,6 +1964,36 @@
 }
 
 /* Historical performance scatter, below the model-size comparison. */
+.lp-distillation { margin-top: 28px; padding: 30px; border: 1px solid var(--lp-line); background: var(--lp-cloud); }
+.lp-distillation-intro { max-width: 76ch; font-size: 15px; line-height: 1.65; color: var(--lp-muted); }
+.lp-distillation-charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px; margin-top: 28px; }
+.lp-distillation-chart { margin: 0; min-width: 0; }
+.lp-distillation-chart figcaption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--lp-line); padding-bottom: 14px; }
+.lp-distillation-chart figcaption strong { font-size: 14px; font-weight: 500; }
+.lp-distillation-chart figcaption > span { font-size: 12px; color: var(--lp-muted); }
+.lp-distillation-chart ol { list-style: none; padding: 0; margin: 0; }
+.lp-distillation-chart li { padding-top: 22px; }
+.lp-distillation-label { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; font-size: 14px; }
+.lp-distillation-label small { display: block; margin-top: 5px; color: var(--lp-muted); font-size: 11px; }
+.lp-distillation-label strong { flex-shrink: 0; font-size: 21px; font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+.lp-distillation-track { height: 20px; background: #e1e5e3; }
+.lp-distillation-track > span { display: block; height: 100%; background: #899b9e; }
+.lp-distillation-chart .is-student .lp-distillation-track > span { background: var(--lp-accent); }
+.lp-distillation-chart .is-student .lp-distillation-label > strong { color: var(--lp-accent); }
+.lp-model-card-download { display: flex; align-items: center; justify-content: space-between; gap: 28px; border-top: 1px solid var(--lp-line); padding-top: 24px; margin-top: 24px; }
+.lp-model-card-download p { max-width: 60ch; margin-top: 12px; font-size: 13px; line-height: 1.65; color: var(--lp-muted); }
+.lp-model-card-download > a { flex-shrink: 0; }
+@media (max-width: 850px) {
+  .lp-distillation-charts { grid-template-columns: 1fr; gap: 28px; }
+  .lp-model-card-download { align-items: flex-start; flex-direction: column; gap: 18px; }
+}
+@media (max-width: 700px) {
+  .lp-distillation { padding: 20px 16px; }
+  .lp-distillation-intro { font-size: 14px; }
+  .lp-distillation-label { font-size: 13px; }
+  .lp-distillation-label strong { font-size: 20px; }
+}
+
 .lp-performance-figure { margin: 28px 0 0; padding: 30px; border: 1px solid var(--lp-line); background: var(--lp-paper); }
 .lp-performance-scroll { overflow-x: auto; padding-block: 8px; }
 .lp-performance-svg { display: block; width: 100%; min-width: 860px; height: auto; font-family: inherit; }
