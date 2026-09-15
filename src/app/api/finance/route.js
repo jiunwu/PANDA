@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getClient, ensureTables } from '@/lib/data';
+import { parseInvoices, serializeInvoices } from '@/lib/invoice-files';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -15,13 +16,15 @@ export async function GET() {
     await ensureTables(db);
 
     const expensesRes = await db.execute(
-      'SELECT id, category, description, amount, date, invoice_url, invoice_name, author, created_at FROM expenses ORDER BY date DESC'
+      'SELECT id, category, description, amount, date, invoice_url, invoice_name, invoices, invoice_to, project_relevance, author, created_at FROM expenses ORDER BY date DESC'
     );
     const travelRes = await db.execute(
       'SELECT id, destination, purpose, start_date, end_date, departure_time, return_time, city_size, nights, nightly_rate, accommodation_total, transport_cost, daily_allowance_total, total_estimated, status, author, created_at FROM travel_plans ORDER BY start_date DESC'
     );
 
-    const expenses = expensesRes.rows;
+    // Hand the client one shape regardless of whether the row predates the
+    // invoices column.
+    const expenses = expensesRes.rows.map(row => ({ ...row, invoices: parseInvoices(row) }));
     const travelPlans = travelRes.rows;
     const totalSpent = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
     const totalPlanned = travelPlans
@@ -61,18 +64,22 @@ export async function POST(request) {
     await ensureTables(db);
 
     if (type === 'expense') {
+      // Accepts either the invoices array or the legacy single invoice_url.
+      const invoices = parseInvoices(data);
+
       if (action === 'add') {
         const id = data.id || crypto.randomUUID();
         await db.execute({
-          sql: 'INSERT INTO expenses (id, category, description, amount, date, invoice_url, invoice_name, invoice_to, project_relevance, author, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          sql: 'INSERT INTO expenses (id, category, description, amount, date, invoice_url, invoice_name, invoices, invoice_to, project_relevance, author, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           args: [
             id,
             data.category || 'other',
             data.description || '',
             data.amount,
             data.date || new Date().toISOString().split('T')[0],
-            data.invoice_url || null,
-            data.invoice_name || null,
+            invoices[0]?.url || null,
+            invoices[0]?.name || null,
+            serializeInvoices(invoices),
             data.invoice_to || 'hochschule',
             data.project_relevance || null,
             author || 'Unknown',
@@ -86,14 +93,15 @@ export async function POST(request) {
         return NextResponse.json({ success: true, id });
       } else if (action === 'update') {
         await db.execute({
-          sql: 'UPDATE expenses SET category = COALESCE(?, category), description = COALESCE(?, description), amount = COALESCE(?, amount), date = COALESCE(?, date), invoice_url = COALESCE(?, invoice_url), invoice_name = COALESCE(?, invoice_name), invoice_to = COALESCE(?, invoice_to), project_relevance = COALESCE(?, project_relevance) WHERE id = ?',
+          sql: 'UPDATE expenses SET category = COALESCE(?, category), description = COALESCE(?, description), amount = COALESCE(?, amount), date = COALESCE(?, date), invoice_url = ?, invoice_name = ?, invoices = ?, invoice_to = COALESCE(?, invoice_to), project_relevance = COALESCE(?, project_relevance) WHERE id = ?',
           args: [
             data.category || null,
             data.description || null,
             data.amount !== undefined ? data.amount : null,
             data.date || null,
-            data.invoice_url || null,
-            data.invoice_name || null,
+            invoices[0]?.url || null,
+            invoices[0]?.name || null,
+            serializeInvoices(invoices),
             data.invoice_to || null,
             data.project_relevance || null,
             data.id
