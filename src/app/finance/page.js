@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { validateInvoiceFile } from '@/lib/invoice-files';
+import { MAX_INVOICES_PER_EXPENSE, parseInvoices, validateInvoiceFile } from '@/lib/invoice-files';
 
 // ─── EXIST Budget Configuration ───
 const COACHING_BUDGET = 5000;
@@ -81,10 +81,10 @@ const DAILY_ALLOWANCE_HALF = 14;
 
 // Invoices are streamed back through an authenticated route; pass the original
 // filename along so the browser shows it instead of the blob id.
-function invoiceHref(exp) {
-  if (!exp.invoice_url) return exp.invoice_url;
-  if (!exp.invoice_url.startsWith('/api/finance/invoice/') || !exp.invoice_name) return exp.invoice_url;
-  return `${exp.invoice_url}?name=${encodeURIComponent(exp.invoice_name)}`;
+function invoiceHref(invoice) {
+  if (!invoice?.url) return '#';
+  if (!invoice.url.startsWith('/api/finance/invoice/') || !invoice.name) return invoice.url;
+  return `${invoice.url}?name=${encodeURIComponent(invoice.name)}`;
 }
 
 function formatEuro(n) {
@@ -206,8 +206,7 @@ export default function FinancePage() {
   const [expDescription, setExpDescription] = useState('');
   const [expAmount, setExpAmount] = useState('');
   const [expDate, setExpDate] = useState(new Date().toISOString().split('T')[0]);
-  const [expInvoiceUrl, setExpInvoiceUrl] = useState('');
-  const [expInvoiceName, setExpInvoiceName] = useState('');
+  const [expInvoices, setExpInvoices] = useState([]);
   const [expInvoiceTo, setExpInvoiceTo] = useState('hochschule');
   const [expProjectRelevance, setExpProjectRelevance] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -287,39 +286,64 @@ export default function FinancePage() {
   const expAmountNum = parseFloat(expAmount) || 0;
   const coachingRateWarning = isCoachingCategory && expAmountNum > COACHING_MAX_DAILY_RATE;
 
-  // File upload
+  // File upload — one expense can carry several receipts (hotel, train, bus…),
+  // each uploaded as its own request so one bad file doesn't sink the rest.
+  async function uploadInvoice(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/finance/upload', { method: 'POST', body: formData });
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok || !d.url) {
+      throw new Error(d.error || `Upload fehlgeschlagen (HTTP ${res.status}).`);
+    }
+    return { url: d.url, name: d.name || file.name };
+  }
+
   async function handleFileUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
     setUploadError('');
 
-    const invalid = validateInvoiceFile(file);
-    if (invalid) {
-      setUploadError(invalid);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
+    const free = MAX_INVOICES_PER_EXPENSE - expInvoices.length;
+    const errors = [];
+    if (files.length > free) {
+      errors.push(`Maximal ${MAX_INVOICES_PER_EXPENSE} Belege pro Ausgabe.`);
     }
 
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/api/finance/upload', { method: 'POST', body: formData });
-      const d = await res.json().catch(() => ({}));
-      if (!res.ok || !d.url) {
-        throw new Error(d.error || `Upload fehlgeschlagen (HTTP ${res.status}).`);
-      }
-      setExpInvoiceUrl(d.url);
-      setExpInvoiceName(d.name || file.name);
-    } catch (err) {
-      console.error('Upload failed:', err);
-      setUploadError(err.message || 'Upload fehlgeschlagen. Bitte erneut versuchen.');
-      setExpInvoiceUrl('');
-      setExpInvoiceName('');
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    } finally {
-      setUploading(false);
+    const accepted = [];
+    for (const file of files.slice(0, Math.max(0, free))) {
+      const invalid = validateInvoiceFile(file);
+      if (invalid) errors.push(`${file.name}: ${invalid}`);
+      else accepted.push(file);
     }
+
+    if (accepted.length) {
+      setUploading(true);
+      try {
+        const results = await Promise.allSettled(accepted.map(uploadInvoice));
+        const uploaded = [];
+        results.forEach((result, i) => {
+          if (result.status === 'fulfilled') {
+            uploaded.push(result.value);
+          } else {
+            console.error('Upload failed:', result.reason);
+            errors.push(`${accepted[i].name}: ${result.reason?.message || 'Upload fehlgeschlagen.'}`);
+          }
+        });
+        if (uploaded.length) setExpInvoices(prev => [...prev, ...uploaded]);
+      } finally {
+        setUploading(false);
+      }
+    }
+
+    setUploadError(errors.join(' '));
+    // Let the same file be picked again after a removal or a failure.
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  function handleRemoveInvoice(url) {
+    setExpInvoices(prev => prev.filter(i => i.url !== url));
+    setUploadError('');
   }
 
   function resetExpenseForm() {
@@ -327,8 +351,7 @@ export default function FinancePage() {
     setExpDescription('');
     setExpAmount('');
     setExpDate(new Date().toISOString().split('T')[0]);
-    setExpInvoiceUrl('');
-    setExpInvoiceName('');
+    setExpInvoices([]);
     setUploadError('');
     setExpInvoiceTo('hochschule');
     setExpProjectRelevance('');
@@ -361,8 +384,7 @@ export default function FinancePage() {
           description: expDescription,
           amount: parseFloat(expAmount),
           date: expDate,
-          invoice_url: expInvoiceUrl || null,
-          invoice_name: expInvoiceName || null,
+          invoices: expInvoices,
           invoice_to: expInvoiceTo || 'hochschule',
           project_relevance: expProjectRelevance || null,
         },
@@ -403,8 +425,7 @@ export default function FinancePage() {
     setExpDescription(exp.description || '');
     setExpAmount(String(exp.amount));
     setExpDate(exp.date);
-    setExpInvoiceUrl(exp.invoice_url || '');
-    setExpInvoiceName(exp.invoice_name || '');
+    setExpInvoices(parseInvoices(exp));
     setUploadError('');
     setExpInvoiceTo(exp.invoice_to || 'hochschule');
     setExpProjectRelevance(exp.project_relevance || '');
@@ -766,10 +787,14 @@ export default function FinancePage() {
                       </td>
                       <td>{exp.description || '—'}</td>
                       <td>
-                        {exp.invoice_url ? (
-                          <a href={invoiceHref(exp)} target="_blank" rel="noopener noreferrer" className="fin-invoice-link">
-                            📎 {exp.invoice_name || 'Rechnung'}
-                          </a>
+                        {parseInvoices(exp).length ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            {parseInvoices(exp).map(inv => (
+                              <a key={inv.url} href={invoiceHref(inv)} target="_blank" rel="noopener noreferrer" className="fin-invoice-link">
+                                📎 {inv.name}
+                              </a>
+                            ))}
+                          </div>
                         ) : (
                           <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>—</span>
                         )}
@@ -1035,39 +1060,57 @@ export default function FinancePage() {
 
               {/* File upload */}
               <div className="cal-field">
-                <label className="cal-label">Rechnung / Beleg</label>
-                <div
-                  className={`fin-dropzone ${uploading ? 'fin-dropzone-uploading' : ''} ${expInvoiceUrl ? 'fin-dropzone-done' : ''}`}
-                  onClick={() => fileInputRef.current?.click()}
-                  onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('fin-dropzone-active'); }}
-                  onDragLeave={e => e.currentTarget.classList.remove('fin-dropzone-active')}
-                  onDrop={e => {
-                    e.preventDefault();
-                    e.currentTarget.classList.remove('fin-dropzone-active');
-                    const file = e.dataTransfer.files[0];
-                    if (file) {
-                      const dt = new DataTransfer();
-                      dt.items.add(file);
-                      fileInputRef.current.files = dt.files;
-                      handleFileUpload({ target: { files: [file] } });
-                    }
-                  }}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,.png,.jpg,.jpeg,.webp"
-                    style={{ display: 'none' }}
-                    onChange={handleFileUpload}
-                  />
-                  {uploading ? (
-                    <span className="fin-dropzone-text">⏳ Wird hochgeladen…</span>
-                  ) : expInvoiceUrl ? (
-                    <span className="fin-dropzone-text">✅ {expInvoiceName || 'Hochgeladen'}</span>
-                  ) : (
-                    <span className="fin-dropzone-text">📎 Datei hierher ziehen oder klicken (PDF, PNG, JPG · max. 4 MB)</span>
-                  )}
-                </div>
+                <label className="cal-label">Rechnungen / Belege</label>
+                {expInvoices.length > 0 && (
+                  <ul style={{ listStyle: 'none', margin: '0 0 8px', padding: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {expInvoices.map(inv => (
+                      <li key={inv.url} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                        <a href={invoiceHref(inv)} target="_blank" rel="noopener noreferrer" className="fin-invoice-link" style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          📎 {inv.name}
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveInvoice(inv.url)}
+                          aria-label={`${inv.name} entfernen`}
+                          title="Entfernen"
+                          style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: '14px', lineHeight: 1, padding: '2px 4px' }}
+                        >
+                          ✕
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {expInvoices.length < MAX_INVOICES_PER_EXPENSE && (
+                  <div
+                    className={`fin-dropzone ${uploading ? 'fin-dropzone-uploading' : ''} ${expInvoices.length ? 'fin-dropzone-done' : ''}`}
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('fin-dropzone-active'); }}
+                    onDragLeave={e => e.currentTarget.classList.remove('fin-dropzone-active')}
+                    onDrop={e => {
+                      e.preventDefault();
+                      e.currentTarget.classList.remove('fin-dropzone-active');
+                      const files = Array.from(e.dataTransfer.files || []);
+                      if (files.length) handleFileUpload({ target: { files } });
+                    }}
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept=".pdf,.png,.jpg,.jpeg,.webp"
+                      style={{ display: 'none' }}
+                      onChange={handleFileUpload}
+                    />
+                    {uploading ? (
+                      <span className="fin-dropzone-text">⏳ Wird hochgeladen…</span>
+                    ) : (
+                      <span className="fin-dropzone-text">
+                        📎 {expInvoices.length ? 'Weitere Belege' : 'Dateien'} hierher ziehen oder klicken (PDF, PNG, JPG · max. 4 MB pro Datei)
+                      </span>
+                    )}
+                  </div>
+                )}
                 {uploadError && (
                   <div role="alert" style={{ marginTop: '6px', fontSize: '12px', color: '#dc2626' }}>
                     ⚠️ {uploadError}
