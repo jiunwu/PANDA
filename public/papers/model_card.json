@@ -1,0 +1,171 @@
+{
+  "teacher": "nlpaueb/bert-base-uncased-contracts",
+  "teacher_revision": "f918d2e0cf491ba2c5fcf9f82d5e9603b8c5f3ea",
+  "dataset": "coastalcph/lex_glue",
+  "dataset_revision": "c23fdff1a6bf74e0e1a71cb86f1e781d37da888c",
+  "arm": "B_attn_6L",
+  "parameters": 23516168,
+  "fp32_bytes": 94064672,
+  "pruned_vocab": 12000,
+  "max_length": 128,
+  "distillation": {
+    "steps": 4000,
+    "batch_size": 32,
+    "lr": 0.0001,
+    "sentences": 65510,
+    "objective": "layer-mapped MSE + cosine"
+  },
+  "finetune": {
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "epochs": 10,
+    "batch_size": 16,
+    "lr_matched": 3e-05,
+    "lr_probe": [
+      3e-05,
+      5e-05,
+      0.0001
+    ],
+    "best_lr": 5e-05,
+    "lr_penalty_of_shared_rate": 0.015700000000000047,
+    "pooling": "mean over non-special tokens (teacher used [CLS] + tanh pooler)"
+  },
+  "threshold": 0.4,
+  "labels": [
+    "Limitation of liability",
+    "Unilateral termination",
+    "Unilateral change",
+    "Content removal",
+    "Contract by using",
+    "Choice of law",
+    "Jurisdiction",
+    "Arbitration"
+  ],
+  "ceiling_reference": {
+    "model": "Contracts-BERT fine-tuned",
+    "macro_F1": 0.8115,
+    "std": 0.0128
+  },
+  "results": [
+    {
+      "model": "Contracts-BERT fine-tuned (109 M, 436 MB)",
+      "macro_F1": 0.8115,
+      "std": 0.0128,
+      "MB": 435.6,
+      "vs ceiling": 0.0
+    },
+    {
+      "model": "B_attn_6L fine-tuned (23.5 M, 94 MB) @ lr 5e-05",
+      "macro_F1": 0.7691,
+      "std": 0.0157,
+      "MB": 94.1,
+      "vs ceiling": -0.0424
+    },
+    {
+      "model": "B_attn_6L fine-tuned (23.5 M, 94 MB)",
+      "macro_F1": 0.7586,
+      "std": 0.0161,
+      "MB": 94.1,
+      "vs ceiling": -0.0529
+    },
+    {
+      "model": "A_ffn_2L fine-tuned (23.5 M, 94 MB)",
+      "macro_F1": 0.7582,
+      "std": 0.0186,
+      "MB": 94.0,
+      "vs ceiling": -0.0533
+    },
+    {
+      "model": "A_ffn_2L fine-tuned (23.5 M, 94 MB) @ lr 5e-05",
+      "macro_F1": 0.754,
+      "std": 0.0275,
+      "MB": 94.0,
+      "vs ceiling": -0.0575
+    },
+    {
+      "model": "Contracts-BERT frozen probe (no fine-tuning)",
+      "macro_F1": 0.5439,
+      "std": null,
+      "MB": 435.6,
+      "vs ceiling": -0.2676
+    },
+    {
+      "model": "B_attn_6L frozen probe (no fine-tuning)",
+      "macro_F1": 0.5019,
+      "std": null,
+      "MB": 94.1,
+      "vs ceiling": -0.3096
+    }
+  ],
+  "ship_readiness": [
+    {
+      "label": "Limitation of liability",
+      "test precision": 0.711,
+      "test recall": 0.711,
+      "test F1": 0.711,
+      "test support": 38,
+      "SHIP?": "yes"
+    },
+    {
+      "label": "Unilateral termination",
+      "test precision": 0.784,
+      "test recall": 0.763,
+      "test F1": 0.773,
+      "test support": 38,
+      "SHIP?": "yes"
+    },
+    {
+      "label": "Unilateral change",
+      "test precision": 0.8,
+      "test recall": 0.632,
+      "test F1": 0.706,
+      "test support": 38,
+      "SHIP?": "yes"
+    },
+    {
+      "label": "Content removal",
+      "test precision": 0.611,
+      "test recall": 0.846,
+      "test F1": 0.71,
+      "test support": 13,
+      "SHIP?": "no"
+    },
+    {
+      "label": "Contract by using",
+      "test precision": 1.0,
+      "test recall": 0.739,
+      "test F1": 0.85,
+      "test support": 23,
+      "SHIP?": "yes"
+    },
+    {
+      "label": "Choice of law",
+      "test precision": 1.0,
+      "test recall": 0.923,
+      "test F1": 0.96,
+      "test support": 13,
+      "SHIP?": "yes"
+    },
+    {
+      "label": "Jurisdiction",
+      "test precision": 0.929,
+      "test recall": 0.812,
+      "test F1": 0.867,
+      "test support": 16,
+      "SHIP?": "yes"
+    },
+    {
+      "label": "Arbitration",
+      "test precision": 0.667,
+      "test recall": 0.857,
+      "test F1": 0.75,
+      "test support": 7,
+      "SHIP?": "no"
+    }
+  ],
+  "license_note": "inherits nlpaueb/bert-base-uncased-contracts CC-BY-SA-4.0; UNFAIR-ToS card is CC-BY-4.0",
+  "_serialization_note": "Missing standard deviations represented as NaN in the supplied file are serialized as null. All reported experiment values are otherwise unchanged."
+}
